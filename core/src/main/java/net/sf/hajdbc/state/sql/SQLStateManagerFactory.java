@@ -31,6 +31,7 @@ import net.sf.hajdbc.logging.LoggerFactory;
 import net.sf.hajdbc.pool.generic.GenericObjectPoolConfiguration;
 import net.sf.hajdbc.pool.generic.GenericObjectPoolFactory;
 import net.sf.hajdbc.sql.DriverDatabase;
+import net.sf.hajdbc.sql.DriverDatabaseBuilder;
 import net.sf.hajdbc.state.StateManager;
 import net.sf.hajdbc.state.StateManagerFactory;
 import net.sf.hajdbc.util.Strings;
@@ -46,24 +47,28 @@ public class SQLStateManagerFactory extends GenericObjectPoolConfiguration imple
 	
 	enum EmbeddedVendor
 	{
-		H2("jdbc:h2:{1}/{0}"),
-		HSQLDB("jdbc:hsqldb:{1}/{0}"),
-		DERBY("jdbc:derby:{1}/{0};create=true")
+		H2("jdbc:h2:{1}/{0}", "sa", ""),
+		HSQLDB("jdbc:hsqldb:{1}/{0}", "sa", ""),
+		DERBY("jdbc:derby:{1}/{0};create=true", null, null)
 		;
 		
 		final String pattern;
+		final String user;
+		final String password;
 		
-		EmbeddedVendor(String pattern)
+		EmbeddedVendor(String pattern, String user, String password)
 		{
 			this.pattern = pattern;
+			this.user = user;
+			this.password = password;
 		}
 	}
 	
-	private String urlPattern = defaultUrlPattern();
+	private String urlPattern;
 	private String user;
 	private String password;
-	
-	private static String defaultUrlPattern()
+
+	public SQLStateManagerFactory()
 	{
 		for (EmbeddedVendor vendor: EmbeddedVendor.values())
 		{
@@ -75,7 +80,9 @@ public class SQLStateManagerFactory extends GenericObjectPoolConfiguration imple
 				{
 					if (driver.acceptsURL(url))
 					{
-						return vendor.pattern;
+						this.urlPattern = vendor.pattern;
+						this.user = vendor.user;
+						this.password = vendor.password;
 					}
 				}
 			}
@@ -84,8 +91,6 @@ public class SQLStateManagerFactory extends GenericObjectPoolConfiguration imple
 				// Skip vendor
 			}
 		}
-		
-		return null;
 	}
 	
 	@Override
@@ -96,10 +101,11 @@ public class SQLStateManagerFactory extends GenericObjectPoolConfiguration imple
 
 	/**
 	 * {@inheritDoc}
+	 * @throws SQLException 
 	 * @see net.sf.hajdbc.state.StateManagerFactory#createStateManager(net.sf.hajdbc.DatabaseCluster)
 	 */
 	@Override
-	public <Z, D extends Database<Z>> StateManager createStateManager(DatabaseCluster<Z, D> cluster)
+	public <Z, D extends Database<Z>> StateManager createStateManager(DatabaseCluster<Z, D> cluster) throws SQLException
 	{
 		if (this.urlPattern == null)
 		{
@@ -107,10 +113,13 @@ public class SQLStateManagerFactory extends GenericObjectPoolConfiguration imple
 		}
 		
 		String url = MessageFormat.format(this.urlPattern, cluster.getId(), Strings.HA_JDBC_HOME);
-		DriverDatabase database = new DriverDatabase();
-		database.setLocation(url);
-		database.setUser(this.user);
-		database.setPassword(this.password);
+		
+		DriverDatabaseBuilder builder = new DriverDatabaseBuilder("").url(url);
+		if (this.user != null)
+		{
+			builder.credentials(this.user, this.password);
+		}
+		DriverDatabase database = builder.build();
 		
 		this.logger.log(Level.INFO, "State for database cluster {0} will be persisted to {1}", cluster, url);
 		

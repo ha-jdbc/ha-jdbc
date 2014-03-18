@@ -952,8 +952,8 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	@Override
 	public <Z, D extends Database<Z>> ConnectionProperties getConnectionProperties(D database, Decoder decoder) throws SQLException
 	{
-		final String password = database.decodePassword(decoder);
-		try (Connection connection = database.connect(database.createConnectionSource(), password))
+		final String password = database.getCredentials().decodePassword(decoder);
+		try (Connection connection = database.connect(decoder))
 		{
 			DatabaseMetaData metaData = connection.getMetaData();
 			String url = metaData.getURL();

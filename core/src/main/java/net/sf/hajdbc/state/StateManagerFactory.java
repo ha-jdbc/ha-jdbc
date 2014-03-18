@@ -18,6 +18,7 @@
 package net.sf.hajdbc.state;
 
 import java.io.Serializable;
+import java.sql.SQLException;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
@@ -28,5 +29,5 @@ import net.sf.hajdbc.Identifiable;
  */
 public interface StateManagerFactory extends Identifiable, Serializable
 {
-	<Z, D extends Database<Z>> StateManager createStateManager(DatabaseCluster<Z, D> cluster);
+	<Z, D extends Database<Z>> StateManager createStateManager(DatabaseCluster<Z, D> cluster) throws SQLException;
 }

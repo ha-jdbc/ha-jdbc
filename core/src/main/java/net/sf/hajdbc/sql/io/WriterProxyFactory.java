@@ -17,7 +17,6 @@
  */
 package net.sf.hajdbc.sql.io;
 
-import java.io.IOException;
 import java.io.Writer;
 import java.sql.SQLException;
 import java.util.Map;
@@ -35,12 +34,6 @@ public class WriterProxyFactory<Z, D extends Database<Z>, P> extends OutputProxy
 	public WriterProxyFactory(P parentProxy, ProxyFactory<Z, D, P, SQLException> parent, Invoker<Z, D, P, Writer, SQLException> invoker, Map<D, Writer> writers)
 	{
 		super(parentProxy, parent, invoker, writers);
-	}
-	
-	@Override
-	public void close(D database, Writer writer) throws IOException
-	{
-		writer.close();
 	}
 
 	@Override

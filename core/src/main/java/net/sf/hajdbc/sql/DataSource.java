@@ -21,18 +21,20 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.SimpleDatabaseClusterConfigurationFactory;
 
 /**
  * @author Paul Ferraro
  */
-public class DataSource extends CommonDataSource<javax.sql.DataSource, DataSourceDatabase, DataSourceProxyFactory> implements javax.sql.DataSource
+public class DataSource extends CommonDataSource<javax.sql.DataSource, DataSourceDatabase, DataSourceDatabaseBuilder, DataSourceProxyFactory> implements javax.sql.DataSource
 {
-	/**
-	 * Constructs a new DataSource
-	 */
-	public DataSource()
+	private final DataSourceDatabaseClusterConfigurationBuilder builder = new DataSourceDatabaseClusterConfigurationBuilder();
+
+	@Override
+	public DataSourceDatabaseClusterConfigurationBuilder getConfigurationBuilder()
 	{
-		super(DataSourceDatabaseClusterConfiguration.class);
+		this.setConfigurationFactory(new SimpleDatabaseClusterConfigurationFactory<javax.sql.DataSource, DataSourceDatabase>());
+		return this.builder;
 	}
 
 	@Override

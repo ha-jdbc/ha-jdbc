@@ -29,8 +29,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.locks.Lock;
 
-import javax.management.JMException;
-
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterConfiguration;
@@ -65,7 +63,9 @@ import net.sf.hajdbc.state.StateManager;
 import net.sf.hajdbc.state.distributed.DistributedStateManager;
 import net.sf.hajdbc.sync.SynchronizationContext;
 import net.sf.hajdbc.sync.SynchronizationContextImpl;
+import net.sf.hajdbc.tx.SimpleTransactionIdentifierFactory;
 import net.sf.hajdbc.tx.TransactionIdentifierFactory;
+import net.sf.hajdbc.tx.UUIDTransactionIdentifierFactory;
 import net.sf.hajdbc.util.concurrent.cron.CronExpression;
 import net.sf.hajdbc.util.concurrent.cron.CronThreadPoolExecutor;
 
@@ -91,12 +91,19 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	private LockManager lockManager;
 	private StateManager stateManager;
 	private InputSinkStrategy<? extends Object> sinkSourceFactory;
+	private TransactionIdentifierFactory<? extends Object> txIdentifierFactory;
+	private MBeanRegistrar<Z, D> registrar;
 	
 	private boolean active = false;
 	
 	private final List<DatabaseClusterConfigurationListener<Z, D>> configurationListeners = new CopyOnWriteArrayList<>();	
 	private final List<DatabaseClusterListener> clusterListeners = new CopyOnWriteArrayList<>();
 	private final List<SynchronizationListener> synchronizationListeners = new CopyOnWriteArrayList<>();
+	
+	public DatabaseClusterImpl(String id, DatabaseClusterConfiguration<Z, D> configuration)
+	{
+		this(id, configuration, null);
+	}
 	
 	public DatabaseClusterImpl(String id, DatabaseClusterConfiguration<Z, D> configuration, DatabaseClusterConfigurationListener<Z, D> listener)
 	{
@@ -240,7 +247,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	 * @param databaseId a database identifier
 	 * @throws JMException 
 	 * @throws IllegalArgumentException if database already exists.
-	 */
+	 *
 	@ManagedOperation
 	public void add(String databaseId) throws JMException
 	{
@@ -251,14 +258,14 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 			throw new IllegalArgumentException(Messages.DATABASE_ALREADY_EXISTS.getMessage(databaseId, this));
 		}
 		
-		this.configuration.getMBeanRegistrar().register(this, database);
+		this.registrar.register(this, database);
 		
 		for (DatabaseClusterConfigurationListener<Z, D> listener: this.configurationListeners)
 		{
 			listener.added(database, this.configuration);
 		}
 	}
-	
+*/	
 	/**
 	 * Removes the specified database from the cluster.
 	 * @param databaseId a database identifier
@@ -274,7 +281,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 			throw new IllegalStateException(Messages.DATABASE_STILL_ACTIVE.getMessage(this, databaseId));
 		}
 
-		this.configuration.getMBeanRegistrar().unregister(this, database);
+		this.registrar.unregister(this, database);
 		
 		this.configuration.getDatabaseMap().remove(databaseId);
 
@@ -426,13 +433,14 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		
 		if (added)
 		{
+/*
 			database.setActive(true);
 			
 			if (database.isDirty())
 			{
 				database.clean();
 			}
-			
+*/
 			DatabaseEvent event = new DatabaseEvent(database);
 
 			manager.activated(event);
@@ -457,7 +465,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		
 		if (removed)
 		{
-			database.setActive(false);
+//			database.setActive(false);
 			
 			DatabaseEvent event = new DatabaseEvent(database);
 
@@ -594,7 +602,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	@Override
 	public TransactionIdentifierFactory<? extends Object> getTransactionIdentifierFactory()
 	{
-		return this.configuration.getTransactionIdentifierFactory();
+		return this.txIdentifierFactory;
 	}
 
 	/**
@@ -683,7 +691,8 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		this.durability = this.configuration.getDurabilityFactory().createDurability(this);
 		this.executor = this.configuration.getExecutorProvider().getExecutor(this.configuration.getThreadFactory());
 		this.sinkSourceFactory = this.configuration.getInputSinkProvider().createInputSinkStrategy();
-		
+		this.txIdentifierFactory = (dispatcherFactory != null) ? new UUIDTransactionIdentifierFactory() : new SimpleTransactionIdentifierFactory();
+
 		this.lockManager.start();
 		this.stateManager.start();
 		
@@ -712,6 +721,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 				if (this.isAlive(database, Level.WARN))
 				{
 					this.activate(database, this.stateManager);
+//					database.setActive(true);
 				}
 			}
 		}
@@ -752,16 +762,13 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 			}
 		}
 		
-		MBeanRegistrar<Z, D> registrar = this.configuration.getMBeanRegistrar();
+		this.registrar = this.configuration.getMBeanRegistrarFactory().createMBeanRegistrar();
 
-		if (registrar != null)
+		this.registrar.register(this);
+		
+		for (D database: this.configuration.getDatabaseMap().values())
 		{
-			registrar.register(this);
-			
-			for (D database: this.configuration.getDatabaseMap().values())
-			{
-				registrar.register(this, database);
-			}
+			this.registrar.register(this, database);
 		}
 		
 		this.active = true;
@@ -793,15 +800,13 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 			}
 		}
 		
-		MBeanRegistrar<Z, D> registrar = this.configuration.getMBeanRegistrar();
-
-		if (registrar != null)
+		if (this.registrar != null)
 		{
-			registrar.unregister(this);
+			this.registrar.unregister(this);
 			
 			for (D database: this.configuration.getDatabaseMap().values())
 			{
-				registrar.unregister(this, database);
+				this.registrar.unregister(this, database);
 			}
 		}
 		
@@ -833,7 +838,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 
 	boolean isAlive(D database, Level level)
 	{
-		try (Connection connection = database.connect(database.createConnectionSource(), database.decodePassword(this.decoder)))
+		try (Connection connection = database.connect(this.decoder))
 		{
 			return this.dialect.isValid(connection);
 		}

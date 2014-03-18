@@ -23,18 +23,13 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import javax.naming.BinaryRefAddr;
-import javax.naming.Reference;
-import javax.naming.Referenceable;
-import javax.naming.StringRefAddr;
-
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseBuilder;
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.DatabaseClusterConfiguration;
+import net.sf.hajdbc.DatabaseClusterConfigurationBuilderProvider;
 import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.DatabaseClusterFactory;
 import net.sf.hajdbc.ExceptionType;
-import net.sf.hajdbc.util.Objects;
 import net.sf.hajdbc.util.TimePeriod;
 import net.sf.hajdbc.util.concurrent.ReferenceRegistryStoreFactory;
 import net.sf.hajdbc.util.concurrent.LifecycleRegistry;
@@ -45,10 +40,8 @@ import net.sf.hajdbc.xml.XMLDatabaseClusterConfigurationFactory;
  * @author Paul Ferraro
  * @param <Z> data source class
  */
-public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D extends Database<Z>, F extends CommonDataSourceProxyFactory<Z, D>> implements Referenceable, javax.sql.CommonDataSource, CommonDataSourceProxyFactoryFactory<Z, D, F>, Registry.Factory<Void, DatabaseCluster<Z, D>, Void, SQLException>
+public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D extends Database<Z>, B extends DatabaseBuilder<Z, D>, F extends CommonDataSourceProxyFactory<Z, D>> implements javax.sql.CommonDataSource, CommonDataSourceProxyFactoryFactory<Z, D, F>, Registry.Factory<Void, DatabaseCluster<Z, D>, Void, SQLException>, DatabaseClusterConfigurationBuilderProvider<Z, D, B>, AutoCloseable
 {
-	private final Class<? extends DatabaseClusterConfiguration<Z, D>> configurationClass;
-	
 	private final Registry<Void, DatabaseCluster<Z, D>, Void, SQLException> registry = new LifecycleRegistry<>(this, new ReferenceRegistryStoreFactory(), ExceptionType.SQL.<SQLException>getExceptionFactory());
 	
 	private volatile TimePeriod timeout = new TimePeriod(10, TimeUnit.SECONDS);
@@ -58,13 +51,15 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 	private volatile String password;
 	private volatile DatabaseClusterFactory<Z, D> factory = new DatabaseClusterFactoryImpl<>();
 	private volatile DatabaseClusterConfigurationFactory<Z, D> configurationFactory;	
-	
-	protected CommonDataSource(Class<? extends DatabaseClusterConfiguration<Z, D>> configurationClass)
-	{
-		this.configurationClass = configurationClass;
-	}
-	
+
+	@Deprecated
 	public void stop() throws SQLException
+	{
+		this.close();
+	}
+
+	@Override
+	public void close() throws SQLException
 	{
 		this.registry.remove(null);
 	}
@@ -75,14 +70,24 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 	@Override
 	public DatabaseCluster<Z, D> create(Void key, Void context) throws SQLException
 	{
-		DatabaseClusterConfigurationFactory<Z, D> factory = (this.configurationFactory != null) ? this.configurationFactory : new XMLDatabaseClusterConfigurationFactory<>(this.configurationClass, this.cluster, this.config);
-		
-		return this.factory.createDatabaseCluster(this.cluster, factory);
+		String cluster = this.cluster;
+		if (cluster == null)
+		{
+			throw new SQLException();
+		}
+		DatabaseClusterConfigurationFactory<Z, D> configurationFactory = this.configurationFactory;
+		DatabaseClusterConfigurationFactory<Z, D> factory = (configurationFactory == null) ? new XMLDatabaseClusterConfigurationFactory<Z, D>(cluster, this.config) : configurationFactory;
+		return this.factory.createDatabaseCluster(cluster, factory, this.getConfigurationBuilder());
 	}
 
+	public DatabaseCluster<Z, D> getDatabaseCluster() throws SQLException
+	{
+		return this.registry.get(null, null);
+	}
+	
 	public Z getProxy() throws SQLException
 	{
-		return this.createProxyFactory(this.registry.get(null, null)).createProxy();
+		return this.createProxyFactory(this.getDatabaseCluster()).createProxy();
 	}
 	
 	/**
@@ -230,30 +235,5 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 	public void setLogWriter(PrintWriter writer) throws SQLException
 	{
 		this.getProxy().setLogWriter(writer);
-	}
-
-	@Override
-	public Reference getReference()
-	{
-		Reference reference = new Reference(this.getClass().getName(), CommonDataSourceFactory.class.getName(), null);
-		reference.add(new StringRefAddr(CommonDataSourceFactory.CLUSTER, this.cluster));
-		DatabaseClusterConfigurationFactory<Z, D> factory = this.getConfigurationFactory();
-		if (factory != null)
-		{
-			reference.add(new BinaryRefAddr(CommonDataSourceFactory.CONFIG, Objects.serialize(factory)));
-		}
-		else
-		{
-			reference.add(new StringRefAddr(CommonDataSourceFactory.CONFIG, this.config));
-		}
-		if (this.user != null)
-		{
-			reference.add(new StringRefAddr(CommonDataSourceFactory.USER, this.user));
-		}
-		if (this.password != null)
-		{
-			reference.add(new StringRefAddr(CommonDataSourceFactory.PASSWORD, this.password));
-		}
-		return reference;
 	}
 }

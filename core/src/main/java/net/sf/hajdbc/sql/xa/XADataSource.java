@@ -23,19 +23,21 @@ import java.sql.SQLException;
 import javax.sql.XAConnection;
 
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.SimpleDatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.sql.CommonDataSource;
 
 /**
  * @author Paul Ferraro
  */
-public class XADataSource extends CommonDataSource<javax.sql.XADataSource, XADataSourceDatabase, XADataSourceProxyFactory> implements javax.sql.XADataSource
+public class XADataSource extends CommonDataSource<javax.sql.XADataSource, XADataSourceDatabase, XADataSourceDatabaseBuilder, XADataSourceProxyFactory> implements javax.sql.XADataSource
 {
-	/**
-	 * Constructs a new XADataSource
-	 */
-	public XADataSource()
+	private final XADataSourceDatabaseClusterConfigurationBuilder builder = new XADataSourceDatabaseClusterConfigurationBuilder();
+
+	@Override
+	public XADataSourceDatabaseClusterConfigurationBuilder getConfigurationBuilder()
 	{
-		super(XADataSourceDatabaseClusterConfiguration.class);
+		this.setConfigurationFactory(new SimpleDatabaseClusterConfigurationFactory<javax.sql.XADataSource, XADataSourceDatabase>());
+		return this.builder;
 	}
 
 	@Override

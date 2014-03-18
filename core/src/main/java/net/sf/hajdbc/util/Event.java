@@ -43,7 +43,7 @@ public class Event<T> extends EventObject
 	@Override
 	public boolean equals(Object object)
 	{
-		return ((object != null) && this.getClass().isInstance(object)) ? this.source.equals(this.getClass().cast(object).source) : false;
+		return (object instanceof Event) ? this.source.equals(((EventObject) object).getSource()) : false;
 	}
 
 	@Override

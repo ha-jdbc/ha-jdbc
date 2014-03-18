@@ -39,6 +39,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 /**
@@ -94,39 +95,42 @@ public class DriverTest
 		Balancer<java.sql.Driver, DriverDatabase> balancer = mock(Balancer.class);
 		LockManager lockManager = mock(LockManager.class);
 		
-		DriverDatabase database = new DriverDatabase();
-		database.setId("db1");
-		database.setLocation("jdbc:mock:test");
+		DriverDatabase database = new DriverDatabaseBuilder("db1").driver(this.mockDriver).url("jdbc:mock:test").build();
 		
 		Driver driver = new Driver();
+		
 		Driver.setConfigurationFactory(id, this.configurationFactory);
-
-		when(this.factory.createDatabaseCluster(eq(id), same(this.configurationFactory))).thenReturn(cluster);
 		
-		when(cluster.isActive()).thenReturn(true);
-		when(cluster.getBalancer()).thenReturn(balancer);
-		when(balancer.iterator()).thenReturn(Collections.singleton(database).iterator());
-		when(cluster.getBalancer()).thenReturn(balancer);
-		when(balancer.contains(database)).thenReturn(true);
-		when(balancer.isEmpty()).thenReturn(false);
-		when(balancer.size()).thenReturn(1);
-		when(balancer.iterator()).thenReturn(Collections.singleton(database).iterator());
-		when(balancer.next()).thenReturn(database);
-		when(cluster.getExecutor()).thenReturn(Executors.newCachedThreadPool());
-		when(cluster.getLockManager()).thenReturn(lockManager);
-		when(lockManager.readLock(null)).thenReturn(mock(Lock.class));
-		when(cluster.getDurability()).thenReturn(mock(Durability.class));
-		when(cluster.getTransactionIdentifierFactory()).thenReturn(mock(TransactionIdentifierFactory.class));
-		
-		try (Connection result = driver.connect(url, null))
+		try
 		{
-			Assert.assertTrue(result.getClass().getName(), Proxy.isProxyClass(result.getClass()));
-			ConnectionInvocationHandler<java.sql.Driver, DriverDatabase, java.sql.Driver> handler = (ConnectionInvocationHandler<java.sql.Driver, DriverDatabase, java.sql.Driver>) Proxy.getInvocationHandler(result);
-			Assert.assertSame(this.connection, handler.getProxyFactory().get(database));
+//			when(this.connection.isValid(anyInt())).thenReturn(true);
+			when(this.factory.createDatabaseCluster(eq(id), same(this.configurationFactory), any(DriverDatabaseClusterConfigurationBuilder.class))).thenReturn(cluster);
+			
+			when(cluster.isActive()).thenReturn(true);
+			when(cluster.getBalancer()).thenReturn(balancer);
+			when(balancer.iterator()).thenReturn(Collections.singleton(database).iterator());
+			when(cluster.getBalancer()).thenReturn(balancer);
+			when(balancer.contains(database)).thenReturn(true);
+			when(balancer.isEmpty()).thenReturn(false);
+			when(balancer.size()).thenReturn(1);
+			when(balancer.iterator()).thenReturn(Collections.singleton(database).iterator());
+			when(balancer.next()).thenReturn(database);
+			when(cluster.getExecutor()).thenReturn(Executors.newCachedThreadPool());
+			when(cluster.getLockManager()).thenReturn(lockManager);
+			when(lockManager.readLock(null)).thenReturn(mock(Lock.class));
+			when(cluster.getDurability()).thenReturn(mock(Durability.class));
+			when(cluster.getTransactionIdentifierFactory()).thenReturn(mock(TransactionIdentifierFactory.class));
+			
+			try (Connection result = driver.connect(url, null))
+			{
+				Assert.assertTrue(result.getClass().getName(), Proxy.isProxyClass(result.getClass()));
+				ConnectionInvocationHandler<java.sql.Driver, DriverDatabase, java.sql.Driver> handler = (ConnectionInvocationHandler<java.sql.Driver, DriverDatabase, java.sql.Driver>) Proxy.getInvocationHandler(result);
+				Assert.assertSame(this.connection, handler.getProxyFactory().get(database));
+			}
 		}
 		finally
 		{
-			Driver.stop(id);
+			Driver.close(id);
 		}
 	}
 }

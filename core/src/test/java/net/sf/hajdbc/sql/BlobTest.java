@@ -12,13 +12,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Arrays;
-
-import net.sf.hajdbc.SimpleDatabaseClusterConfigurationFactory;
-import net.sf.hajdbc.cache.simple.SimpleDatabaseMetaDataCacheFactory;
-import net.sf.hajdbc.dialect.hsqldb.HSQLDBDialectFactory;
-import net.sf.hajdbc.durability.none.NoDurabilityFactory;
-import net.sf.hajdbc.state.simple.SimpleStateManagerFactory;
 
 import org.hsqldb.jdbc.JDBCDataSource;
 import org.junit.Assert;
@@ -29,30 +22,22 @@ public class BlobTest
 	@Test
 	public void test() throws Exception
 	{
-		DataSourceDatabase db1 = new DataSourceDatabase();
-		db1.setId("db1");
-		db1.setLocation(JDBCDataSource.class.getName());
-		db1.setProperty("url", "jdbc:hsqldb:mem:db1");
-		
-		DataSourceDatabase db2 = new DataSourceDatabase();
-		db2.setId("db2");
-		db2.setLocation(JDBCDataSource.class.getName());
-		db2.setProperty("url", "jdbc:hsqldb:mem:db2");
-		
-		DataSourceDatabaseClusterConfiguration config = new DataSourceDatabaseClusterConfiguration();
-		
-		config.setDatabases(Arrays.asList(db1, db2));
-		config.setDialectFactory(new HSQLDBDialectFactory());
-		config.setDatabaseMetaDataCacheFactory(new SimpleDatabaseMetaDataCacheFactory());
-		config.setStateManagerFactory(new SimpleStateManagerFactory());
-		config.setDurabilityFactory(new NoDurabilityFactory());
+		JDBCDataSource ds1 = new JDBCDataSource();
+		ds1.setUrl("jdbc:hsqldb:mem:db1");
 
-		DataSource ds = new DataSource();
-		ds.setCluster("cluster");
-		ds.setConfigurationFactory(new SimpleDatabaseClusterConfigurationFactory<>(config));
+		JDBCDataSource ds2 = new JDBCDataSource();
+		ds2.setUrl("jdbc:hsqldb:mem:db2");
 		
-		try
+		try (DataSource ds = new DataSource())
 		{
+			ds.setCluster("cluster");
+
+			DataSourceDatabaseClusterConfigurationBuilder builder = ds.getConfigurationBuilder();
+			builder.addDatabase("db1").dataSource(ds1);
+			builder.addDatabase("db2").dataSource(ds2);
+			builder.addSynchronizationStrategy("passive");
+			builder.defaultSynchronizationStrategy("passive").dialect("hsqldb").metaDataCache("none").durability("none").state("simple");
+			
 			try (Connection c = ds.getConnection())
 			{
 				c.setAutoCommit(true);
@@ -65,10 +50,12 @@ public class BlobTest
 					
 					ConnectionInvocationHandler<javax.sql.DataSource, DataSourceDatabase, javax.sql.DataSource> handler = (ConnectionInvocationHandler<javax.sql.DataSource, DataSourceDatabase, javax.sql.DataSource>) Proxy.getInvocationHandler(c);
 					ConnectionProxyFactory<javax.sql.DataSource, DataSourceDatabase, javax.sql.DataSource> proxyFactory = handler.getProxyFactory();
-		
+					DataSourceDatabase db1 = proxyFactory.getDatabaseCluster().getDatabase("db1");
+					DataSourceDatabase db2 = proxyFactory.getDatabaseCluster().getDatabase("db2");
+					
 					Connection c1 = proxyFactory.get(db1);
 					Connection c2 = proxyFactory.get(db2);
-								
+					
 					Blob blob = c.createBlob();
 					String expected = "test";
 					
@@ -124,10 +111,6 @@ public class BlobTest
 					dropTable(c);
 				}
 			}
-		}
-		finally
-		{
-			ds.stop();
 		}
 	}
 

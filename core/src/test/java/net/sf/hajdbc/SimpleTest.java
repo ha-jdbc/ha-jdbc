@@ -17,22 +17,14 @@
  */
 package net.sf.hajdbc;
 
-import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Arrays;
 
-import net.sf.hajdbc.cache.simple.SimpleDatabaseMetaDataCacheFactory;
-import net.sf.hajdbc.dialect.hsqldb.HSQLDBDialectFactory;
-import net.sf.hajdbc.durability.fine.FineDurabilityFactory;
 import net.sf.hajdbc.sql.DataSource;
-import net.sf.hajdbc.sql.DataSourceDatabase;
-import net.sf.hajdbc.sql.DataSourceDatabaseClusterConfiguration;
-import net.sf.hajdbc.sql.InvocationHandler;
-import net.sf.hajdbc.sql.ProxyFactory;
+import net.sf.hajdbc.sql.DataSourceDatabaseClusterConfigurationBuilder;
 import net.sf.hajdbc.state.StateManager;
 import net.sf.hajdbc.state.StateManagerFactory;
 import net.sf.hajdbc.state.bdb.BerkeleyDBStateManagerFactory;
@@ -40,7 +32,7 @@ import net.sf.hajdbc.state.simple.SimpleStateManagerFactory;
 import net.sf.hajdbc.state.sql.SQLStateManagerFactory;
 import net.sf.hajdbc.state.sqlite.SQLiteStateManagerFactory;
 
-import org.hsqldb.jdbc.JDBCDataSource;
+import org.h2.jdbcx.JdbcDataSource;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -72,6 +64,8 @@ public class SimpleTest
 	{
 		SQLStateManagerFactory factory = new SQLStateManagerFactory();
 		factory.setUrlPattern("jdbc:h2:target/h2/{0}");
+		factory.setUser("sa");
+		factory.setPassword("");
 		test(factory);
 	}
 	
@@ -80,6 +74,8 @@ public class SimpleTest
 	{
 		SQLStateManagerFactory factory = new SQLStateManagerFactory();
 		factory.setUrlPattern("jdbc:hsqldb:target/hsqldb/{0}");
+		factory.setUser("sa");
+		factory.setPassword("");
 		test(factory);
 	}
 	
@@ -101,92 +97,81 @@ public class SimpleTest
 	
 	private static void test(StateManagerFactory factory) throws Exception
 	{
-		DataSourceDatabase db1 = new DataSourceDatabase();
-		db1.setId("db1");
-		db1.setLocation(JDBCDataSource.class.getName());
-		db1.setProperty("url", "jdbc:hsqldb:mem:db1");
-		db1.setProperty("user", "sa");
-		db1.setProperty("password", "");
-		db1.setUser("sa");
-		db1.setPassword("");
-		
-		DataSourceDatabase db2 = new DataSourceDatabase();
-		db2.setId("db2");
-		db2.setLocation(JDBCDataSource.class.getName());
-		db2.setProperty("url", "jdbc:hsqldb:mem:db2");
-		db2.setProperty("user", "sa");
-		db2.setProperty("password", "");
-		db2.setUser("sa");
-		db2.setPassword("");
-		
-		DataSourceDatabaseClusterConfiguration config = new DataSourceDatabaseClusterConfiguration();
-		
-		config.setDatabases(Arrays.asList(db1, db2));
-		config.setDialectFactory(new HSQLDBDialectFactory());
-		config.setDatabaseMetaDataCacheFactory(new SimpleDatabaseMetaDataCacheFactory());
-		config.setStateManagerFactory(factory);
-//		config.setDispatcherFactory(new JGroupsCommandDispatcherFactory());
-		config.setDurabilityFactory(new FineDurabilityFactory());
+		JdbcDataSource ds1 = new JdbcDataSource();
+		ds1.setUrl("jdbc:h2:mem:db1");
+		ds1.setUser("sa");
+		ds1.setPassword("");
 
-		DataSource ds = new DataSource();
-		ds.setCluster("cluster");
-		ds.setConfigurationFactory(new SimpleDatabaseClusterConfigurationFactory<>(config));
-		
-		InvocationHandler<javax.sql.DataSource, DataSourceDatabase, javax.sql.DataSource, SQLException, ProxyFactory<javax.sql.DataSource, DataSourceDatabase, javax.sql.DataSource, SQLException>> handler = (InvocationHandler<javax.sql.DataSource, DataSourceDatabase, javax.sql.DataSource, SQLException, ProxyFactory<javax.sql.DataSource, DataSourceDatabase, javax.sql.DataSource, SQLException>>) Proxy.getInvocationHandler(ds.getProxy());
-		ProxyFactory<javax.sql.DataSource, DataSourceDatabase, javax.sql.DataSource, SQLException> proxyFactory = handler.getProxyFactory();
+		JdbcDataSource ds2 = new JdbcDataSource();
+		ds2.setUrl("jdbc:h2:mem:db2");
+		ds2.setUser("sa");
+		ds2.setPassword("");
 
-		try (Connection c1 = proxyFactory.get(db1).getConnection())
+		try (DataSource ds = new DataSource())
 		{
-			createTable(c1);
-			
-			try (Connection c2 = proxyFactory.get(db2).getConnection())
+			ds.setCluster("cluster");
+			DataSourceDatabaseClusterConfigurationBuilder builder = ds.getConfigurationBuilder();
+			builder.addDatabase("db1").dataSource(ds1).credentials("sa", "");
+			builder.addDatabase("db2").dataSource(ds2).credentials("sa", "");
+			builder.addSynchronizationStrategy("passive");
+			builder.defaultSynchronizationStrategy("passive");
+			builder.dialect("hsqldb");
+			builder.metaDataCache("none");
+			builder.state(factory);
+			builder.durability("fine");
+//			builder.distributable("jgroups");
+
+			try (Connection c1 = ds1.getConnection())
 			{
-				createTable(c2);
+				createTable(c1);
 				
-				try (Connection c = ds.getConnection())
+				try (Connection c2 = ds2.getConnection())
 				{
-					c.setAutoCommit(false);
+					createTable(c2);
 					
-					try (PreparedStatement ps = c.prepareStatement("INSERT INTO test (id, name) VALUES (?, ?)"))
+					try (Connection c = ds.getConnection())
 					{
-						ps.setInt(1, 1);
-						ps.setString(2, "1");
-						ps.addBatch();
-						ps.setInt(1, 2);
-						ps.setString(2, "2");
-						ps.addBatch();
-						ps.executeBatch();
+						c.setAutoCommit(false);
+						
+						try (PreparedStatement ps = c.prepareStatement("INSERT INTO test (id, name) VALUES (?, ?)"))
+						{
+							ps.setInt(1, 1);
+							ps.setString(2, "1");
+							ps.addBatch();
+							ps.setInt(1, 2);
+							ps.setString(2, "2");
+							ps.addBatch();
+							ps.executeBatch();
+						}
+						
+						c.commit();
+						
+						validate(c1);
+						validate(c2);
 					}
-					
-					c.commit();
-					
-					validate(c1);
-					validate(c2);
+					finally
+					{
+						dropTable(c2);
+					}
 				}
 				finally
 				{
-					dropTable(c2);
+					dropTable(c1);
 				}
 			}
-			finally
-			{
-				dropTable(c1);
-			}
-		}
-		finally
-		{
-			ds.stop();
 		}
 	}
 
 	private static void createTable(Connection connection) throws SQLException
 	{
 		execute(connection, "CREATE TABLE test (id INTEGER NOT NULL, name VARCHAR(10) NOT NULL, PRIMARY KEY (id))");
+		connection.commit();
 	}
 
 	private static void dropTable(Connection connection) throws SQLException
 	{
 		execute(connection, "DROP TABLE test");
+		connection.commit();
 	}
 
 	private static void execute(Connection connection, String sql) throws SQLException

@@ -23,6 +23,8 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 import javax.xml.bind.annotation.XmlType;
 
+import net.sf.hajdbc.Credentials;
+import net.sf.hajdbc.codec.Decoder;
 import net.sf.hajdbc.management.Description;
 import net.sf.hajdbc.management.MBean;
 
@@ -34,20 +36,18 @@ import net.sf.hajdbc.management.MBean;
 @MBean
 @Description("Database accessed via a DataSource")
 @XmlType(name = "database")
-public class DataSourceDatabase extends CommonDataSourceDatabase<DataSource>
+public class DataSourceDatabase extends AbstractDatabase<DataSource>
 {
-	public DataSourceDatabase()
+	public DataSourceDatabase(String id, DataSource dataSource, Credentials credentials, int weight, boolean local)
 	{
-		super(DataSource.class);
+		super(id, dataSource, credentials, weight, local);
 	}
-	
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.Database#connect(java.lang.Object, java.lang.String)
-	 */
+
 	@Override
-	public Connection connect(DataSource dataSource, String password) throws SQLException
+	public Connection connect(Decoder decoder) throws SQLException
 	{
-		return this.requiresAuthentication() ? dataSource.getConnection(this.getUser(), password) : dataSource.getConnection();
+		DataSource dataSource = this.getConnectionSource();
+		Credentials credentials = this.getCredentials();
+		return (credentials != null) ? dataSource.getConnection(credentials.getUser(), credentials.decodePassword(decoder)) : dataSource.getConnection();
 	}
 }

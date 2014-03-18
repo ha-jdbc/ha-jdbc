@@ -20,7 +20,9 @@ package net.sf.hajdbc.sql;
 import java.sql.SQLException;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseBuilder;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.DatabaseClusterConfigurationBuilder;
 import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.DatabaseClusterFactory;
 
@@ -29,13 +31,9 @@ import net.sf.hajdbc.DatabaseClusterFactory;
  */
 public class DatabaseClusterFactoryImpl<Z, D extends Database<Z>> implements DatabaseClusterFactory<Z, D>
 {
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.DatabaseClusterFactory#createDatabaseCluster(java.lang.String, net.sf.hajdbc.DatabaseClusterConfigurationFactory)
-	 */
 	@Override
-	public DatabaseCluster<Z, D> createDatabaseCluster(String id, DatabaseClusterConfigurationFactory<Z, D> factory) throws SQLException
+	public <B extends DatabaseBuilder<Z, D>> DatabaseCluster<Z, D> createDatabaseCluster(String id, DatabaseClusterConfigurationFactory<Z, D> factory, DatabaseClusterConfigurationBuilder<Z, D, B> builder) throws SQLException
 	{
-		return new DatabaseClusterImpl<>(id, factory.createConfiguration(), factory);
+		return new DatabaseClusterImpl<>(id, factory.createConfiguration(builder), factory);
 	}
 }

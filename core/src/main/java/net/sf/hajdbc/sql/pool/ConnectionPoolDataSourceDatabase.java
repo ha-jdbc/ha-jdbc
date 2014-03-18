@@ -24,9 +24,11 @@ import javax.sql.ConnectionPoolDataSource;
 import javax.sql.PooledConnection;
 import javax.xml.bind.annotation.XmlType;
 
+import net.sf.hajdbc.Credentials;
+import net.sf.hajdbc.codec.Decoder;
 import net.sf.hajdbc.management.Description;
 import net.sf.hajdbc.management.MBean;
-import net.sf.hajdbc.sql.CommonDataSourceDatabase;
+import net.sf.hajdbc.sql.AbstractDatabase;
 
 /**
  * A database described by a {@link ConnectionPoolDataSource}.
@@ -35,22 +37,19 @@ import net.sf.hajdbc.sql.CommonDataSourceDatabase;
 @MBean
 @Description("Database accessed via a server-side ConnectionPoolDataSource")
 @XmlType(name = "database")
-public class ConnectionPoolDataSourceDatabase extends CommonDataSourceDatabase<ConnectionPoolDataSource>
+public class ConnectionPoolDataSourceDatabase extends AbstractDatabase<ConnectionPoolDataSource>
 {
-	public ConnectionPoolDataSourceDatabase()
+	public ConnectionPoolDataSourceDatabase(String id, ConnectionPoolDataSource dataSource, Credentials credentials, int weight, boolean local)
 	{
-		super(ConnectionPoolDataSource.class);
+		super(id, dataSource, credentials, weight, local);
 	}
-	
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.Database#connect(java.lang.Object, java.lang.String)
-	 */
+
 	@Override
-	public Connection connect(ConnectionPoolDataSource dataSource, String password) throws SQLException
+	public Connection connect(Decoder decoder) throws SQLException
 	{
-		PooledConnection connection = this.requiresAuthentication() ? dataSource.getPooledConnection(this.getUser(), password) : dataSource.getPooledConnection();
-		
+		ConnectionPoolDataSource dataSource = this.getConnectionSource();
+		Credentials credentials = this.getCredentials();
+		PooledConnection connection = (credentials != null) ? dataSource.getPooledConnection(credentials.getUser(), credentials.decodePassword(decoder)) : dataSource.getPooledConnection();
 		return connection.getConnection();
 	}
 }

@@ -17,7 +17,6 @@
  */
 package net.sf.hajdbc.sql.io;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.SQLException;
 import java.util.Map;
@@ -34,12 +33,6 @@ public class OutputStreamProxyFactory<Z, D extends Database<Z>, P> extends Outpu
 	public OutputStreamProxyFactory(P parentProxy, ProxyFactory<Z, D, P, SQLException> parent, Invoker<Z, D, P, OutputStream, SQLException> invoker, Map<D, OutputStream> outputs)
 	{
 		super(parentProxy, parent, invoker, outputs);
-	}
-
-	@Override
-	public void close(D database, OutputStream output) throws IOException
-	{
-		output.close();
 	}
 
 	@Override

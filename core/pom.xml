@@ -25,10 +25,10 @@
 		<version>3.1.0-alpha-1-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>ha-jdbc</artifactId>
+	<artifactId>ha-jdbc-core</artifactId>
 	<packaging>jar</packaging>
 	
-	<name>HA-JDBC</name>
+	<name>HA-JDBC Core</name>
 
 	<repositories>
 		<repository>
@@ -44,14 +44,14 @@
 		<dependency>
 			<groupId>org.jgroups</groupId>
 			<artifactId>jgroups</artifactId>
-			<version>3.4.1.Final</version>
+			<version>3.4.3.Final</version>
 			<optional>true</optional>
 		</dependency>
 		<!-- Optional logging dependencies -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.5</version>
+			<version>1.7.6</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
@@ -82,13 +82,13 @@
 		<dependency>
 			<groupId>org.tmatesoft.sqljet</groupId>
 			<artifactId>sqljet</artifactId>
-			<version>1.1.9</version>
+			<version>1.1.10</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.iq80.leveldb</groupId>
 			<artifactId>leveldb-api</artifactId>
-			<version>0.6</version>
+			<version>0.7</version>
 			<optional>true</optional>
 		</dependency>
 		<!-- Optional password codec dependencies -->
@@ -114,13 +114,13 @@
 		<dependency>
 			<groupId>org.hsqldb</groupId>
 			<artifactId>hsqldb</artifactId>
-			<version>2.3.1</version>
+			<version>2.3.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<version>1.3.174</version>
+			<version>1.3.175</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -145,26 +145,6 @@
 			</resource>
 		</resources>
 		<plugins>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<phase>compile</phase>
-						<goals>
-							<goal>java</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<mainClass>net.sf.hajdbc.xml.SchemaGenerator</mainClass>
-					<arguments>
-						<argument>net.sf.hajdbc.sql.DriverDatabaseClusterConfiguration</argument>
-						<argument>${project.build.outputDirectory}</argument>
-						<argument>ha-jdbc.xsd</argument>
-					</arguments>
-				</configuration>
-			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
@@ -197,23 +177,6 @@
 					<srcDir>${project.build.directory}/site/images</srcDir>
 					<destDir>${project.build.directory}/site/images</destDir>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-antrun-plugin</artifactId>
-				<configuration>
-					<target>
-						<copy file="${project.build.outputDirectory}/ha-jdbc.xsd" tofile="${project.build.directory}/site/xsd/ha-jdbc-${project.version}.xsd" />
-					</target>
-				</configuration>
-				<executions>
-					<execution>
-						<phase>site</phase>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

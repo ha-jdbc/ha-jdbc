@@ -20,6 +20,7 @@ package net.sf.hajdbc;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import net.sf.hajdbc.codec.Decoder;
 import net.sf.hajdbc.sql.AbstractDatabase;
 
 /**
@@ -40,35 +41,21 @@ public class MockDatabase extends AbstractDatabase<Void>
 	
 	public MockDatabase(String id, int weight)
 	{
-		this.setId(id);
-		this.setWeight(weight);
-		this.clean();
+		super(id, null, null, weight, false);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.Database#connect(java.lang.Object, java.lang.String)
-	 */
 	@Override
-	public Connection connect(Void connectionSource, String password) throws SQLException
+	public Connection connect(Decoder decoder) throws SQLException
 	{
 		return null;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.Database#createConnectionSource()
-	 */
 	@Override
-	public Void createConnectionSource()
+	public Void getConnectionSource()
 	{
 		return null;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.AbstractDatabase#hashCode()
-	 */
 	@Override
 	public int hashCode()
 	{

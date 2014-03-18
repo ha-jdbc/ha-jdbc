@@ -24,63 +24,20 @@ import net.sf.hajdbc.codec.Decoder;
 
 /**
  * @author  Paul Ferraro
- * @version $Revision: 1536 $
  * @param <Z> connection source (e.g. Driver, DataSource, etc.)
- * @since   1.0
  */
 public interface Database<Z> extends Comparable<Database<Z>>
 {
-	static final int ID_MAX_SIZE = 64;
-	
-	/**
-	 * Returns the unique idenfier for this database
-	 * @return a unique identifier
-	 */
 	String getId();
+
+	Z getConnectionSource();
+
+	Credentials getCredentials();
 	
-	/**
-	 * Returns the location of this database
-	 * @return a location
-	 */
-	String getLocation();
-	
-	/**
-	 * Returns the relative "weight" of this cluster node.
-	 * In general, when choosing a node to service read requests, a cluster will favor the node with the highest weight.
-	 * A weight of 0 is somewhat special, depending on the type of balancer used by the cluster.
-	 * In most cases, a weight of 0 means that this node will never service read requests unless it is the only node in the cluster.
-	 * @return a positive integer
-	 */
 	int getWeight();
-	
-	/**
-	 * Indicates whether or not this database is local to the machine on which the JVM resides.
-	 * @return true if local, false if remote
-	 */
+	void setWeight(int weight);
+
 	boolean isLocal();
 
-	String decodePassword(Decoder decoder) throws SQLException;
-	
-	/**
-	 * Connects to the database using the specified connection factory.
-	 * @param connectionSource a factory object for creating connections
-	 * @return a database connection
-	 * @throws SQLException if connection fails
-	 */
-	Connection connect(Z connectionSource, String password) throws SQLException;
-	
-	/**
-	 * Factory method for creating a connection factory object for this database.
-	 * @return a connection factory object
-	 * @throws IllegalArgumentException if connection factory could not be created
-	 */
-	Z createConnectionSource();
-	
-	boolean isDirty();
-	
-	void clean();
-	
-	boolean isActive();
-	
-	void setActive(boolean active);
+	Connection connect(Decoder decoder) throws SQLException;
 }

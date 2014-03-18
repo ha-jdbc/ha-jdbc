@@ -17,6 +17,7 @@
  */
 package net.sf.hajdbc.sql.io;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.LinkedList;
@@ -36,13 +37,19 @@ import net.sf.hajdbc.sql.ProxyFactory;
  * @param <P> parent type
  * @param <T> IO type
  */
-public abstract class OutputProxyFactory<Z, D extends Database<Z>, P, T> extends AbstractChildProxyFactory<Z, D, P, SQLException, T, IOException>
+public abstract class OutputProxyFactory<Z, D extends Database<Z>, P, T extends Closeable> extends AbstractChildProxyFactory<Z, D, P, SQLException, T, IOException>
 {
 	private List<Invoker<Z, D, T, ?, IOException>> invokers = new LinkedList<>();
 	
 	protected OutputProxyFactory(P parentProxy, ProxyFactory<Z, D, P, SQLException> parent, Invoker<Z, D, P, T, SQLException> invoker, Map<D, T> map)
 	{
 		super(parentProxy, parent, invoker, map, IOException.class);
+	}
+
+	@Override
+	public void close(D database, T object) throws IOException
+	{
+		object.close();
 	}
 
 	@Override

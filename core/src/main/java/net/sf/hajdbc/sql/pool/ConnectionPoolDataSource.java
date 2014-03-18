@@ -22,20 +22,22 @@ import java.sql.SQLException;
 import javax.sql.PooledConnection;
 
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.SimpleDatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.sql.CommonDataSource;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class ConnectionPoolDataSource extends CommonDataSource<javax.sql.ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase, ConnectionPoolDataSourceProxyFactory> implements javax.sql.ConnectionPoolDataSource
+public class ConnectionPoolDataSource extends CommonDataSource<javax.sql.ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase, ConnectionPoolDataSourceDatabaseBuilder, ConnectionPoolDataSourceProxyFactory> implements javax.sql.ConnectionPoolDataSource
 {
-	/**
-	 * Constructs a new ConnectionPoolDataSource
-	 */
-	public ConnectionPoolDataSource()
+	private final ConnectionPoolDataSourceDatabaseClusterConfigurationBuilder builder = new ConnectionPoolDataSourceDatabaseClusterConfigurationBuilder();
+	
+	@Override
+	public ConnectionPoolDataSourceDatabaseClusterConfigurationBuilder getConfigurationBuilder()
 	{
-		super(ConnectionPoolDataSourceDatabaseClusterConfiguration.class);
+		this.setConfigurationFactory(new SimpleDatabaseClusterConfigurationFactory<javax.sql.ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase>());
+		return this.builder;
 	}
 
 	@Override

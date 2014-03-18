@@ -19,24 +19,17 @@ package net.sf.hajdbc.sql;
 
 import java.util.concurrent.ExecutorService;
 
-import javax.xml.bind.annotation.XmlEnum;
-import javax.xml.bind.annotation.XmlEnumValue;
-
 import net.sf.hajdbc.TransactionMode;
 import net.sf.hajdbc.util.concurrent.SynchronousExecutor;
 
 /**
  * @author Paul Ferraro
- *
  */
-@XmlEnum(String.class)
 public enum TransactionModeEnum implements TransactionMode
 {
-	@XmlEnumValue("parallel")
 	PARALLEL(false),
-	@XmlEnumValue("serial")
-	SERIAL(true);
-
+	SERIAL(true),
+	;
 	private final boolean synchronous;
 	
 	private TransactionModeEnum(boolean synchronous)

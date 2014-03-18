@@ -19,95 +19,57 @@ package net.sf.hajdbc.sql;
 
 import java.sql.Connection;
 import java.sql.Driver;
-import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Map;
 import java.util.Properties;
 
-import javax.xml.bind.annotation.XmlType;
-
-import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.Credentials;
+import net.sf.hajdbc.codec.Decoder;
 import net.sf.hajdbc.management.Description;
 import net.sf.hajdbc.management.MBean;
-import net.sf.hajdbc.management.ManagedAttribute;
 
 /**
  * @author  Paul Ferraro
- * @version $Revision: 1948 $
- * @since   1.0
  */
 @MBean
-@Description("Database accessed via DriverManager")
-@XmlType(name = "database")
+@Description("Database accessed via Driver")
 public class DriverDatabase extends AbstractDatabase<Driver>
 {
-	private static final String USER = "user"; //$NON-NLS-1$
-	private static final String PASSWORD = "password"; //$NON-NLS-1$
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.AbstractDatabase#setLocation(java.lang.String)
-	 */
-	@ManagedAttribute
-	@Description("JDBC url")
-	@Override
-	public void setLocation(String location)
+	public static String parseVendor(String url)
 	{
-		getDriver(location);
-
-		super.setLocation(location);
-	}
-	
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.Database#connect(java.lang.Object, java.lang.String)
-	 */
-	@Override
-	public Connection connect(Driver driver, String password) throws SQLException
-	{
-		Properties properties = new Properties();
-		
-		for (Map.Entry<String, String> entry: this.getProperties().entrySet())
-		{
-			properties.setProperty(entry.getKey(), entry.getValue());
-		}
-		
-		if (this.requiresAuthentication())
-		{
-			properties.setProperty(USER, this.getUser());
-			if (password != null)
-			{
-				properties.setProperty(PASSWORD, password);
-			}
-		}
-		
-		return driver.connect(this.getLocation(), properties);
-	}
-
-	/**
-	 * @see net.sf.hajdbc.Database#createConnectionSource()
-	 */
-	@Override
-	public Driver createConnectionSource()
-	{
-		return getDriver(this.getLocation());
-	}
-
-	public String parseVendor()
-	{
-		String url = this.getLocation();
 		return url.substring(5, url.indexOf(":", 5));
 	}
+	
+	private final String url;
+	private final Properties properties;
 
-	private static Driver getDriver(String url)
+	public DriverDatabase(String id, Driver driver, String url, Properties properties, Credentials credentials, int weight, boolean local)
 	{
-		try
+		super(id, driver, credentials, weight, local);
+		this.url = url;
+		this.properties = properties;
+	}
+	
+	public String getUrl()
+	{
+		return this.url;
+	}
+
+	public Properties getProperties()
+	{
+		return this.properties;
+	}
+
+	@Override
+	public Connection connect(Decoder decoder) throws SQLException
+	{
+		Properties properties = this.properties;
+		Credentials credentials = this.getCredentials();
+		if (credentials != null)
 		{
-			return DriverManager.getDriver(url);
+			properties = new Properties(this.properties);
+			properties.setProperty("user", credentials.getUser());
+			properties.setProperty("password", credentials.decodePassword(decoder));
 		}
-		catch (SQLException e)
-		{
-			throw new IllegalArgumentException(Messages.JDBC_URL_REJECTED.getMessage(url), e);
-		}
+		return this.getConnectionSource().connect(this.url, properties);
 	}
 }

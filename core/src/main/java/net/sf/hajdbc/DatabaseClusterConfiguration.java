@@ -17,7 +17,6 @@
  */
 package net.sf.hajdbc;
 
-import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ThreadFactory;
@@ -30,15 +29,14 @@ import net.sf.hajdbc.distributed.CommandDispatcherFactory;
 import net.sf.hajdbc.durability.DurabilityFactory;
 import net.sf.hajdbc.io.InputSinkProvider;
 import net.sf.hajdbc.lock.LockManagerFactory;
-import net.sf.hajdbc.management.MBeanRegistrar;
+import net.sf.hajdbc.management.MBeanRegistrarFactory;
 import net.sf.hajdbc.state.StateManagerFactory;
-import net.sf.hajdbc.tx.TransactionIdentifierFactory;
 import net.sf.hajdbc.util.concurrent.cron.CronExpression;
 
 /**
  * @author Paul Ferraro
  */
-public interface DatabaseClusterConfiguration<Z, D extends Database<Z>> extends Serializable
+public interface DatabaseClusterConfiguration<Z, D extends Database<Z>>
 {
 	CommandDispatcherFactory getDispatcherFactory();
 	
@@ -129,13 +127,9 @@ public interface DatabaseClusterConfiguration<Z, D extends Database<Z>> extends 
 	
 	DecoderFactory getDecoderFactory();
 	
-	MBeanRegistrar<Z, D> getMBeanRegistrar();
-	
-	TransactionIdentifierFactory<? extends Object> getTransactionIdentifierFactory();
+	MBeanRegistrarFactory getMBeanRegistrarFactory();
 	
 	boolean isEmptyClusterAllowed();
-
-	DatabaseFactory<Z, D> getDatabaseFactory();
 
 	InputSinkProvider getInputSinkProvider();
 }

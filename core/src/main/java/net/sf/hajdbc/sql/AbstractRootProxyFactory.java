@@ -18,6 +18,7 @@
 package net.sf.hajdbc.sql;
 
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.TreeMap;
 
 import net.sf.hajdbc.Database;
@@ -33,20 +34,25 @@ public abstract class AbstractRootProxyFactory<Z, D extends Database<Z>> extends
 {
 	protected AbstractRootProxyFactory(DatabaseCluster<Z, D> cluster)
 	{
-		super(cluster, new TreeMap<D, Z>(), SQLException.class);
-		
-		for (D database: cluster.getBalancer())
-		{
-			this.get(database);
-		}
+		super(cluster, createInitialMap(cluster), SQLException.class);
 		
 		cluster.addListener(this);
 	}
 
+	private static <Z, D extends Database<Z>> Map<D, Z> createInitialMap(DatabaseCluster<Z, D> cluster)
+	{
+		Map<D, Z> map = new TreeMap<>();
+		for (D database: cluster.getBalancer())
+		{
+			map.put(database, database.getConnectionSource());
+		}
+		return map;
+	}
+	
 	@Override
 	protected Z create(D database)
 	{
-		return database.createConnectionSource();
+		return database.getConnectionSource();
 	}
 
 	@Override

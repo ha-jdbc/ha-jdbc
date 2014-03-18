@@ -21,18 +21,17 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.Map;
 
-import javax.xml.XMLConstants;
-import javax.xml.bind.JAXB;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.transform.sax.SAXSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseBuilder;
 import net.sf.hajdbc.DatabaseClusterConfiguration;
+import net.sf.hajdbc.DatabaseClusterConfigurationBuilder;
 import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.Version;
@@ -40,11 +39,6 @@ import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
 import net.sf.hajdbc.util.SystemProperties;
-
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
  * {@link DatabaseClusterConfigurationFactory} that parses an xml configuration file.
@@ -57,14 +51,12 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 	private static final String CONFIG_PROPERTY_FORMAT = "ha-jdbc.{0}.configuration"; //$NON-NLS-1$
 	private static final String CONFIG_PROPERTY = "ha-jdbc.configuration"; //$NON-NLS-1$
 	private static final String DEFAULT_RESOURCE = "ha-jdbc-{0}.xml"; //$NON-NLS-1$
-	
-	private static final URL SCHEMA = findResource("ha-jdbc.xsd");
 
 	private static final Logger logger = LoggerFactory.getLogger(XMLDatabaseClusterConfigurationFactory.class);
 	
-	private final Class<? extends DatabaseClusterConfiguration<Z, D>> targetClass;
 	private final XMLStreamFactory streamFactory;
-	
+	private final Map<String, Namespace> namespaces = new HashMap<>();
+
 	private static String identifyResource(String id)
 	{
 		String resource = SystemProperties.getSystemProperty(MessageFormat.format(CONFIG_PROPERTY_FORMAT, id));
@@ -105,54 +97,51 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 		throw new IllegalArgumentException(Messages.CONFIG_NOT_FOUND.getMessage(resource));
 	}
 
-	public XMLDatabaseClusterConfigurationFactory(Class<? extends DatabaseClusterConfiguration<Z, D>> targetClass, String id, String resource)
+	public XMLDatabaseClusterConfigurationFactory(String id, String resource)
 	{
-		this(targetClass, id, resource, Thread.currentThread().getContextClassLoader());
+		this(id, resource, XMLDatabaseClusterConfigurationFactory.class.getClassLoader());
 	}
 	
-	public XMLDatabaseClusterConfigurationFactory(Class<? extends DatabaseClusterConfiguration<Z, D>> targetClass, String id, String resource, ClassLoader loader)
+	public XMLDatabaseClusterConfigurationFactory(String id, String resource, ClassLoader loader)
 	{
-		this(targetClass, findResource((resource == null) ? identifyResource(id) : MessageFormat.format(resource, id), loader));
+		this(findResource((resource == null) ? identifyResource(id) : MessageFormat.format(resource, id), loader));
 	}
 	
-	public XMLDatabaseClusterConfigurationFactory(Class<? extends DatabaseClusterConfiguration<Z, D>> targetClass, URL url)
-	{		
-		this(targetClass, url.getProtocol().equals("file") ? new FileXMLStreamFactory(url) : new URLXMLStreamFactory(url));
+	public XMLDatabaseClusterConfigurationFactory(URL url)
+	{
+		this(url.getProtocol().equals("file") ? new FileXMLStreamFactory(url) : new URLXMLStreamFactory(url));
 	}
 	
-	public XMLDatabaseClusterConfigurationFactory(Class<? extends DatabaseClusterConfiguration<Z, D>> targetClass, XMLStreamFactory streamFactory)
+	public XMLDatabaseClusterConfigurationFactory(XMLStreamFactory streamFactory)
 	{
-		this.targetClass = targetClass;
 		this.streamFactory = streamFactory;
+		for (Namespace namespace: Namespace.values())
+		{
+			this.namespaces.put(namespace.getURI(), namespace);
+		}
 	}
 	
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.DatabaseClusterConfigurationFactory#createConfiguration()
-	 */
 	@Override
-	public DatabaseClusterConfiguration<Z, D> createConfiguration() throws SQLException
+	public <B extends DatabaseBuilder<Z, D>> DatabaseClusterConfiguration<Z, D> createConfiguration(DatabaseClusterConfigurationBuilder<Z, D, B> builder) throws SQLException
 	{
 		logger.log(Level.INFO, Messages.HA_JDBC_INIT.getMessage(), Version.CURRENT, this.streamFactory);
 		
 		try
 		{
-			SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-			Schema schema = schemaFactory.newSchema(SCHEMA);
+			XMLStreamReader reader = new PropertyReplacementFilter(XMLInputFactory.newFactory().createXMLStreamReader(this.streamFactory.createSource()));
+			reader.nextTag();
+			String uri = reader.getNamespaceURI();
+			Namespace namespace = this.namespaces.get(uri);
 			
-			Unmarshaller unmarshaller = JAXBContext.newInstance(this.targetClass).createUnmarshaller();
-			unmarshaller.setSchema(schema);
+			if (namespace == null)
+			{
+				throw new SQLException("Unsupported namespace: " + uri);
+			}
 			
-			XMLReader reader = new PropertyReplacementFilter(XMLReaderFactory.createXMLReader());
-			InputSource source = SAXSource.sourceToInputSource(this.streamFactory.createSource());
-
-			return this.targetClass.cast(unmarshaller.unmarshal(new SAXSource(reader, source)));
+			namespace.getReaderFactory().<Z, D, B>createReader().read(reader, builder);
+			return builder.build();
 		}
-		catch (JAXBException e)
-		{
-			throw new SQLException(e);
-		}
-		catch (SAXException e)
+		catch (XMLStreamException e)
 		{
 			throw new SQLException(e);
 		}
@@ -180,6 +169,6 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 	
 	public void export(DatabaseClusterConfiguration<Z, D> configuration)
 	{
-		JAXB.marshal(configuration, this.streamFactory.createResult());
+//		JAXB.marshal(configuration, this.streamFactory.createResult());
 	}
 }

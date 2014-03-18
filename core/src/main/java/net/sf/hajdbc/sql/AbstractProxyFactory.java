@@ -55,7 +55,7 @@ public abstract class AbstractProxyFactory<Z, D extends Database<Z>, TE extends 
 	protected AbstractProxyFactory(DatabaseCluster<Z, D> cluster, Map<D, T> map, Class<E> exceptionClass)
 	{
 		this.cluster = cluster;
-		this.map = Collections.synchronizedMap(map);
+		this.map = map;
 		this.exceptionFactory = ExceptionType.valueOf(exceptionClass).getExceptionFactory();
 	}
 

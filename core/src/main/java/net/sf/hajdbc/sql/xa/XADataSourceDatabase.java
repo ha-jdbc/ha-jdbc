@@ -24,9 +24,11 @@ import javax.sql.XAConnection;
 import javax.sql.XADataSource;
 import javax.xml.bind.annotation.XmlType;
 
+import net.sf.hajdbc.Credentials;
+import net.sf.hajdbc.codec.Decoder;
 import net.sf.hajdbc.management.Description;
 import net.sf.hajdbc.management.MBean;
-import net.sf.hajdbc.sql.CommonDataSourceDatabase;
+import net.sf.hajdbc.sql.AbstractDatabase;
 
 /**
  * A database described by an {@link XADataSource}.
@@ -35,34 +37,27 @@ import net.sf.hajdbc.sql.CommonDataSourceDatabase;
 @MBean
 @Description("Database accessed via a server-side XADataSource")
 @XmlType(name = "database")
-public class XADataSourceDatabase extends CommonDataSourceDatabase<XADataSource>
+public class XADataSourceDatabase extends AbstractDatabase<XADataSource>
 {
 	private boolean force2PC = false;
 	
-	public XADataSourceDatabase()
+	public XADataSourceDatabase(String id, XADataSource dataSource, Credentials credentials, int weight, boolean local, boolean force2PC)
 	{
-		super(XADataSource.class);
+		super(id, dataSource, credentials, weight, local);
+		this.force2PC = force2PC;
 	}
-	
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.Database#connect(java.lang.Object, java.lang.String)
-	 */
+
 	@Override
-	public Connection connect(XADataSource dataSource, String password) throws SQLException
+	public Connection connect(Decoder decoder) throws SQLException
 	{
-		XAConnection connection = this.requiresAuthentication() ? dataSource.getXAConnection(this.getUser(), password) : dataSource.getXAConnection();
-		
+		XADataSource dataSource = this.getConnectionSource();
+		Credentials credentials = this.getCredentials();
+		XAConnection connection = (credentials != null) ? dataSource.getXAConnection(credentials.getUser(), credentials.decodePassword(decoder)) : dataSource.getXAConnection();
 		return connection.getConnection();
 	}
 
 	public boolean isForce2PC()
 	{
 		return this.force2PC;
-	}
-	
-	public void setForce2PC(boolean force)
-	{
-		this.force2PC = force;
 	}
 }

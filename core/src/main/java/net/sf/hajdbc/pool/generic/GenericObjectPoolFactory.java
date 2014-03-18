@@ -125,6 +125,10 @@ public class GenericObjectPoolFactory implements PoolFactory
 				{
 					throw e;
 				}
+				catch (RuntimeException | Error e)
+				{
+					throw e;
+				}
 				catch (Exception e)
 				{
 					throw provider.getExceptionClass().cast(e);

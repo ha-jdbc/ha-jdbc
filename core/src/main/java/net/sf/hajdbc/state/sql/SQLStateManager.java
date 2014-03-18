@@ -18,7 +18,6 @@
 package net.sf.hajdbc.state.sql;
 
 import java.sql.Connection;
-import java.sql.Driver;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -32,6 +31,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseBuilder;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseProperties;
 import net.sf.hajdbc.ExceptionType;
@@ -40,6 +40,7 @@ import net.sf.hajdbc.cache.lazy.LazyDatabaseProperties;
 import net.sf.hajdbc.cache.simple.SimpleDatabaseMetaDataProvider;
 import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.dialect.DialectFactory;
+import net.sf.hajdbc.dialect.StandardDialectFactory;
 import net.sf.hajdbc.durability.Durability;
 import net.sf.hajdbc.durability.DurabilityListener;
 import net.sf.hajdbc.durability.InvocationEvent;
@@ -103,8 +104,6 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	private final PoolFactory poolFactory;
 	private final DriverDatabase database;
 	
-	private String password;
-	private Driver driver;
 	private Pool<Connection, SQLException> pool;
 	
 	public SQLStateManager(DatabaseCluster<Z, D> cluster, DriverDatabase database, PoolFactory poolFactory)
@@ -522,15 +521,13 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	@Override
 	public void start() throws Exception
 	{
-		this.driver = this.database.createConnectionSource();
-		this.password = this.database.decodePassword(this.cluster.getDecoder());
 		this.pool = this.poolFactory.createPool(new ConnectionPoolProvider(this));
 		
-		DialectFactory factory = ServiceLoaders.findService(new IdentifiableMatcher<DialectFactory>(this.database.parseVendor()), DialectFactory.class);
+		DialectFactory factory = ServiceLoaders.findService(new IdentifiableMatcher<DialectFactory>(DriverDatabase.parseVendor(this.database.getUrl())), DialectFactory.class);
 		if (factory == null)
 		{
 			// Use default dialect
-			factory = ServiceLoaders.findRequiredService(DialectFactory.class);
+			factory = new StandardDialectFactory();
 		}
 		
 		Dialect dialect = factory.createDialect();
@@ -540,11 +537,11 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 		try
 		{
 			connection.setAutoCommit(true);
-	
+
 			DatabaseProperties properties = new LazyDatabaseProperties(new SimpleDatabaseMetaDataProvider(connection.getMetaData()), dialect);
 
 			String enumType = properties.findType(0, Types.TINYINT, Types.SMALLINT, Types.INTEGER);
-			String stringType = properties.findType(Database.ID_MAX_SIZE, Types.VARCHAR);
+			String stringType = properties.findType(DatabaseBuilder.ID_MAX_SIZE, Types.VARCHAR);
 			String binaryType = properties.findType(this.cluster.getTransactionIdentifierFactory().size(), Types.BINARY);
 			String varBinaryType = properties.findType(0, Types.VARBINARY);
 			
@@ -596,7 +593,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	@Override
 	public Connection getConnection() throws SQLException
 	{
-		Connection connection = this.database.connect(this.driver, this.cluster.getDecoder().decode(this.password));
+		Connection connection = this.database.connect(this.cluster.getDecoder());
 		
 		connection.setAutoCommit(false);
 		

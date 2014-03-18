@@ -42,7 +42,7 @@ import net.sf.hajdbc.dialect.StandardDialect;
  */
 public class HSQLDBDialect extends StandardDialect
 {
-	private static final Set<Integer> failureCodes = new HashSet<Integer>(Arrays.asList(402, 407, 452, 460, 468));
+	private static final Set<Integer> failureCodes = new HashSet<>(Arrays.asList(402, 407, 452, 460, 468));
 
 	/**
 	 * {@inheritDoc}

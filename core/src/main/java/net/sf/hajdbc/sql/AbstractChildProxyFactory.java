@@ -21,6 +21,7 @@ import java.util.Map;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.invocation.Invoker;
+import net.sf.hajdbc.logging.Level;
 
 /**
  * 
@@ -83,7 +84,7 @@ public abstract class AbstractChildProxyFactory<Z, D extends Database<Z>, P, PE 
 			}
 			catch (Exception e)
 			{
-				// Log warning
+				this.logger.log(Level.WARN, e);
 			}
 		}
 	}

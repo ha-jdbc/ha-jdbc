@@ -17,7 +17,6 @@
  */
 package net.sf.hajdbc.management;
 
-import java.lang.management.ManagementFactory;
 import java.util.Hashtable;
 
 import javax.management.JMException;
@@ -47,11 +46,6 @@ public class DefaultMBeanRegistrar<Z, D extends Database<Z>> implements MBeanReg
 	
 	private final MBeanServer server;
 	private String domain = DatabaseCluster.class.getPackage().getName();
-	
-	public DefaultMBeanRegistrar()
-	{
-		this(ManagementFactory.getPlatformMBeanServer());
-	}
 	
 	public DefaultMBeanRegistrar(MBeanServer server)
 	{

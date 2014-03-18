@@ -17,6 +17,8 @@
  */
 package net.sf.hajdbc;
 
+import java.sql.SQLException;
+
 /**
  * @author Paul Ferraro
  */
@@ -24,21 +26,10 @@ public class SimpleDatabaseClusterConfigurationFactory<Z, D extends Database<Z>>
 {
 	private static final long serialVersionUID = -6882420729056764462L;
 	
-	private final DatabaseClusterConfiguration<Z, D> configuration;
-	
-	public SimpleDatabaseClusterConfigurationFactory(DatabaseClusterConfiguration<Z, D> configuration)
-	{
-		this.configuration = configuration;
-	}
-	
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.DatabaseClusterConfigurationFactory#createConfiguration()
-	 */
 	@Override
-	public DatabaseClusterConfiguration<Z, D> createConfiguration()
+	public <B extends DatabaseBuilder<Z, D>> DatabaseClusterConfiguration<Z, D> createConfiguration(DatabaseClusterConfigurationBuilder<Z, D, B> builder) throws SQLException
 	{
-		return this.configuration;
+		return builder.build();
 	}
 
 	/**

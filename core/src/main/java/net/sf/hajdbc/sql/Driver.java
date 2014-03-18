@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -34,6 +35,7 @@ import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.DatabaseClusterFactory;
 import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.SimpleDatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.invocation.InvocationStrategies;
 import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.logging.Level;
@@ -58,6 +60,7 @@ public final class Driver extends AbstractDriver
 	static volatile DatabaseClusterFactory<java.sql.Driver, DriverDatabase> factory = new DatabaseClusterFactoryImpl<>();
 	
 	static final Map<String, DatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>> configurationFactories = new ConcurrentHashMap<>();
+	static final ConcurrentMap<String, DriverDatabaseClusterConfigurationBuilder> builders = new ConcurrentHashMap<>();
 	private static final Registry.Factory<String, DatabaseCluster<java.sql.Driver, DriverDatabase>, Properties, SQLException> registryFactory = new Registry.Factory<String, DatabaseCluster<java.sql.Driver, DriverDatabase>, Properties, SQLException>()
 	{
 		@Override
@@ -68,10 +71,10 @@ public final class Driver extends AbstractDriver
 			if (configurationFactory == null)
 			{
 				String config = (properties != null) ? properties.getProperty(CONFIG) : null;
-				configurationFactory = new XMLDatabaseClusterConfigurationFactory<>(DriverDatabaseClusterConfiguration.class, id, config);
+				configurationFactory = new XMLDatabaseClusterConfigurationFactory<>(id, config);
 			}
 			
-			return factory.createDatabaseCluster(id, configurationFactory);
+			return factory.createDatabaseCluster(id, configurationFactory, getConfigurationBuilder(id));
 		}
 
 		@Override
@@ -94,14 +97,28 @@ public final class Driver extends AbstractDriver
 		}
 	}
 	
+	@Deprecated
 	public static void stop(String id) throws SQLException
+	{
+		close(id);
+	}
+	
+	public static void close(String id) throws SQLException
 	{
 		registry.remove(id);
 	}
 
-	public static void setFactory(DatabaseClusterFactory<java.sql.Driver, DriverDatabase> databaseClusterFactory)
+	public static DriverDatabaseClusterConfigurationBuilder getConfigurationBuilder(String id)
 	{
-		factory = databaseClusterFactory;
+		DriverDatabaseClusterConfigurationBuilder builder = new DriverDatabaseClusterConfigurationBuilder();
+		DriverDatabaseClusterConfigurationBuilder existing = builders.putIfAbsent(id, builder);
+		configurationFactories.put(id, new SimpleDatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>());
+		return (existing != null) ? existing : builder;
+	}
+
+	public static void setFactory(DatabaseClusterFactory<java.sql.Driver, DriverDatabase> factory)
+	{
+		Driver.factory = factory;
 	}
 
 	public static void setConfigurationFactory(String id, DatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase> configurationFactory)
@@ -146,7 +163,7 @@ public final class Driver extends AbstractDriver
 			@Override
 			public Connection invoke(DriverDatabase database, java.sql.Driver driver) throws SQLException
 			{
-				return driver.connect(database.getLocation(), properties);
+				return driver.connect(database.getUrl(), properties);
 			}
 		};
 		
@@ -174,7 +191,7 @@ public final class Driver extends AbstractDriver
 			@Override
 			public DriverPropertyInfo[] invoke(DriverDatabase database, java.sql.Driver driver) throws SQLException
 			{
-				return driver.getPropertyInfo(database.getLocation(), properties);
+				return driver.getPropertyInfo(database.getUrl(), properties);
 			}
 		};
 		

@@ -58,6 +58,7 @@ import javax.sql.rowset.spi.SyncProviderException;
 import javax.transaction.xa.XAException;
 
 import net.sf.hajdbc.ColumnProperties;
+import net.sf.hajdbc.Credentials;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.IdentityColumnSupport;
@@ -521,6 +522,7 @@ public class StandardDialectTest
 	public void getConnectionProperties() throws SQLException
 	{
 		Database<Void> database = mock(Database.class);
+		Credentials credentials = mock(Credentials.class);
 		Decoder decoder = mock(Decoder.class);
 		Connection connection = mock(Connection.class);
 		DatabaseMetaData metaData = mock(DatabaseMetaData.class);
@@ -530,8 +532,10 @@ public class StandardDialectTest
 		String user = "user";
 		String password = "password";
 		
-		when(database.decodePassword(decoder)).thenReturn(password);
-		when(database.connect(null, password)).thenReturn(connection);
+		when(database.getCredentials()).thenReturn(credentials);
+		when(credentials.getUser()).thenReturn(user);
+		when(credentials.decodePassword(decoder)).thenReturn(password);
+		when(database.connect(decoder)).thenReturn(connection);
 		when(connection.getMetaData()).thenReturn(metaData);
 		when(metaData.getURL()).thenReturn(String.format("jdbc:%s://%s:%s/%s?loginTimeout=0&socketTimeout=0&prepareThreshold=5&unknownLength=2147483647&tcpKeepAlive=false&binaryTransfer=true", this.factory.getId(), host, port, databaseName));
 		when(metaData.getUserName()).thenReturn(user);

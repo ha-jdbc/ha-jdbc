@@ -17,453 +17,583 @@
  */
 package net.sf.hajdbc.xml;
 
-import java.io.IOException;
 import java.util.Properties;
 
-import net.sf.hajdbc.util.Strings;
+import javax.xml.namespace.NamespaceContext;
+import javax.xml.namespace.QName;
+import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.DTDHandler;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLFilterImpl;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.AdditionalMatchers.*;
 
 /**
  * @author Paul Ferraro
  */
 public class PropertyReplacementFilterTest
 {
-	private ContentHandler contentHandler;
-	private DTDHandler dtdHandler;
-	private ErrorHandler errorHandler;
-	private EntityResolver resolver;
-	private XMLReader parent;
-	private XMLFilterImpl filter;
-
+	private final Properties properties = new Properties();
+	private final XMLStreamReader reader = mock(XMLStreamReader.class);
+	private final XMLStreamReader filter = new PropertyReplacementFilter(this.reader, this.properties);
+	private final static String PROPERTY_NAME = "existing";
+	private final static String SYSTEM_PROPERTY = String.format("${%s}", PROPERTY_NAME);
+	private final static String PROPERTY_VALUE = "expected";
+	
 	@Before
 	public void before()
 	{
-		this.contentHandler = mock(ContentHandler.class);
-		this.dtdHandler = mock(DTDHandler.class);
-		this.errorHandler = mock(ErrorHandler.class);
-		this.resolver = mock(EntityResolver.class);
-		this.parent = mock(XMLReader.class);
-		Properties properties = new Properties();
-		properties.setProperty("existing", "Release");
-		
-		this.filter = new PropertyReplacementFilter(this.parent, properties);
-		this.filter.setContentHandler(this.contentHandler);
-		this.filter.setDTDHandler(this.dtdHandler);
-		this.filter.setEntityResolver(this.resolver);
-		this.filter.setErrorHandler(this.errorHandler);
+		this.properties.setProperty(PROPERTY_NAME, PROPERTY_VALUE);
 	}
-	
+
 	@Test
-	public void characters() throws SAXException
+	public void close() throws XMLStreamException
 	{
-		String plain = "test";
+		this.filter.close();
 		
-		this.filter.characters(plain.toCharArray(), 0, plain.length());
-		
-		verify(this.contentHandler).characters(aryEq(plain.toCharArray()), eq(0), eq(plain.length()));
-		
-		String string = "${dummy,existing:Free} the ${non-existing:Kraken}! ${dummy} ${/} ${:} ${} ${dummy:}";
-		String expected = String.format("Release the Kraken! ${dummy} %s %s ${} ", Strings.FILE_SEPARATOR, Strings.PATH_SEPARATOR);
-		
-		this.filter.characters(string.toCharArray(), 0, string.length());
-		
-		verify(this.contentHandler).characters(aryEq(expected.toCharArray()), eq(0), eq(expected.length()));
+		verify(this.reader).close();
 	}
-	
+
 	@Test
-	public void startElement() throws SAXException
+	public void getAttributeCount()
 	{
-		Attributes attributes = mock(Attributes.class);
-		ArgumentCaptor<Attributes> capturedAttributes = ArgumentCaptor.forClass(Attributes.class);
+		int expected = 10;
 		
-		String plain = "test";
-		String attributeURI = "uri";
-		String attributeLocalName = "localName";
-		String attributeQName = "qName";
-		String attributeType = "type";
-		String elementURI = "uri";
-		String elementLocalName = "localName";
-		String elementQName = "qName";
+		when(this.reader.getAttributeCount()).thenReturn(expected);
+
+		int result = this.filter.getAttributeCount();
 		
-		when(attributes.getLength()).thenReturn(1);
-		when(attributes.getURI(0)).thenReturn(attributeURI);
-		when(attributes.getLocalName(0)).thenReturn(attributeLocalName);
-		when(attributes.getQName(0)).thenReturn(attributeQName);
-		when(attributes.getType(0)).thenReturn(attributeType);
-		when(attributes.getValue(0)).thenReturn(plain);
-		
-		doNothing().when(this.contentHandler).startElement(eq(elementURI), eq(elementLocalName), eq(elementQName), capturedAttributes.capture());
-		
-		this.filter.startElement(elementURI, elementLocalName, elementQName, attributes);
-		
-		Attributes attr = capturedAttributes.getValue();
-		assertEquals(1, attr.getLength());
-		assertSame(attributeURI, attr.getURI(0));
-		assertSame(attributeLocalName, attr.getLocalName(0));
-		assertSame(attributeQName, attr.getQName(0));
-		assertSame(attributeType, attr.getType(0));
-		assertEquals(plain, attr.getValue(0));
-		
-		
-		String string = "${dummy,existing:Free} the ${non-existing:Kraken}! ${dummy} ${/} ${:} ${} ${dummy:}";
-		String expected = String.format("Release the Kraken! ${dummy} %s %s ${} ", Strings.FILE_SEPARATOR, Strings.PATH_SEPARATOR);
-		
-		when(attributes.getLength()).thenReturn(1);
-		when(attributes.getURI(0)).thenReturn(attributeURI);
-		when(attributes.getLocalName(0)).thenReturn(attributeLocalName);
-		when(attributes.getQName(0)).thenReturn(attributeQName);
-		when(attributes.getType(0)).thenReturn(attributeType);
-		when(attributes.getValue(0)).thenReturn(string);
-		
-		doNothing().when(this.contentHandler).startElement(eq(elementURI), eq(elementLocalName), eq(elementQName), capturedAttributes.capture());
-		
-		this.filter.startElement(elementURI, elementLocalName, elementQName, attributes);
-		
-		attr = capturedAttributes.getValue();
-		assertEquals(1, attr.getLength());
-		assertSame(attributeURI, attr.getURI(0));
-		assertSame(attributeLocalName, attr.getLocalName(0));
-		assertSame(attributeQName, attr.getQName(0));
-		assertSame(attributeType, attr.getType(0));
-		assertEquals(expected, attr.getValue(0));
+		assertSame(expected, result);
 	}
-	
+
 	@Test
-	public void getContentHandler()
+	public void getAttributeLocalName()
 	{
-		assertSame(this.contentHandler, this.filter.getContentHandler());
+		String expected = "expected";
+		int index = 10;
+		
+		when(this.reader.getAttributeLocalName(index)).thenReturn(expected);
+
+		String result = this.filter.getAttributeLocalName(index);
+		
+		assertSame(expected, result);
 	}
-	
+
 	@Test
-	public void getDTDHandler()
+	public void getAttributeName()
 	{
-		assertSame(this.dtdHandler, this.filter.getDTDHandler());
+		QName expected = QName.valueOf("expected");
+		int index = 10;
+		
+		when(this.reader.getAttributeName(index)).thenReturn(expected);
+
+		QName result = this.filter.getAttributeName(index);
+		
+		assertSame(expected, result);
 	}
-	
+
 	@Test
-	public void getEntityResolver()
+	public void getAttributeNamespace()
 	{
-		assertSame(this.resolver, this.filter.getEntityResolver());
+		String expected = "expected";
+		int index = 10;
+		
+		when(this.reader.getAttributeNamespace(index)).thenReturn(expected);
+
+		String result = this.filter.getAttributeNamespace(index);
+		
+		assertSame(expected, result);
 	}
-	
+
 	@Test
-	public void getErrorHandler()
+	public void getAttributePrefix()
 	{
-		assertSame(this.errorHandler, this.filter.getErrorHandler());
+		String expected = "expected";
+		int index = 10;
+		
+		when(this.reader.getAttributePrefix(index)).thenReturn(expected);
+
+		String result = this.filter.getAttributePrefix(index);
+		
+		assertSame(expected, result);
 	}
-	
+
 	@Test
-	public void getFeature() throws SAXException
+	public void getAttributeType()
 	{
-		String feature = "name";
+		String expected = "expected";
+		int index = 10;
 		
-		when(this.parent.getFeature(feature)).thenReturn(true);
+		when(this.reader.getAttributeType(index)).thenReturn(expected);
+
+		String result = this.filter.getAttributeType(index);
 		
-		SAXException exception = null;
-		Boolean result = null;
-		try
-		{
-			result = this.filter.getFeature(feature);
-		}
-		catch (SAXException e)
-		{
-			exception = e;
-		}
-		
-		assertNull(exception);
-		assertNotNull(result);
-		assertTrue(result);
-		
-		this.getFeature(feature, new SAXNotRecognizedException());
-		this.getFeature(feature, new SAXNotSupportedException());
+		assertSame(expected, result);
 	}
-	
-	private void getFeature(String feature, SAXException expected) throws SAXException
-	{
-		reset(this.parent);
-		
-		when(this.parent.getFeature(feature)).thenThrow(expected);
-		
-		SAXException exception = null;
-		Boolean result = null;
-		try
-		{
-			result = this.filter.getFeature(feature);
-		}
-		catch (SAXException e)
-		{
-			exception = e;
-		}
-		
-		assertNull(result);
-		assertNotNull(exception);
-		assertSame(expected, exception);
-	}
-	
+
 	@Test
-	public void getParent()
+	public void getAttributeValue()
 	{
-		XMLReader result = this.filter.getParent();
+		String expected = "expected";
+		int index = 10;
 		
-		assertSame(this.parent, result);
+		when(this.reader.getAttributeValue(index)).thenReturn(expected);
+
+		String result = this.filter.getAttributeValue(index);
+		
+		assertSame(expected, result);
+		
+		when(this.reader.getAttributeValue(index)).thenReturn(SYSTEM_PROPERTY);
+		
+		result = this.filter.getAttributeValue(index);
+		
+		assertEquals(PROPERTY_VALUE, result);
 	}
-	
+
 	@Test
-	public void getProperty() throws SAXException
+	public void getAttributeValueByName()
 	{
-		String property = "name";
+		String namespaceURI = "url";
+		String localName = "name";
+		String expected = "expected";
+		
+		when(this.reader.getAttributeValue(namespaceURI, localName)).thenReturn(expected);
+
+		String result = this.filter.getAttributeValue(namespaceURI, localName);
+		
+		assertSame(expected, result);
+		
+		when(this.reader.getAttributeValue(namespaceURI, localName)).thenReturn(SYSTEM_PROPERTY);
+		
+		result = this.filter.getAttributeValue(namespaceURI, localName);
+		
+		assertEquals(PROPERTY_VALUE, result);
+	}
+
+	@Test
+	public void getCharacterEncodingScheme()
+	{
+		String expected = "expected";
+
+		when(this.reader.getCharacterEncodingScheme()).thenReturn(expected);
+		
+		String result = this.filter.getCharacterEncodingScheme();
+		
+		assertSame(expected, result);
+	}
+
+	@Test
+	public void getElementText() throws XMLStreamException
+	{
+		String expected = "expected";
+		
+		when(this.reader.getElementText()).thenReturn(expected);
+
+		String result = this.filter.getElementText();
+		
+		assertSame(expected, result);
+		
+		when(this.reader.getElementText()).thenReturn(String.format("Expect the un%s!", SYSTEM_PROPERTY));
+		
+		result = this.filter.getElementText();
+		
+		assertEquals("Expect the unexpected!", result);
+	}
+
+	@Test
+	public void getEncoding()
+	{
+		String expected = "expected";
+
+		when(this.reader.getEncoding()).thenReturn(expected);
+		
+		String result = this.filter.getEncoding();
+		
+		assertSame(expected, result);
+	}
+
+	@Test
+	public void getEventType()
+	{
+		int expected = 10;
+
+		when(this.reader.getEventType()).thenReturn(expected);
+		
+		int result = this.filter.getEventType();
+		
+		assertSame(expected, result);
+	}
+
+	@Test
+	public void getLocalName()
+	{
+		String expected = "expected";
+
+		when(this.reader.getLocalName()).thenReturn(expected);
+		
+		String result = this.filter.getLocalName();
+		
+		assertSame(expected, result);
+	}
+
+	@Test
+	public void getLocation()
+	{
+		Location expected = mock(Location.class);
+
+		when(this.reader.getLocation()).thenReturn(expected);
+		
+		Location result = this.filter.getLocation();
+		
+		assertSame(expected, result);
+	}
+
+	@Test
+	public void getName()
+	{
+		QName expected = QName.valueOf("expected");
+
+		when(this.reader.getName()).thenReturn(expected);
+		
+		QName result = this.filter.getName();
+		
+		assertSame(expected, result);
+	}
+
+	@Test
+	public void getNamespaceContext()
+	{
+		NamespaceContext expected = mock(NamespaceContext.class);
+
+		when(this.reader.getNamespaceContext()).thenReturn(expected);
+		
+		NamespaceContext result = this.filter.getNamespaceContext();
+		
+		assertSame(expected, result);
+	}
+
+	@Test
+	public void getNamespaceCount()
+	{
+		int expected = 10;
+
+		when(this.reader.getNamespaceCount()).thenReturn(expected);
+		
+		int result = this.filter.getNamespaceCount();
+		
+		assertSame(expected, result);
+	}
+
+	@Test
+	public void getNamespacePrefix()
+	{
+		String expected = "expected";
+		int index = 10;
+
+		when(this.reader.getNamespacePrefix(index)).thenReturn(expected);
+		
+		String result = this.filter.getNamespacePrefix(index);
+		
+		assertSame(expected, result);
+	}
+
+	@Test
+	public void getNamespaceURI()
+	{
+		String expected = "expected";
+
+		when(this.reader.getNamespaceURI()).thenReturn(expected);
+		
+		String result = this.filter.getNamespaceURI();
+		
+		assertSame(expected, result);
+	}
+
+	@Test
+	public void getNamespaceURIByPrefix()
+	{
+		String expected = "expected";
+		String prefix = "prefix";
+
+		when(this.reader.getNamespaceURI(prefix)).thenReturn(expected);
+		
+		String result = this.filter.getNamespaceURI(prefix);
+		
+		assertSame(expected, result);
+	}
+
+	@Test
+	public void getNamespaceURIByIndex()
+	{
+		String expected = "expected";
+		int index = 10;
+
+		when(this.reader.getNamespaceURI(index)).thenReturn(expected);
+		
+		String result = this.filter.getNamespaceURI(index);
+		
+		assertSame(expected, result);
+	}
+
+	@Test
+	public void getPIData()
+	{
+		String expected = "expected";
+		
+		when(this.reader.getPIData()).thenReturn(expected);
+
+		String result = this.filter.getPIData();
+		
+		assertSame(expected, result);
+	}
+
+	@Test
+	public void getPITarget()
+	{
+		String expected = "expected";
+		
+		when(this.reader.getPITarget()).thenReturn(expected);
+
+		String result = this.filter.getPITarget();
+		
+		assertSame(expected, result);
+	}
+
+	@Test
+	public void getPrefix()
+	{
+		String expected = "expected";
+		
+		when(this.reader.getPrefix()).thenReturn(expected);
+
+		String result = this.filter.getPrefix();
+		
+		assertSame(expected, result);
+	}
+
+	@Test
+	public void getProperty()
+	{
+		String property = "property";
 		Object expected = new Object();
 		
-		when(this.parent.getProperty(property)).thenReturn(expected);
+		when(this.reader.getProperty(property)).thenReturn(expected);
 		
 		Object result = this.filter.getProperty(property);
 		
 		assertSame(expected, result);
-		
-		this.getProperty(property, new SAXNotRecognizedException());
-		this.getProperty(property, new SAXNotSupportedException());
 	}
-	
-	private void getProperty(String property, SAXException expected) throws SAXException
-	{
-		reset(this.parent);
-		
-		when(this.parent.getProperty(property)).thenThrow(expected);
-		
-		SAXException exception = null;
-		
-		try
-		{
-			this.filter.getProperty(property);
-		}
-		catch (SAXException e)
-		{
-			exception = e;
-		}
-		
-		assertNotNull(exception);
-		assertSame(expected, exception);
-	}
-	
-	@Test
-	public void parseInputSource() throws IOException, SAXException
-	{
-		InputSource source = mock(InputSource.class);
-		
-//		checkOrder(this.parent, false);
-//		EasyMock.checkOrder(this.parent, true);
-		
-		this.filter.parse(source);
-		
-		verify(this.parent).setContentHandler(this.filter);
-		verify(this.parent).setDTDHandler(this.filter);
-		verify(this.parent).setEntityResolver(this.filter);
-		verify(this.parent).setErrorHandler(this.filter);
-		verify(this.parent).parse(source);
-	}
-	
-	@Test
-	public void parseSystemId() throws IOException, SAXException
-	{
-		ArgumentCaptor<InputSource> capturedSource = ArgumentCaptor.forClass(InputSource.class);
-		String systemId = "";
-		
-//		EasyMock.checkOrder(this.parent, false);
-//		EasyMock.checkOrder(this.parent, true);
-		
-		this.filter.parse(systemId);
 
-		verify(this.parent).setContentHandler(this.filter);
-		verify(this.parent).setDTDHandler(this.filter);
-		verify(this.parent).setEntityResolver(this.filter);
-		verify(this.parent).setErrorHandler(this.filter);
-		verify(this.parent).parse(capturedSource.capture());
-		
-		InputSource source = capturedSource.getValue();
-		assertSame(systemId, source.getSystemId());
-	}
-	
 	@Test
-	public void setFeature() throws SAXException
+	public void getText()
 	{
-		String feature = "feature";
-		boolean enabled = true;
+		String expected = "expected";
 		
-		SAXException exception = null;
-		try
-		{
-			this.filter.setFeature(feature, enabled);
-		}
-		catch (SAXException e)
-		{
-			exception = e;
-		}
+		when(this.reader.getText()).thenReturn(expected);
+
+		String result = this.filter.getText();
 		
-		verify(this.parent).setFeature(feature, enabled);
+		assertSame(expected, result);
 		
-		assertNull(exception);
+		when(this.reader.getText()).thenReturn(String.format("Expect the un%s!", SYSTEM_PROPERTY));
 		
-		this.setFeature(feature, enabled, new SAXNotRecognizedException());
-		this.setFeature(feature, enabled, new SAXNotSupportedException());
+		result = this.filter.getText();
+		
+		assertEquals("Expect the unexpected!", result);
 	}
-	
-	private void setFeature(String feature, boolean enabled, SAXException expected) throws SAXException
-	{
-		doThrow(expected).when(this.parent).setFeature(feature, enabled);
-		
-		SAXException exception = null;
-		try
-		{
-			this.filter.setFeature(feature, enabled);
-		}
-		catch (SAXException e)
-		{
-			exception = e;
-		}
-		
-		assertSame(expected, exception);
-	}
-	
+
 	@Test
-	public void endDocument() throws SAXException
+	public void getTextCharacters()
 	{
-		this.filter.endDocument();
+		char[] expected = "expected".toCharArray();
 		
-		verify(this.contentHandler).endDocument();
+		when(this.reader.getTextCharacters()).thenReturn(expected);
+
+		char[] result = this.filter.getTextCharacters();
+		
+		assertArrayEquals(expected, result);
+		
+		when(this.reader.getTextCharacters()).thenReturn(String.format("Expect the un%s!", SYSTEM_PROPERTY).toCharArray());
+		
+		result = this.filter.getTextCharacters();
+		
+		assertArrayEquals("Expect the unexpected!".toCharArray(), result);
 	}
-	
+
 	@Test
-	public void endElement() throws SAXException
+	public void getTextLength()
 	{
-		this.filter.endElement("uri", "localName", "qName");
+		int expected = 10;
+
+		when(this.reader.getTextLength()).thenReturn(expected);
 		
-		verify(this.contentHandler).endElement("uri", "localName", "qName");
-	}
-	
-	@Test
-	public void endPrefixMapping() throws SAXException
-	{
-		this.filter.endPrefixMapping("prefix");
-		
-		verify(this.contentHandler).endPrefixMapping("prefix");
-	}
-	
-	@Test
-	public void error() throws SAXException
-	{
-		SAXParseException error = new SAXParseException("", "publicId", "systemId", 1, 2);
-		
-		this.filter.error(error);
-		
-		verify(this.errorHandler).error(error);
-	}
-	
-	@Test
-	public void fatalError() throws SAXException
-	{
-		SAXParseException error = new SAXParseException("", "publicId", "systemId", 1, 2);
-		
-		this.filter.fatalError(error);
-		
-		verify(this.errorHandler).fatalError(error);		
-	}
-	
-	@Test
-	public void ignorableWhitespace() throws SAXException
-	{
-		String space = " ";
-		
-		doNothing().when(this.contentHandler).ignorableWhitespace(aryEq(space.toCharArray()), eq(0), eq(space.length()));
-		
-		this.filter.ignorableWhitespace(space.toCharArray(), 0, space.length());
-	}
-	
-	@Test
-	public void notationDecl() throws SAXException
-	{
-		this.filter.notationDecl("name", "publicId", "systemId");
-		
-		verify(this.dtdHandler).notationDecl("name", "publicId", "systemId");
-	}
-	
-	@Test
-	public void processingInstruction() throws SAXException
-	{
-		this.filter.processingInstruction("target", "data");
-		
-		verify(this.contentHandler).processingInstruction("target", "data");
-	}
-	
-	@Test
-	public void resolveEntity() throws SAXException, IOException
-	{
-		InputSource expected = mock(InputSource.class);
-		
-		when(this.resolver.resolveEntity("publicId", "systemId")).thenReturn(expected);
-		
-		InputSource result = this.filter.resolveEntity("publicId", "systemId");
+		int result = this.filter.getTextLength();
 		
 		assertSame(expected, result);
 	}
-	
+
 	@Test
-	public void skippedEntity() throws SAXException
+	public void getTextStart()
 	{
-		this.filter.skippedEntity("name");
+		int expected = 10;
+
+		when(this.reader.getTextStart()).thenReturn(expected);
 		
-		verify(this.contentHandler).skippedEntity("name");
+		int result = this.filter.getTextStart();
+		
+		assertSame(expected, result);
 	}
-	
+
 	@Test
-	public void startDocument() throws SAXException
+	public void getVersion()
 	{
-		this.filter.startDocument();
+		String expected = "expected";
 		
-		verify(this.contentHandler).startDocument();
+		when(this.reader.getVersion()).thenReturn(expected);
+
+		String result = this.filter.getVersion();
+		
+		assertSame(expected, result);
 	}
-	
+
 	@Test
-	public void startPrefixMapping() throws SAXException
+	public void hasName()
 	{
-		this.filter.startPrefixMapping("prefix", "uri");
+		when(this.reader.hasName()).thenReturn(true);
+
+		boolean result = this.filter.hasName();
 		
-		verify(this.contentHandler).startPrefixMapping("prefix", "uri");
+		assertTrue(result);
 	}
-	
+
 	@Test
-	public void unparsedEntityDecl() throws SAXException
+	public void hasNext() throws XMLStreamException
 	{
-		this.filter.unparsedEntityDecl("name", "publicId", "systemId", "notationName");
+		when(this.reader.hasNext()).thenReturn(true);
+
+		boolean result = this.filter.hasNext();
 		
-		verify(this.dtdHandler).unparsedEntityDecl("name", "publicId", "systemId", "notationName");
+		assertTrue(result);
 	}
-	
+
 	@Test
-	public void warning() throws SAXException
+	public void hasText()
 	{
-		SAXParseException error = new SAXParseException("", "publicId", "systemId", 1, 2);
+		when(this.reader.hasText()).thenReturn(true);
+
+		boolean result = this.filter.hasText();
 		
-		this.filter.warning(error);
+		assertTrue(result);
+	}
+
+	@Test
+	public void isAttributeSpecified()
+	{
+		int index = 10;
 		
-		verify(this.errorHandler).warning(error);
+		when(this.reader.isAttributeSpecified(index)).thenReturn(true);
+
+		boolean result = this.filter.isAttributeSpecified(index);
+		
+		assertTrue(result);
+	}
+
+	@Test
+	public void isCharacters()
+	{
+		when(this.reader.isCharacters()).thenReturn(true);
+
+		boolean result = this.filter.isCharacters();
+		
+		assertTrue(result);
+	}
+
+	@Test
+	public void isEndElement()
+	{
+		when(this.reader.isEndElement()).thenReturn(true);
+
+		boolean result = this.filter.isEndElement();
+		
+		assertTrue(result);
+	}
+
+	@Test
+	public void isStandalone()
+	{
+		when(this.reader.isStandalone()).thenReturn(true);
+
+		boolean result = this.filter.isStandalone();
+		
+		assertTrue(result);
+	}
+
+	@Test
+	public void isStartElement()
+	{
+		when(this.reader.isStartElement()).thenReturn(true);
+
+		boolean result = this.filter.isStartElement();
+		
+		assertTrue(result);
+	}
+
+	@Test
+	public void isWhiteSpace()
+	{
+		when(this.reader.isWhiteSpace()).thenReturn(true);
+
+		boolean result = this.filter.isWhiteSpace();
+		
+		assertTrue(result);
+	}
+
+	@Test
+	public void next() throws XMLStreamException
+	{
+		int expected = 10;
+		
+		when(this.reader.next()).thenReturn(expected);
+
+		int result = this.filter.next();
+		
+		assertEquals(expected, result);
+	}
+
+	@Test
+	public void nextTag() throws XMLStreamException
+	{
+		int expected = 10;
+		
+		when(this.reader.nextTag()).thenReturn(expected);
+
+		int result = this.filter.nextTag();
+		
+		assertEquals(expected, result);
+	}
+
+	@Test
+	public void require() throws XMLStreamException
+	{
+		int type = 10;
+		String uri = "uri";
+		String name = "name";
+
+		this.filter.require(type, uri, name);
+		
+		verify(this.reader).require(type, uri, name);
+	}
+
+	@Test
+	public void standaloneSet()
+	{
+		when(this.reader.standaloneSet()).thenReturn(true);
+
+		boolean result = this.filter.standaloneSet();
+		
+		assertTrue(result);
 	}
 }
