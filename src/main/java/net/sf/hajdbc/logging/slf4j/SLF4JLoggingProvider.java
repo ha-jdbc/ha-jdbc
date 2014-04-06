@@ -17,21 +17,21 @@
  */
 package net.sf.hajdbc.logging.slf4j;
 
-import org.slf4j.LoggerFactory;
-import org.slf4j.helpers.NOPLoggerFactory;
+import net.sf.hajdbc.logging.Logger;
+import net.sf.hajdbc.logging.LoggingProvider;
 
 /**
  * <a href="http://slf4j.org">SLF4J</a>-based logging service provider.
  * @author Paul Ferraro
  */
-public class SLF4JLoggingProvider implements net.sf.hajdbc.logging.LoggingProvider
+public class SLF4JLoggingProvider implements LoggingProvider
 {
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.logging.LoggingProvider#getLogger(java.lang.Class)
 	 */
 	@Override
-	public net.sf.hajdbc.logging.Logger getLogger(Class<?> targetClass)
+	public Logger getLogger(Class<?> targetClass)
 	{
 		return new SLF4JLogger(targetClass);
 	}
@@ -55,7 +55,7 @@ public class SLF4JLoggingProvider implements net.sf.hajdbc.logging.LoggingProvid
 	{
 		try
 		{
-			return !LoggerFactory.getILoggerFactory().getClass().equals(NOPLoggerFactory.class);
+			return !org.slf4j.LoggerFactory.getILoggerFactory().getClass().equals(org.slf4j.helpers.NOPLoggerFactory.class);
 		}
 		catch (Throwable e)
 		{

@@ -17,9 +17,6 @@
  */
 package net.sf.hajdbc.logging.commons;
 
-import org.apache.commons.logging.LogConfigurationException;
-import org.apache.commons.logging.LogFactory;
-
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggingProvider;
 
@@ -59,11 +56,11 @@ public class CommonsLoggingProvider implements LoggingProvider
 	{
 		try
 		{
-			LogFactory.getFactory();
+			org.apache.commons.logging.LogFactory.getFactory();
 			
 			return true;
 		}
-		catch (LogConfigurationException e)
+		catch (Throwable e)
 		{
 			return false;
 		}
