@@ -76,7 +76,7 @@
 		<dependency>
 			<groupId>com.sleepycat</groupId>
 			<artifactId>je</artifactId>
-			<version>5.0.97</version>
+			<version>5.0.103</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
