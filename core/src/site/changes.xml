@@ -21,7 +21,7 @@
 		<title>HA-JDBC Changes</title>
 	</properties>
 	<body>
-		<release version="3.1" date="?">
+		<release version="3.1.0-alpha-1" date="?">
 			<action dev="pferraro" type="update">
 				Require Java 1.7.
 			</action>
@@ -36,6 +36,11 @@
 			</action>
 			<action dev="pferraro" type="update">
 				Create static xsd with documentation.
+			</action>
+		</release>
+		<release version="3.0.2" date="2014-04-07">
+			<action dev="pferraro" type="fix">
+				Fix NoClassDefFoundError in SLF4J and Commons logging providers when the requisite classes are not available.
 			</action>
 		</release>
 		<release version="3.0.1" date="2014-04-03">
