@@ -17,7 +17,10 @@
  */
 package net.sf.hajdbc.dialect;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -32,13 +35,13 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import org.h2.constant.ErrorCode;
-
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.SequencePropertiesFactory;
 import net.sf.hajdbc.dialect.h2.H2DialectFactory;
+
+import org.h2.api.ErrorCode;
 
 /**
  * @author Paul Ferraro
