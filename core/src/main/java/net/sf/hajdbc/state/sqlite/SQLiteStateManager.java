@@ -31,13 +31,10 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.ExceptionType;
-import net.sf.hajdbc.durability.Durability;
-import net.sf.hajdbc.durability.DurabilityListener;
+import net.sf.hajdbc.durability.DurabilityEvent;
+import net.sf.hajdbc.durability.DurabilityEventFactory;
 import net.sf.hajdbc.durability.InvocationEvent;
-import net.sf.hajdbc.durability.InvocationEventImpl;
 import net.sf.hajdbc.durability.InvokerEvent;
-import net.sf.hajdbc.durability.InvokerEventImpl;
 import net.sf.hajdbc.durability.InvokerResult;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
@@ -48,7 +45,6 @@ import net.sf.hajdbc.state.DatabaseEvent;
 import net.sf.hajdbc.state.DurabilityListenerAdapter;
 import net.sf.hajdbc.state.SerializedDurabilityListener;
 import net.sf.hajdbc.state.StateManager;
-import net.sf.hajdbc.tx.TransactionIdentifierFactory;
 import net.sf.hajdbc.util.Objects;
 
 import org.tmatesoft.sqljet.core.SqlJetException;
@@ -84,8 +80,8 @@ public class SQLiteStateManager<Z, D extends Database<Z>> implements StateManage
 	static final String CREATE_INVOKER_INDEX = MessageFormat.format("CREATE INDEX {0} ON {1} ({2}, {3})", INVOKER_TABLE_INDEX, INVOKER_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN);
 	static final String CREATE_STATE_SQL = MessageFormat.format("CREATE TABLE {0} ({1} TEXT NOT NULL, PRIMARY KEY ({1}))", STATE_TABLE, DATABASE_COLUMN);
 
-	private final DatabaseCluster<Z, D> cluster;
-	private final DurabilityListener listener;
+	final DurabilityListenerAdapter listener;
+	final DurabilityEventFactory eventFactory;
 	private final File file;
 	private final PoolFactory poolFactory;
 	
@@ -95,10 +91,10 @@ public class SQLiteStateManager<Z, D extends Database<Z>> implements StateManage
 
 	public SQLiteStateManager(DatabaseCluster<Z, D> cluster, File file, PoolFactory poolFactory)
 	{
-		this.cluster = cluster;
 		this.file = file;
 		this.poolFactory = poolFactory;
-		this.listener = new DurabilityListenerAdapter(this, cluster.getTransactionIdentifierFactory());
+		this.eventFactory = cluster.getDurability();
+		this.listener = new DurabilityListenerAdapter(this, cluster.getTransactionIdentifierFactory(), this.eventFactory);
 	}
 	
 	@Override
@@ -356,8 +352,6 @@ public class SQLiteStateManager<Z, D extends Database<Z>> implements StateManage
 	@Override
 	public Map<InvocationEvent, Map<String, InvokerEvent>> recover()
 	{
-		final TransactionIdentifierFactory<?> txIdFactory = this.cluster.getTransactionIdentifierFactory();
-		
 		Query<Map<InvocationEvent, Map<String, InvokerEvent>>> invocationQuery = new Query<Map<InvocationEvent, Map<String, InvokerEvent>>>()
 		{
 			@Override
@@ -371,10 +365,10 @@ public class SQLiteStateManager<Z, D extends Database<Z>> implements StateManage
 					{
 						do
 						{
-							Object txId = txIdFactory.deserialize(cursor.getBlobAsArray(TRANSACTION_COLUMN));
-							Durability.Phase phase = Durability.Phase.values()[(int) cursor.getInteger(PHASE_COLUMN)];
-							ExceptionType type = ExceptionType.values()[(int) cursor.getInteger(EXCEPTION_COLUMN)];
-							map.put(new InvocationEventImpl(txId, phase, type), new HashMap<String, InvokerEvent>());
+							byte[] transactionId = cursor.getBlobAsArray(TRANSACTION_COLUMN);
+							byte phase = (byte) cursor.getInteger(PHASE_COLUMN);
+							byte exceptionType = (byte) cursor.getInteger(EXCEPTION_COLUMN);
+							map.put(SQLiteStateManager.this.listener.createInvocationEvent(transactionId, phase, exceptionType), new HashMap<String, InvokerEvent>());
 						}
 						while (cursor.next());
 					}
@@ -390,22 +384,22 @@ public class SQLiteStateManager<Z, D extends Database<Z>> implements StateManage
 					{
 						do
 						{
-							Object txId = txIdFactory.deserialize(cursor.getBlobAsArray(TRANSACTION_COLUMN));
-							Durability.Phase phase = Durability.Phase.values()[(int) cursor.getInteger(PHASE_COLUMN)];
-							
-							Map<String, InvokerEvent> invokers = map.get(new InvocationEventImpl(txId, phase, null));
+							byte[] transactionId = cursor.getBlobAsArray(TRANSACTION_COLUMN);
+							byte phase = (byte) cursor.getInteger(PHASE_COLUMN);
+							DurabilityEvent event = SQLiteStateManager.this.listener.createEvent(transactionId, phase);
+							Map<String, InvokerEvent> invokers = map.get(event);
 							if (invokers != null)
 							{
 								String databaseId = cursor.getString(DATABASE_COLUMN);
-								InvokerEvent event = new InvokerEventImpl(txId, phase, databaseId);
+								InvokerEvent invokerEvent = SQLiteStateManager.this.eventFactory.createInvokerEvent(event.getTransactionId(), event.getPhase(), databaseId);
 								
 								if (!cursor.isNull(RESULT_COLUMN))
 								{
 									byte[] result = cursor.getBlobAsArray(RESULT_COLUMN);
-									event.setResult(Objects.<InvokerResult>deserialize(result));
+									invokerEvent.setResult(Objects.deserialize(result, InvokerResult.class));
 								}
-
-								invokers.put(databaseId, event);
+								
+								invokers.put(databaseId, invokerEvent);
 							}
 						}
 						while (cursor.next());

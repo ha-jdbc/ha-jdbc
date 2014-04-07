@@ -22,6 +22,7 @@ import java.util.SortedMap;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.durability.DurabilityListener;
 import net.sf.hajdbc.durability.InvocationEvent;
 import net.sf.hajdbc.durability.InvocationEventImpl;
@@ -49,6 +50,12 @@ public class CoarseDurability<Z, D extends Database<Z>> extends NoDurability<Z, 
 	public CoarseDurability(DatabaseCluster<Z, D> cluster)
 	{
 		this.cluster = cluster;
+	}
+
+	@Override
+	public InvocationEvent createInvocationEvent(Object transactionId, Phase phase, ExceptionType exceptionType)
+	{
+		return new InvocationEventImpl(transactionId, phase, exceptionType);
 	}
 
 	/**

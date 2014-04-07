@@ -46,6 +46,12 @@ public class FineDurability<Z, D extends Database<Z>> extends CoarseDurability<Z
 		super(cluster);
 	}
 
+	@Override
+	public InvokerEvent createInvokerEvent(Object transactionId, Phase phase, String databaseId)
+	{
+		return new InvokerEventImpl(transactionId, phase, databaseId);
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.durability.none.NoDurability#getInvoker(net.sf.hajdbc.invocation.Invoker, net.sf.hajdbc.durability.Durability.Phase, java.lang.Object, net.sf.hajdbc.ExceptionFactory)

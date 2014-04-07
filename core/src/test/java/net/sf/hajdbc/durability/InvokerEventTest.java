@@ -37,7 +37,7 @@ public class InvokerEventTest
 	public void serializationNoResult()
 	{
 		InvokerEvent event1 = new InvokerEventImpl(UUID.randomUUID(), Durability.Phase.COMMIT, "1");
-		InvokerEvent event2 = Objects.deserialize(Objects.serialize(event1));
+		InvokerEvent event2 = Objects.deserialize(Objects.serialize(event1), InvokerEvent.class);
 		assertEquals(event1, event2);
 		assertEquals(event1.getTransactionId(), event2.getTransactionId());
 		assertEquals(event1.getPhase(), event2.getPhase());
@@ -49,7 +49,7 @@ public class InvokerEventTest
 	{
 		InvokerEvent event1 = new InvokerEventImpl(UUID.randomUUID(), Durability.Phase.COMMIT, "1");
 		event1.setResult(new InvokerResultImpl(100));
-		InvokerEvent event2 = Objects.deserialize(Objects.serialize(event1));
+		InvokerEvent event2 = Objects.deserialize(Objects.serialize(event1), InvokerEvent.class);
 		assertEquals(event1, event2);
 		assertEquals(event1.getTransactionId(), event2.getTransactionId());
 		assertEquals(event1.getPhase(), event2.getPhase());
@@ -62,7 +62,7 @@ public class InvokerEventTest
 	{
 		InvokerEvent event1 = new InvokerEventImpl(UUID.randomUUID(), Durability.Phase.COMMIT, "1");
 		event1.setResult(new InvokerResultImpl(new Exception()));
-		InvokerEvent event2 = Objects.deserialize(Objects.serialize(event1));
+		InvokerEvent event2 = Objects.deserialize(Objects.serialize(event1), InvokerEvent.class);
 		assertEquals(event1, event2);
 		assertEquals(event1.getTransactionId(), event2.getTransactionId());
 		assertEquals(event1.getPhase(), event2.getPhase());

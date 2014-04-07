@@ -21,7 +21,10 @@ import java.util.Map;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.ExceptionFactory;
+import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.durability.Durability;
+import net.sf.hajdbc.durability.DurabilityEvent;
+import net.sf.hajdbc.durability.DurabilityEventImpl;
 import net.sf.hajdbc.durability.InvocationEvent;
 import net.sf.hajdbc.durability.InvokerEvent;
 import net.sf.hajdbc.invocation.InvocationStrategy;
@@ -67,5 +70,23 @@ public class NoDurability<Z, D extends Database<Z>> implements Durability<Z, D>
 	public void recover(Map<InvocationEvent, Map<String, InvokerEvent>> invokers)
 	{
 		this.logger.log(Level.WARN, invokers.toString());
+	}
+
+	@Override
+	public DurabilityEvent createEvent(Object transactionId, Phase phase)
+	{
+		return new DurabilityEventImpl(transactionId, phase);
+	}
+
+	@Override
+	public InvocationEvent createInvocationEvent(Object transactionId, Phase phase, ExceptionType exceptionType)
+	{
+		return null;
+	}
+
+	@Override
+	public InvokerEvent createInvokerEvent(Object transactionId, Phase phase, String databaseId)
+	{
+		return null;
 	}
 }

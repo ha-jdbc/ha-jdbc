@@ -27,7 +27,7 @@ import net.sf.hajdbc.invocation.Invoker;
 /**
  * @author Paul Ferraro
  */
-public interface Durability<Z, D extends Database<Z>>
+public interface Durability<Z, D extends Database<Z>> extends DurabilityEventFactory
 {
 	enum Phase
 	{

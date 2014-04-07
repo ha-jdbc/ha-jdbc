@@ -34,19 +34,16 @@ import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseBuilder;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseProperties;
-import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.IdentifiableMatcher;
 import net.sf.hajdbc.cache.lazy.LazyDatabaseProperties;
 import net.sf.hajdbc.cache.simple.SimpleDatabaseMetaDataProvider;
 import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.dialect.DialectFactory;
 import net.sf.hajdbc.dialect.StandardDialectFactory;
-import net.sf.hajdbc.durability.Durability;
-import net.sf.hajdbc.durability.DurabilityListener;
+import net.sf.hajdbc.durability.DurabilityEvent;
+import net.sf.hajdbc.durability.DurabilityEventFactory;
 import net.sf.hajdbc.durability.InvocationEvent;
-import net.sf.hajdbc.durability.InvocationEventImpl;
 import net.sf.hajdbc.durability.InvokerEvent;
-import net.sf.hajdbc.durability.InvokerEventImpl;
 import net.sf.hajdbc.durability.InvokerResult;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
@@ -60,7 +57,6 @@ import net.sf.hajdbc.state.DatabaseEvent;
 import net.sf.hajdbc.state.DurabilityListenerAdapter;
 import net.sf.hajdbc.state.SerializedDurabilityListener;
 import net.sf.hajdbc.state.StateManager;
-import net.sf.hajdbc.tx.TransactionIdentifierFactory;
 import net.sf.hajdbc.util.Objects;
 import net.sf.hajdbc.util.ServiceLoaders;
 
@@ -99,7 +95,8 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	
 	private static Logger logger = LoggerFactory.getLogger(SQLStateManager.class);
 	
-	private final DurabilityListener listener;
+	final DurabilityEventFactory eventFactory;
+	final DurabilityListenerAdapter listener;
 	private final DatabaseCluster<Z, D> cluster;
 	private final PoolFactory poolFactory;
 	private final DriverDatabase database;
@@ -111,7 +108,8 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 		this.cluster = cluster;
 		this.database = database;
 		this.poolFactory = poolFactory;
-		this.listener = new DurabilityListenerAdapter(this, cluster.getTransactionIdentifierFactory());
+		this.eventFactory = cluster.getDurability();
+		this.listener = new DurabilityListenerAdapter(this, cluster.getTransactionIdentifierFactory(), this.eventFactory);
 	}
 
 	/**
@@ -421,8 +419,8 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	@Override
 	public Map<InvocationEvent, Map<String, InvokerEvent>> recover()
 	{
-		final TransactionIdentifierFactory<?> txIdFactory = this.cluster.getTransactionIdentifierFactory();
-		
+		final DurabilityEventFactory factory = this.cluster.getDurability();
+
 		Query<Map<InvocationEvent, Map<String, InvokerEvent>>> query = new Query<Map<InvocationEvent, Map<String, InvokerEvent>>>()
 		{
 			@Override
@@ -436,10 +434,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 					{
 						while (resultSet.next())
 						{
-							Object txId = txIdFactory.deserialize(resultSet.getBytes(1));
-							Durability.Phase phase = Durability.Phase.values()[resultSet.getInt(2)];
-							ExceptionType type = ExceptionType.values()[resultSet.getInt(3)];
-							map.put(new InvocationEventImpl(txId, phase, type), new HashMap<String, InvokerEvent>());
+							map.put(SQLStateManager.this.listener.createInvocationEvent(resultSet.getBytes(1), resultSet.getByte(2), resultSet.getByte(3)), new HashMap<String, InvokerEvent>());
 						}
 					}
 				}
@@ -450,25 +445,25 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 					{
 						while (resultSet.next())
 						{
-							Object txId = txIdFactory.deserialize(resultSet.getBytes(1));
-							Durability.Phase phase = Durability.Phase.values()[resultSet.getByte(2)];
+							byte[] txId = resultSet.getBytes(1);
+							byte phase = resultSet.getByte(2);
 							
-							Map<String, InvokerEvent> invokers = map.get(new InvocationEventImpl(txId, phase, null));
+							DurabilityEvent event = SQLStateManager.this.listener.createEvent(txId, phase);
+							Map<String, InvokerEvent> invokers = map.get(event);
 							
 							if (invokers != null)
 							{
 								String databaseId = resultSet.getString(3);
-								
-								InvokerEvent event = new InvokerEventImpl(txId, phase, databaseId);
-								
 								byte[] bytes = resultSet.getBytes(4);
+								
+								InvokerEvent invokerEvent = factory.createInvokerEvent(event.getTransactionId(), event.getPhase(), databaseId);
 								
 								if (!resultSet.wasNull())
 								{
-									event.setResult(Objects.<InvokerResult>deserialize(bytes));
+									invokerEvent.setResult(Objects.deserialize(bytes, InvokerResult.class));
 								}
-	
-								invokers.put(databaseId, event);
+								
+								invokers.put(databaseId, invokerEvent);
 							}
 						}
 					}

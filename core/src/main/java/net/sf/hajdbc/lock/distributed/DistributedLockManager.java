@@ -188,7 +188,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 		
 		for (int i = 0; i < size; ++i)
 		{
-			Member member = Objects.readObject(input);
+			Member member = Objects.readObject(input, Member.class);
 			
 			Map<LockDescriptor, Lock> map = new HashMap<>();
 			

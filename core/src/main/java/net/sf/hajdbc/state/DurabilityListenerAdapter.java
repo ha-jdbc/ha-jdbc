@@ -20,6 +20,10 @@ package net.sf.hajdbc.state;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import net.sf.hajdbc.ExceptionType;
+import net.sf.hajdbc.durability.Durability;
+import net.sf.hajdbc.durability.DurabilityEvent;
+import net.sf.hajdbc.durability.DurabilityEventFactory;
 import net.sf.hajdbc.durability.DurabilityListener;
 import net.sf.hajdbc.durability.InvocationEvent;
 import net.sf.hajdbc.durability.InvokerEvent;
@@ -29,19 +33,21 @@ import net.sf.hajdbc.util.Objects;
 /**
  * @author Paul Ferraro
  */
-public class DurabilityListenerAdapter implements DurabilityListener
+public class DurabilityListenerAdapter implements DurabilityListener, SerializedDurabilityEventFactory
 {
 	// TODO prevent memory leak
 	// Cache serialized transaction identifiers
 	private final ConcurrentMap<Object, byte[]> transactionIdentifiers = new ConcurrentHashMap<>();
 	private final SerializedDurabilityListener listener;
 	private final TransactionIdentifierFactory<Object> txIdFactory;
-	
+	private final DurabilityEventFactory eventFactory;
+
 	@SuppressWarnings("unchecked")
-	public DurabilityListenerAdapter(SerializedDurabilityListener listener, TransactionIdentifierFactory<? extends Object> txIdFactory)
+	public DurabilityListenerAdapter(SerializedDurabilityListener listener, TransactionIdentifierFactory<? extends Object> txIdFactory, DurabilityEventFactory eventFactory)
 	{
 		this.listener = listener;
 		this.txIdFactory = (TransactionIdentifierFactory<Object>) txIdFactory;
+		this.eventFactory = eventFactory;
 	}
 
 	/**
@@ -86,5 +92,17 @@ public class DurabilityListenerAdapter implements DurabilityListener
 	public void afterInvoker(InvokerEvent event)
 	{
 		this.listener.afterInvoker(this.transactionIdentifiers.get(event.getTransactionId()), (byte) event.getPhase().ordinal(), event.getDatabaseId(), Objects.serialize(event.getResult()));
+	}
+
+	@Override
+	public InvocationEvent createInvocationEvent(byte[] transactionId, byte phase, byte exceptionType)
+	{
+		return this.eventFactory.createInvocationEvent(this.txIdFactory.deserialize(transactionId), Durability.Phase.values()[phase], ExceptionType.values()[exceptionType]);
+	}
+
+	@Override
+	public DurabilityEvent createEvent(byte[] transactionId, byte phase)
+	{
+		return this.eventFactory.createEvent(this.txIdFactory.deserialize(transactionId), Durability.Phase.values()[phase]);
 	}
 }

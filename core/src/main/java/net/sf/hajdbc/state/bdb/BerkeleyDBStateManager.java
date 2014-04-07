@@ -27,13 +27,10 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.ExceptionType;
-import net.sf.hajdbc.durability.Durability;
-import net.sf.hajdbc.durability.DurabilityListener;
+import net.sf.hajdbc.durability.DurabilityEvent;
+import net.sf.hajdbc.durability.DurabilityEventFactory;
 import net.sf.hajdbc.durability.InvocationEvent;
-import net.sf.hajdbc.durability.InvocationEventImpl;
 import net.sf.hajdbc.durability.InvokerEvent;
-import net.sf.hajdbc.durability.InvokerEventImpl;
 import net.sf.hajdbc.durability.InvokerResult;
 import net.sf.hajdbc.pool.CloseablePoolProvider;
 import net.sf.hajdbc.pool.Pool;
@@ -42,7 +39,6 @@ import net.sf.hajdbc.state.DatabaseEvent;
 import net.sf.hajdbc.state.DurabilityListenerAdapter;
 import net.sf.hajdbc.state.SerializedDurabilityListener;
 import net.sf.hajdbc.state.StateManager;
-import net.sf.hajdbc.tx.TransactionIdentifierFactory;
 import net.sf.hajdbc.util.Objects;
 
 import com.sleepycat.bind.ByteArrayBinding;
@@ -66,27 +62,27 @@ public class BerkeleyDBStateManager extends CloseablePoolProvider<Environment, D
 	private static final String STATE = "state";
 	private static final String INVOCATION = "invocation";
 	private static final String INVOKER = "invoker";
-	private static final EntryBinding<InvocationKey> INVOCATION_KEY_BINDING = new KeyBinding<>();
-	private static final EntryBinding<InvokerKey> INVOKER_KEY_BINDING = new KeyBinding<>();
+	private static final EntryBinding<InvocationKey> INVOCATION_KEY_BINDING = new KeyBinding<>(InvocationKey.class);
+	private static final EntryBinding<InvokerKey> INVOKER_KEY_BINDING = new KeyBinding<>(InvokerKey.class);
 	private static final EntryBinding<byte[]> BLOB_BINDING = new ByteArrayBinding();
 	static final byte[] NULL = new byte[0];
 	
-	private final DatabaseCluster<?, ?> cluster;
 	private final File file;
 	private final PoolFactory poolFactory;
 	private final EnvironmentConfig config;
-	private final DurabilityListener durabilityListener;
+	final DurabilityEventFactory eventFactory;
+	final DurabilityListenerAdapter listener;
 	
 	private volatile Pool<Environment, DatabaseException> pool;
 
 	public BerkeleyDBStateManager(DatabaseCluster<?, ?> cluster, File file, EnvironmentConfig config, PoolFactory poolFactory)
 	{
 		super(Environment.class, DatabaseException.class);
-		this.cluster = cluster;
 		this.file = file;
 		this.poolFactory = poolFactory;
 		this.config = config;
-		this.durabilityListener = new DurabilityListenerAdapter(this, cluster.getTransactionIdentifierFactory());
+		this.eventFactory = cluster.getDurability();
+		this.listener = new DurabilityListenerAdapter(this, cluster.getTransactionIdentifierFactory(), this.eventFactory);
 	}
 
 	@Override
@@ -184,25 +180,25 @@ public class BerkeleyDBStateManager extends CloseablePoolProvider<Environment, D
 	@Override
 	public void beforeInvocation(InvocationEvent event)
 	{
-		this.durabilityListener.beforeInvocation(event);
+		this.listener.beforeInvocation(event);
 	}
 
 	@Override
 	public void afterInvocation(InvocationEvent event)
 	{
-		this.durabilityListener.afterInvocation(event);
+		this.listener.afterInvocation(event);
 	}
 
 	@Override
 	public void beforeInvoker(InvokerEvent event)
 	{
-		this.durabilityListener.beforeInvoker(event);
+		this.listener.beforeInvoker(event);
 	}
 
 	@Override
 	public void afterInvoker(InvokerEvent event)
 	{
-		this.durabilityListener.afterInvoker(event);
+		this.listener.afterInvoker(event);
 	}
 
 	@Override
@@ -281,7 +277,6 @@ public class BerkeleyDBStateManager extends CloseablePoolProvider<Environment, D
 	public Map<InvocationEvent, Map<String, InvokerEvent>> recover()
 	{
 		final Map<InvocationEvent, Map<String, InvokerEvent>> result = new HashMap<>();
-		final TransactionIdentifierFactory<?> txIdFactory = this.cluster.getTransactionIdentifierFactory();
 		DatabaseQuery<Void> query = new DatabaseQuery<Void>(INVOCATION)
 		{
 			@Override
@@ -290,7 +285,7 @@ public class BerkeleyDBStateManager extends CloseablePoolProvider<Environment, D
 				for (Map.Entry<InvocationKey, Byte> entry: createInvocationMap(database, true).entrySet())
 				{
 					InvocationKey key = entry.getKey();
-					result.put(new InvocationEventImpl(txIdFactory.deserialize(key.getTransactionId()), Durability.Phase.values()[key.getPhase()], ExceptionType.values()[entry.getValue()]), new HashMap<String, InvokerEvent>());
+					result.put(BerkeleyDBStateManager.this.listener.createInvocationEvent(key.getTransactionId(), key.getPhase(), entry.getValue()), new HashMap<String, InvokerEvent>());
 				}
 				return null;
 			}
@@ -304,16 +299,18 @@ public class BerkeleyDBStateManager extends CloseablePoolProvider<Environment, D
 				for (Map.Entry<InvokerKey, byte[]> entry: createInvokerMap(database, true).entrySet())
 				{
 					InvokerKey key = entry.getKey();
-					Map<String, InvokerEvent> invokers = result.get(new InvocationEventImpl(txIdFactory.deserialize(key.getTransactionId()), Durability.Phase.values()[key.getPhase()], null));
+					DurabilityEvent event = BerkeleyDBStateManager.this.listener.createEvent(key.getTransactionId(), key.getPhase());
+					Map<String, InvokerEvent> invokers = result.get(event);
 					if (invokers != null)
 					{
-						InvokerEvent invoker = new InvokerEventImpl(txIdFactory.deserialize(key.getTransactionId()), Durability.Phase.values()[key.getPhase()], key.getDatabaseId());
+						String databaseId = key.getDatabaseId();
+						InvokerEvent invokerEvent = BerkeleyDBStateManager.this.eventFactory.createInvokerEvent(event.getTransactionId(), event.getPhase(), databaseId);
 						byte[] value = entry.getValue();
 						if (value.length > 0)
 						{
-							invoker.setResult(Objects.<InvokerResult>deserialize(value));
+							invokerEvent.setResult(Objects.deserialize(value, InvokerResult.class));
 						}
-						invokers.put(key.getDatabaseId(), invoker);
+						invokers.put(databaseId, invokerEvent);
 					}
 				}
 				return null;
@@ -530,10 +527,17 @@ public class BerkeleyDBStateManager extends CloseablePoolProvider<Environment, D
 	
 	static class KeyBinding<T> implements EntryBinding<T>
 	{
+		private final Class<T> targetClass;
+
+		KeyBinding(Class<T> targetClass)
+		{
+			this.targetClass = targetClass;
+		}
+		
 		@Override
 		public T entryToObject(DatabaseEntry entry)
 		{
-			return Objects.deserialize(entry.getData());
+			return Objects.deserialize(entry.getData(), this.targetClass);
 		}
 
 		@Override

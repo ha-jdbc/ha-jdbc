@@ -18,7 +18,6 @@
 package net.sf.hajdbc.distributed.jgroups;
 
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
@@ -36,6 +35,7 @@ import net.sf.hajdbc.distributed.Stateful;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
+import net.sf.hajdbc.util.ObjectInputStream;
 import net.sf.hajdbc.util.Objects;
 
 import org.jgroups.Address;
@@ -225,7 +225,7 @@ public class JGroupsCommandDispatcher<C> implements RequestHandler, CommandDispa
 	@Override
 	public Object handle(Message message)
 	{
-		Command<Object, C> command = Objects.deserialize(message.getRawBuffer());
+		Command<Object, C> command = Objects.deserialize(message.getRawBuffer(), Command.class);
 
 		this.logger.log(Level.DEBUG, Messages.COMMAND_RECEIVED.getMessage(command, message.getSrc()));
 		
@@ -283,7 +283,7 @@ public class JGroupsCommandDispatcher<C> implements RequestHandler, CommandDispa
 	@Override
 	public void setState(InputStream input) throws Exception
 	{
-		this.stateful.readState(new ObjectInputStream(input));
+		this.stateful.readState(new ObjectInputStream(input, Stateful.class.getClassLoader()));
 	}
 
 	/**

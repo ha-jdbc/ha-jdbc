@@ -21,7 +21,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.security.PrivilegedAction;
@@ -109,28 +108,18 @@ public class Objects
 	}
 	
 	/**
-	 * Deserializes the specified bytes into the object of the specified type using HA-JDBC's classloader.
+	 * Deserializes the specified bytes into the object of the specified type using the classloader of the target class.
 	 * @param bytes a serialized object
+	 * @param targetClass the target class
 	 * @return a deserialized object
 	 */
-	public static <T> T deserialize(byte[] bytes)
-	{
-		return deserialize(bytes, Objects.class.getClassLoader());
-	}
-	
-	/**
-	 * Deserializes the specified bytes into the object of the specified type.
-	 * @param bytes a serialized object
-	 * @param loader the classloader used during deserialization
-	 * @return a deserialized object
-	 */
-	public static <T> T deserialize(byte[] bytes, ClassLoader loader)
+	public static <T> T deserialize(byte[] bytes, Class<T> targetClass)
 	{
 		if (bytes == null) return null;
 		
-		try (ObjectInput input = new ObjectInputStream(new ByteArrayInputStream(bytes)))
+		try (ObjectInput input = new ObjectInputStream(new ByteArrayInputStream(bytes), targetClass.getClassLoader()))
 		{
-			return readObject(input, loader);
+			return readObject(input, targetClass);
 		}
 		catch (IOException e)
 		{
@@ -139,30 +128,20 @@ public class Objects
 	}
 	
 	/**
-	 * Reads an object from the input stream using HA-JDBC's classloader.
+	 * Reads an object from the input stream using the classloader of the specified target class.
 	 * @param input an input stream
+	 * @param targetClass the target class
 	 * @return a deserialized object
 	 */
-	public static <T> T readObject(ObjectInput input)
-	{
-		return readObject(input, Objects.class.getClassLoader());
-	}
-	
-	/**
-	 * Reads an object from the input stream using the specified classloader.
-	 * @param input an input stream
-	 * @param loader a classloader
-	 * @return a deserialized object
-	 */
-	public static <T> T readObject(ObjectInput input, ClassLoader loader)
+	public static <T> T readObject(ObjectInput input, Class<T> targetClass)
 	{
 		ClassLoader originalLoader = getThreadContextClassLoader();
 		
-		setThreadContextClassLoader(loader);
+		setThreadContextClassLoader(targetClass.getClassLoader());
 		
 		try
 		{
-			return (T) input.readObject();
+			return targetClass.cast(input.readObject());
 		}
 		catch (ClassNotFoundException e)
 		{

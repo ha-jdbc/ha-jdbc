@@ -32,7 +32,7 @@ public class DatabaseEventTest
 	public void serialization()
 	{
 		DatabaseEvent event1 = new DatabaseEvent(new MockDatabase("1"));
-		DatabaseEvent event2 = Objects.deserialize(Objects.serialize(event1));
+		DatabaseEvent event2 = Objects.deserialize(Objects.serialize(event1), DatabaseEvent.class);
 		assertEquals(event1, event2);
 	}
 

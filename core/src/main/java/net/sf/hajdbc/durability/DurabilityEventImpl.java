@@ -28,7 +28,7 @@ public class DurabilityEventImpl extends Event<Object> implements DurabilityEven
 	
 	private final Durability.Phase phase;
 	
-	protected DurabilityEventImpl(Object transactionId, Durability.Phase phase)
+	public DurabilityEventImpl(Object transactionId, Durability.Phase phase)
 	{
 		super(transactionId);
 		

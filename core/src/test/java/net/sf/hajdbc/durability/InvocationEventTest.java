@@ -33,7 +33,7 @@ public class InvocationEventTest
 	public void serialization()
 	{
 		InvocationEvent event1 = new InvocationEventImpl(10, Durability.Phase.COMMIT, ExceptionType.SQL);
-		InvocationEvent event2 = Objects.deserialize(Objects.serialize(event1));
+		InvocationEvent event2 = Objects.deserialize(Objects.serialize(event1), InvocationEvent.class);
 		assertEquals(event1, event2);
 		assertEquals(event1.getTransactionId(), event2.getTransactionId());
 		assertEquals(event1.getPhase(), event2.getPhase());
