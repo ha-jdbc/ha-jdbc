@@ -22,7 +22,6 @@ import java.sql.SQLException;
 
 import javax.sql.ConnectionPoolDataSource;
 import javax.sql.PooledConnection;
-import javax.xml.bind.annotation.XmlType;
 
 import net.sf.hajdbc.Credentials;
 import net.sf.hajdbc.codec.Decoder;
@@ -36,7 +35,6 @@ import net.sf.hajdbc.sql.AbstractDatabase;
  */
 @MBean
 @Description("Database accessed via a server-side ConnectionPoolDataSource")
-@XmlType(name = "database")
 public class ConnectionPoolDataSourceDatabase extends AbstractDatabase<ConnectionPoolDataSource>
 {
 	public ConnectionPoolDataSourceDatabase(String id, ConnectionPoolDataSource dataSource, Credentials credentials, int weight, boolean local)

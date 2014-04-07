@@ -21,7 +21,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import javax.sql.DataSource;
-import javax.xml.bind.annotation.XmlType;
 
 import net.sf.hajdbc.Credentials;
 import net.sf.hajdbc.codec.Decoder;
@@ -35,7 +34,6 @@ import net.sf.hajdbc.management.MBean;
  */
 @MBean
 @Description("Database accessed via a DataSource")
-@XmlType(name = "database")
 public class DataSourceDatabase extends AbstractDatabase<DataSource>
 {
 	public DataSourceDatabase(String id, DataSource dataSource, Credentials credentials, int weight, boolean local)

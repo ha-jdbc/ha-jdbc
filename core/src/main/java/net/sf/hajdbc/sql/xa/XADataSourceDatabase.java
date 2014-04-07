@@ -22,7 +22,6 @@ import java.sql.SQLException;
 
 import javax.sql.XAConnection;
 import javax.sql.XADataSource;
-import javax.xml.bind.annotation.XmlType;
 
 import net.sf.hajdbc.Credentials;
 import net.sf.hajdbc.codec.Decoder;
@@ -36,7 +35,6 @@ import net.sf.hajdbc.sql.AbstractDatabase;
  */
 @MBean
 @Description("Database accessed via a server-side XADataSource")
-@XmlType(name = "database")
 public class XADataSourceDatabase extends AbstractDatabase<XADataSource>
 {
 	private boolean force2PC = false;
