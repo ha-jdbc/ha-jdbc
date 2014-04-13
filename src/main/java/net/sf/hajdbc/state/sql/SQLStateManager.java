@@ -173,12 +173,21 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 			@Override
 			public void execute(Connection connection) throws SQLException
 			{
+				Statement s = connection.createStatement();
+				
+				try
+				{
+					s.executeUpdate(TRUNCATE_STATE_SQL);
+				}
+				finally
+				{
+					Resources.close(s);
+				}
+				
 				PreparedStatement statement = connection.prepareStatement(INSERT_STATE_SQL);
 				
 				try
 				{
-					statement.addBatch(TRUNCATE_STATE_SQL);
-					
 					for (String database: databases)
 					{
 						statement.clearParameters();
