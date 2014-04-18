@@ -21,67 +21,75 @@
 		<title>HA-JDBC Changes</title>
 	</properties>
 	<body>
-		<release version="3.1.0-alpha-1" date="?">
-			<action dev="pferraro" type="update">
+		<release version="3.1.0-alpha-1">
+			<action type="update" dev="pferraro">
 				Require Java 1.7.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Refactor into multi-maven project.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Introduce new builder API for configuring database cluster.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Convert xml parsing from JAXB to StAX.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Create static xsd with documentation.
 			</action>
 		</release>
+		<release version="3.0.3">
+			<action type="fix" due-to="Justin Cranford">
+				Avoid use of PreparedStatement.addBatch(String) in SQLStateManager since not all dialects support it.
+			</action>
+			<action type="add" dev="pferraro">
+				Add ability to override the default logical address of the JGroups channel.
+			</action>
+		</release>
 		<release version="3.0.2" date="2014-04-07">
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fix NoClassDefFoundError in SLF4J and Commons logging providers when the requisite classes are not available.
 			</action>
 		</release>
 		<release version="3.0.1" date="2014-04-03">
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgrade JGroups to 3.4.3.Final
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Refactor DumpRestoreSupport to support dialects that do not require external process execution.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Ensure Database.setActive(...) is set correctly during startup.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixes issue where DataSource is created multiple times, which is very bad if the DataSource encapsulates a connection pool.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fix table introspection in Oracle dialect to use user name as schema.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fix failure detection logic in H2 and HSQLDB dialects.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fix dump/restore in MySQL dialect to use -r option.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Improve resiliency of invocation strategies to concurrent database deactivation.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Distributable state manager needs to delegate to local state manager on activate/deactivate.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fix issue where HA-JDBC proxies can retain stale references to objects from a deactivated database if that database is reactivated before being accessed.
 			</action>
 		</release>
 		<release version="3.0.0" date="2013-12-30">
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Update default jgroups configuration.
 			</action>
 		</release>
 		<release version="3.0.0-rc-1" date="2013-11-06">
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Re-versioned to 3.0.  The scope of changes since 2.0.x justifies a major release bump.
 			</action>
 			<action type="update" due-to="sjones4">
@@ -90,57 +98,57 @@
 			<action type="fix" due-to="sjones4">
 				Fix input channel registration.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixed UnsupportedOperationException when using dump-restore sync strategy due to incorrect regex parsing of jdbc url.
 			</action>
 			<action type="fix" due-to="sjones4">
 				Allow runtime change to weight for active databases.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgrade JGroups to 3.4.0.Final.
 			</action>
 		</release>
 		<release version="2.1.0-beta-4" date="2013-08-11">
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgrade JGroups to 3.3.x.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Optimize SynchronousExecutor.invokeAll(...) and make sure reverse mode doesn't execute first task until all other tasks are complete.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Make DatabaseCluster references within HA-JDBC driver static.  Fixes integration with Tomcat connection pooling.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Deactivate all local active databases upon DatabaseCluster.stop().
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				If DatabaseCluster fails to start, stop it before clearing its reference from the Registry.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Add Dialect.isValid(Connection) to allow workaround for dialects that do not implement Connection.isValid(int).
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Don't create a proxy for null results, e.g. ResultSet.getClob(...).
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Use a new TreeMap to store results, not an immutable singleton map.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixed parsing bug in Driver.getMajorVersion()/getMinorVersion() that prevented deployment on JBoss AS7.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Allow DataSource Reference to define config using URI (not just serialized form).
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Add support for Blob.setBinaryStream(long), Clob.setAsciiStream(long) and Clob.setCharacterStream(long) via OutputStream and Writer, respectively.
 			</action>
-			<action dev="pferraro" type="add">
+			<action type="add" dev="pferraro"">
 				Add "input-sink" configuration property to control whether InputStream and Reader-based update methods will use a file or in-memory sink.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				When loading service providers, skip providers with missing dependencies.  This way optional dependencies are truly optional.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				REPEATABLE_READ queries should execute against primary database only.
 			</action>
 			<action due-to="sjones4" type="fix">
@@ -149,29 +157,29 @@
 			<action due-to="sjones4" type="fix">
 				Fix improper unlock logic in LocalTransactionContext which could preventing database activation.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Correct reserved identifier logic to only include SQL:2003 reserved words by default.
 				Add explicit reserved identifier overrides for PostgreSQL and MySQL.
 			</action>
 		</release>
 		<release version="2.1.0-beta-3" date="2012-12-09">
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Switch default durability from "fine" to "coarse".
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Restore ability to add new databases to the cluster at runtime via JMX.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Ensure event source field is not lost during serialization.
 			</action>
 			<action due-to="eskorzeny" type="fix">
 				Fix configuration file location on windows when file path contains spaces.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Add debug logging if Connection.isValid(...) throws an exception.
 				Otherwise, it is difficult to debug connectivity issues when connection pooling is used.
 			</action>
-			<action dev="pferraro" type="add" issue="2">
+			<action type="add" dev="pferraro"" issue="2">
 				Complete BerkeleyDB state manager implementation.
 			</action>
 			<action due-to="eskorzeny" type="fix">
@@ -183,454 +191,454 @@
 			<action due-to="eskorzeny" type="update">
 				Rename SimpleStateManagerFactory from "memory" to "simple".
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgrade JGroups to 3.2.4.Final.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				XML parser should fail if dialect/durability/balancer/meta-data-cache was not found.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fix formatting of JBoss Logging messages.
 			</action>
-			<action dev="pferraro" type="fix" issue="5">
+			<action type="fix" dev="pferraro" issue="5">
 				Auto-activation and auto-deactivation only need to be triggered on the group coordinator.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Drop obsolete Dialect.getSimpleSQL().
 			</action>
 		</release>
 		<release version="2.1.0-beta-2" date="2012-10-27">
-			<action dev="pferraro" type="add" issue="3">
+			<action type="add" dev="pferraro"" issue="3">
 				Complete SQLite state manager implementation.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Relocate default location of SQL state manager databases to $HOME/.ha-jdbc
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fix xml parsing of pooling configuration for state managers.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fix recovery query logic in SQL state manager.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fix NPE in MulitplexingDecoderFactory if password is null.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fix dialect detection in SQL state manager.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Drop deprecated properties from default jgroups configuration.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fix HSQLDB Dialect.getDefaultSchemas() to return "PUBLIC".
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Database meta data cache should store table/schema names quoted, if necessary.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Allow override of identifier normalization by refactoring DatabaseMetaDataSupport into Dialect interface.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgrade Mockito to version 1.9.5.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgrade JGroups to version 3.2.0.Final.
 			</action>
 		</release>
 		<release version="2.1.0-beta-1" date="2012-10-11">
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Migrate source code repository to github.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Update Java runtime requirement to 1.6.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Update Java compile requirement to 1.7 (for JDBC 4.1 support).
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Migrate build from Ant to Maven.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Migrate site generation from Forrest to Maven site plugin.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Replace JiBX with JAXB for configuration file reading/writing.
 				Configuration schema is now auto-generated from annotations during build.
 				XML parsing will validate against the schema.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Redesign HA-JDBC startup, adding support for programmatic configuration.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Store references to database clusters within Driver or DataSource object, rather than in the mbean server.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Replace mbean interfaces with dynamic mbeans created from annotations.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Replace java.util.prefs-based state manager with a jdbc-based or in-memory implementation.
 				Add alternative implementations for sqlite (via sqljet) and berkeleydb.
 			</action>
-			<action dev="pferraro" type="add">
+			<action type="add" dev="pferraro"">
 				Add generic pooling mechanism for use by state managers.
 			</action>
-			<action dev="pferraro" type="add">
+			<action type="add" dev="pferraro"">
 				Add ability to obfuscate passwords stored in HA-JDBC configuration file.
 				Supported mechanisms: plain text, hex encoding, base-64 encoding, symmetric encryption.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Add support for version (e.g. last update timestamp) columns to differential sync strategy.
 				This improves the general performance of change detection from O(N*M) -> O(N), where N is number of rows, and M is number of columns.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Changed failure detection handling to always prefer response from the designated primary database (instead of always preferring successful responses).
 				Apply the same logic to resolve jdbc method result conflicts.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Add durability support to detect and recover from node crashes during commit, enabled by default.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Improve reliability of distributed lock manager by locking coordinator first, then broadcasting lock acquisition event to other members.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Use exception introspection to determine whether a not a given failure is catastrophic, replacing separate simple query.
 			</action>
-			<action dev="pferraro" type="add">
+			<action type="add" dev="pferraro"">
 				Add per-database eager and lazy meta data cache implementations - useful for schemas with auto-generated constraint names.
 				Options for meta-data-cache="eager|shared-eager|lazy|shared-lazy|none".
 			</action>
-			<action dev="pferraro" type="add">
+			<action type="add" dev="pferraro"">
 				Create logging facade to support parameterized log messages to avoid string evaluation if message won't be logged.
 				Prefer jboss-logging provider, fall back to slf4j, commons-logging, then to jdk logging.
 				This removes any explicit runtime dependency on a particular logging framework.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Reverse invocation order of commit/rollback using serial transaction mode.
 				The first database to acquire a row lock should be the last to commit.
 			</action>
-			<action dev="pferraro" type="update" >
+			<action type="update" dev="pferraro" >
 				Replace deprecated JGroups channel multiplexer with shared transport.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Configuration file now specifies synchronization strategies, state manager provider, and distributable capabilities provider via identifiers instead of class names.
 				Uses service loader mechanism for extensibility.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Modify configuration of balancer, dialect, durability, password codecs, and meta-data cache to use service loader mechanism for extensibility.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Copy CronExpression from Quartz code base instead of pulling in entire artifact.  HA-JDBC no longer has any required dependencies.
 			</action>
-			<action dev="pferraro" type="add">
+			<action type="add" dev="pferraro"">
 				Support system property expansion in configuration file, via ${property} notation.
 			</action>
 		</release>
 		<release version="2.0.16" date="Pending">
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fix unintentional configuration export during initial startup for datasource, pool-datasource, and xa-datasource configs.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				In DatabaseMetaDataSupportImpl.quote(...), use case-insensitive comparison when determining if identifier is a keyword.
 			</action>
-			<action dev="pferraro" type="fix" system="SourceForge" issue="2850077">
+			<action type="fix" dev="pferraro" system="SourceForge" issue="2850077">
 				Using non-zero fetchSize in full and differential sync strategies requires auto-commit off in PostgreSQL.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Connection.setAutoCommit(...) should use a end-transaction invocation strategy, yet still be recordable.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgrade JGroups to 2.6.12.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				If first database activation fails during auto-activate, just log failure and continue with next failed database.
 			</action>
 		</release>
 		<release version="2.0.16-rc-1" date="2009-06-21">
-			<action dev="pferraro" type="fix" system="SourceForge" issue="2684746">
+			<action type="fix" dev="pferraro" system="SourceForge" issue="2684746">
 				Fixed NullPointerException in PreparedStatement.set/ResultSet.update stream/reader/blob/clob methods, if called with null value. 
 			</action>
-			<action dev="pferraro" type="fix" system="SourceForge" issue="2688439">
+			<action type="fix" dev="pferraro" system="SourceForge" issue="2688439">
 				Only consider hashed unique indexes when finding unique constraints.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Ensure unique constraint columns are quoted, if necessary.
 			</action>
-			<action dev="pferraro" type="fix" system="SourceForge" issue="2728324">
+			<action type="fix" dev="pferraro" system="SourceForge" issue="2728324">
 				Fix memory leak caused by batch method recording when using PreparedStatement pooling.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Optimize recording of ResultSet navigation and update methods.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fix recording of CallableStatement.registerOutParameter(...) methods.
 			</action>
-			<action dev="pferraro" type="fix" system="SourceForge" issue="2688421">
+			<action type="fix" dev="pferraro" system="SourceForge" issue="2688421">
 				Fix differential sync strategy breakage when a table contains only primary key columns.
 			</action>
-			<action dev="pferraro" type="fix" system="SourceForge" issue="2770743" due-to="Karl Moore">
+			<action type="fix" dev="pferraro" system="SourceForge" issue="2770743" due-to="Karl Moore">
 				Determine column meta data from ResultSetMetaData instead of DatabaseMetaData.getColumns(...).
 				This avoids the need for dialect specific IDENTITY column detection logic.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixed StandardDialect.getIdentifierPattern(DatabaseMetaData) to require that identifiers begin with a letter.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgraded JGroups to 2.6.10.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgraded JiBX to 1.2.1.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgraded Quartz to 1.6.5.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgraded SLF4J to 1.5.7.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgraded EasyMock to 2.5.1.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgraded TestNG to 5.9.
 			</action>
 		</release>
 		<release version="2.0.15" date="2009-02-17">
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixed infinite loop regression in DistributableLockManager$DistributableLock.tryLock(long, TimeUnit)
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixed ExceptionInInitializerError regression when creating HA-JDBC connections in Java 1.4/1.5.
 			</action>
 		</release>
 		<release version="2.0.14" date="2009-02-15">
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixed parsing of local attribute of database, datasource, etc.
 			</action>
 		</release>
 		<release version="2.0.14-rc-1" date="2009-01-25">
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgraded JiBX to 1.1.6a.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgraded SLF4J to 1.5.6.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgraded Retrotranslator to 1.2.8.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgraded JGroups to 2.6.7.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgraded Quartz to 1.6.4.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgraded EasyMock to 2.4.
 			</action>
-			<action dev="pferraro" type="fix" issue="2004105">
+			<action type="fix" dev="pferraro" issue="2004105">
 				Remove file list items during FileSupport.close() - rather than wait for finalization.
 			</action>
-			<action dev="pferraro" type="fix" issue="2004105">
+			<action type="fix" dev="pferraro" issue="2004105">
 				FileSupport is no longer used for large object support and is now created/destroyed per statement, rather than per connection.
 				This helps mitigate temp file build-up.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Removed references to javax.sql.CommonDataSource - this broke binary compatibility with Java 1.4/1.5 for datasource configurations.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixed java 1.4 binary incompatibility with Boolean (does not yet implement Comparable) not handled by Retrotranslator.
 			</action>
-			<action dev="pferraro" type="fix" due-to="Ben Short">
+			<action type="fix" dev="pferraro" due-to="Ben Short">
 				Restore autoCommit mode to its original value at the end of synchronize(...) in each strategy.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixed regression in lazy/none meta-data-cache that broke synchronization. 
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixed misleading Spanish, French, Italian, and Portuguese translation of config-not-found message.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Store child proxies using weak references to fix potential memory leak if proxy is not closed.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Remote locks in DistributableLockManager now respect lock fairness.
 			</action>
-			<action dev="pferraro" type="add">
+			<action type="add" dev="pferraro"">
 				Startup will now also consult ha-jdbc.{0}.configuration system property when searching for configuration file.
 			</action>
-			<action dev="pferraro" type="add">
+			<action type="add" dev="pferraro"">
 				Add HA proxying of DatabaseMetaData interface.
 			</action>
-			<action dev="pferraro" type="add" issue="2103533">
+			<action type="add" dev="pferraro"" issue="2103533">
 				Added net.sf.hajdbc.util.servlet.DatabaseClusterShutdownContextListener to automatically shutdown a list of database clusters scoped to a servlet context.
 				The clusters to shutdown are defined in a comma delimited init parameter: ha-jdbc.clusters
 			</action>
 		</release>
 		<release version="2.0.13" date="2008-05-20">
-			<action dev="pferraro" type="fix" due-to="Jason Rosenberg">
+			<action type="fix" dev="pferraro" due-to="Jason Rosenberg">
 				Fixed SybaseDialect.getSimpleSQL() to query for GETDATE().
 			</action>
-			<action dev="pferraro" type="add">
+			<action type="add" dev="pferraro"">
 				Added event handler support for activation, deactivation, and synchronization events.
 				Clients can opt to be notified of such events by registering themselves as handlers using the appropriate methods on the database cluster mbean.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixed close() methods of Connection, Statement, and ResultSet proxies to use driver (instead of database) write invocation strategy to prevent unnecessary creation of SQL objects (potentially triggering query execution) just to be closed.
 			</action>
-			<action dev="pferraro" type="fix" due-to="Maris Orbidans">
+			<action type="fix" dev="pferraro" due-to="Maris Orbidans">
 				Fixed exception handling in FullSynchronizationStrategy.
 				Exceptions wrapped as SQLException were not getting re-thrown.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixed logic in DatabaseMetaDataSupport.quote(String) to properly deal with identifier case.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixed synchronization to allow schemas with auto-generated constraint names (i.e. constraint names are not uniform in all databases) to function properly when meta-data-cache="none".
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixed bug where statements created from read-only connections were not getting properly load balanced.
 			</action>
-			<action dev="pferraro" type="add">
+			<action type="add" dev="pferraro"">
 				Added explicit, Referenceable DataSource, ConnectionPoolDataSource, and XADataSource proxy implementations.
 				The <![CDATA[<name>]]> element of a <![CDATA[<datasource>, <pool-datasource>, or <xa-datasource>]]> configuration can define a data source implementation class name.
 				If the <![CDATA[<name>]]> element is a class name, then the subsequent <![CDATA[<property name="...">]]> elements will be interpreted as property values of the data source (e.g. serverName, portNumber, databaseName).
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Added missing definitions for <![CDATA[<pool-datasource>]]> and <![CDATA[<xa-datasource>]]> to DTD and XSD.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Calls to PreparedStatement.addBatch() were not being recorded and, consequently, not getting replayed when a new database is activated.
 			</action>
-			<action dev="pferraro" type="fix" issue="1964456">
+			<action type="fix" dev="pferraro" issue="1964456">
 				Fixed AcquireLockDecree to use write locks, instead of a read locks, so that database activation will block transactions on remote nodes.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgraded TestNG to 2.8.
 			</action>
 		</release>
 		<release version="2.0.12" date="2008-03-18">
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixed case normalization in DatabaseMetaDataSupport.normalize(String, String).
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixed NullPointerException using CallableStatement stream methods.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Optimized Balancer implementations using copy-on-write concurrent collections.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Eliminated some unnecessary runtime reflection.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixed potential deadlock when synchronization is triggered while there are open transactions.
 				Refactored statement read locking to lock and unlock at transaction boundaries.
 				Removed obsoleted table locking in synchronization strategies.
 			</action>
-			<action dev="pferraro" type="add">
+			<action type="add" dev="pferraro"">
 				Added ConnectionPoolDataSource and XADataSource proxies, the latter required to detect distributed transaction boundaries.
 				Added necessary <![CDATA[<xa-datasource>]]> and <![CDATA[<pool-datasource>]]> configuration file elements.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Renamed net.sf.hajdbc.sql.DataSource to net.sf.hajdbc.DataSourceFactory.
 				This should hopefully eliminate some confusion about its usage, as it is a javax.naming.spi.ObjectFactory and not a java.sql.DataSource implementation.
 			</action>
-			<action dev="pferraro" type="fix" due-to="Alejandro Domenech">
+			<action type="fix" dev="pferraro" due-to="Alejandro Domenech">
 				Fixed Spanish translation of log messages.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Added linked source to javadoc.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgraded Retrotranslator to 1.2.6.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgraded JGroups to 2.6.2.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgraded SLF4J to 1.5.0.
 			</action>
 		</release>
 		<release version="2.0.11" date="2008-01-14">
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Replaced accidental use of Method.getTypeParameters() with intended Method.getParameterTypes() in AbstractInvocationHandler.
 				This fixes bug where state changing methods were not recorded properly and subsequently not replayed correctly on newly activated databases.
 			</action>
 		</release>
 		<release version="2.0.10" date="2008-01-08">
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixed CronThreadPoolExecutor to work around potential inaccuracies in java.util.Date that could cause a task to be scheduled multiple times in a single cron interval.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Connection.setReadOnly() should use DatabaseWriteInvocationStrategy instead of DriverWriteInvocationStrategy.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Refactored invoker recording to support any JDBC method regardless of InvocationStrategy implementation.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixed replay of PreparedStatement and CallableStatement set*() methods for a newly activated database.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Cleanup logic in DatabaseWriteInvocationStrategy by splitting into TransactionalDatabaseWriteInvocationStrategy and NonTransactionalDatabaseWriteInvocationStrategy.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Rollback TestNG to 5.6.  Version 5.7 mysteriously skipped test methods.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				CallableStatement does not need to parse out sequences nor identity columns, nor detect SELECT...FOR UPDATE in SQL.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixed broken test cases.
 			</action>
 		</release>
 		<release version="2.0.9" date="2007-12-28">
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				In DatabaseWriteInvocationStrategy, acquire read locks before Balancer.all() so that a newly activated database will not miss any pending write statements.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgraded JGroups to 2.6.1.
 			</action>
 		</release>
 		<release version="2.0.8" date="2007-11-19">
-			<action dev="pferraro" type="fix" issue="1832392" due-to="gamani">
+			<action type="fix" dev="pferraro" issue="1832392" due-to="gamani">
 				Fixed infinite loop in CronThreadPoolExecutor when scheduled task throws an ExecutionException.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgraded JGroups to 2.6.0.
 			</action>
 		</release>
 		<release version="2.0.7" date="2007-11-09">
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Added local="true|false" attribute to database/datasource.
 				Cluster panic detection now consults this flag instead of weight to determine whether a database is local or remote.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				LocalLockManager now uses a custom semaphore-based ReadWriteLock implementation instead of ReentrantReadWriteLock.
 				Removed obsolete DistributableLockAdapter hack.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Optimized DistributableLockManager using RpcDispatcher instead VotingAdapter.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixed deadlocking in DistributableLockManager when simultaneous voting occurs for he same resource from different peers.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgraded Retrotranslator to 1.2.3.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgraded TestNG to 5.7.
 			</action>
 		</release>
 		<release version="2.0.6" date="2007-10-17">
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixed exception handling during startup to prevent subsequent javax.management.InstanceAlreadyExistsExceptions if database cluster fails to start.
 			</action>
-			<action dev="pferraro" type="fix" issue="1814865">
+			<action type="fix" dev="pferraro" issue="1814865">
 				Fixed potential deadlocking sources and improved cpu friendliness of DistributableLockManger.
 			</action>
 		</release>
 		<release version="2.0.5" date="2007-10-15">
-			<action dev="pferraro" type="fix" issue="1811698">
+			<action type="fix" dev="pferraro" issue="1811698">
 				Fixed bug in Dialect.getAlterSequenceSQL(...) and Dialect.getAlterIdentityColumnSQL(...) causing values > 999 to get formatted with grouping separators.
 			</action>
-			<action dev="pferraro" type="fix" issue="1738533">
+			<action type="fix" dev="pferraro" issue="1738533">
 				Added "cluster panic" detection to prevent asymmetric database deactivation during a network fragmentation when in distributable mode where databases are colocated on peer nodes.
 				If HA-JDBC detects a cluster panic, the cluster is stopped.
 				Manual intervention is required to resolve any consequent synchronization problems and to start the cluster.
@@ -640,235 +648,235 @@
 			</action>
 		</release>
 		<release version="2.0.4" date="2007-10-04">
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Added look-ahead and to Dialect.evaluateCurrentTime() regular expression so that it does not match CURRENT_TIMESTAMP functions.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixed NullPointerException regression in DistributableLockManager preventing database activation in distributable mode.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Use new official JDK 1.4 backport of JGroups instead of retrotranslating our own.
 			</action>
 		</release>
 		<release version="2.0.3" date="2007-09-24">
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgraded JGroups to 2.5.1.
 			</action>
-			<action dev="pferraro" type="fix" issue="1799618">
+			<action type="fix" dev="pferraro" issue="1799618">
 				Fixed infinite loop in DistributableLockManager while acquiring a lock when only one peer node is present.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixed missing membership listener registration in DistributableLockManager preventing proper lock cleanup.
 			</action>
-			<action dev="pferraro" type="fix" issue="1796975">
+			<action type="fix" dev="pferraro" issue="1796975">
 				Defer creation of connection factories until needed since DataSource creation relies on JNDI environment properties that may not yet be established.
 			</action>
 		</release>
 		<release version="2.0.2" date="2007-09-14">
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Added Dialect.getIdentifierPattern(...) method to work around buggy DatabaseMetaData.getExtraNameCharacters() in PostgreSQL driver since version 8.1.
 				Bug causes unexpected failures during identity column detection when schema or table name contains non-standard characters.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Optimized StandardDialect.getDefaultSchemas() by replacing separate CURRENT_USER query with DatabaseMetaData.getUserName().
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixed example Tomcat DataSource configuration.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixed currentTimestampFunction() method of MaxDBDialect.
 			</action>
-			<action dev="pferraro" type="add">
+			<action type="add" dev="pferraro"">
 				Created separate OracleDialect, formerly an alias of MaxDBDialect.
 			</action>
-			<action dev="pferraro" type="add">
+			<action type="add" dev="pferraro"">
 				Created separate H2Dialect, formerly an alias of HSQLDBDialect.
 			</action>
-			<action dev="pferraro" type="add">
+			<action type="add" dev="pferraro"">
 				Added new dialect for Sybase.
 			</action>
-			<action dev="pferraro" type="add">
+			<action type="add" dev="pferraro"">
 				Added evaluateCurrentDate(String, java.sql.Date), evaluateCurrentTime(String, java.sql.Time), evaluateCurrentTimestamp(String, java.sql.Timestamp), and evaluateRandom(String) to Dialect interface to replace non-deterministic SQL functions (e.g. CURRENT_TIMESTAMP, RAND()) with deterministic static values.
 				Added optional eval-current-date, eval-current-time, eval-current-timestamp, and eval-rand cluster attribute to enable these behaviors.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Both sequence and identity column detection are no longer enabled by default.
 			</action>
 			<action dev="pferraro" type="remove">
 				Removed supportsSequences() and supportsIdentityColumns() methods from Dialect interface.
 				The corresponding parseSequence(String) and parseInsertTable(String) methods now return null for dialects that do not support these features.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixed race condition in DistributableLockAdapter that may prevent a lock from being released.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgraded SLF4J to 1.4.3.
 			</action>
-			<action dev="pferraro" type="add">
+			<action type="add" dev="pferraro"">
 				Added SynchronizationSupport.synchronizeIdentityColumns(...).
 				Consequently, MySQL AUTO_INCREMENT columns are now fully supported.
 			</action>
-			<action dev="pferraro" type="add">
+			<action type="add" dev="pferraro"">
 				Added DatabaseProperties.getSequences() and TableProperties.getIdentityColumns() to meta data cache facility.
 			</action>
 		</release>
 		<release version="2.0.1" date="2007-07-23">
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				LazyDatabaseMetaDataCache now caches DatabaseProperties using a SoftReference to prevent the cache from causing OutOfMemoryErrors.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Refactored ThreadLocalDatabaseMetaDataCache to NullDatabaseMetaDataCache which no long stores its DatabaseProperties instance in a ThreadLocal since this can inadvertently act like a lazy cache if application threads are pooled.
 				Replaced SynchronizationContext.getDatabaseMetaDataCache() with SynchronizationContext.getDatabaseProperties() so that meta data used during synchronization is still cached for the lifetime of the SynchronizationContext, regardless of cache implementation.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Re-implemented BalancerFactory, DialectFactory, and DatabaseMetaDataCacheFactory using enums.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				In DatabaseMetaDataSupport.normalize(...), adjust case of table to match the way identifiers are stored in the database.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				In DatabaseMetaDataSupport.quote(...), normalize identifiers to lower case if database is case-insensitive, yet stores identifiers in mixed case.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Fixed all benign compiler warnings reported by Eclipse.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Migrated simple string constants to Strings.
 			</action>
 		</release>
 		<release version="2.0.0" date="2007-07-16">
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Optimized failure handling in DatabaseWriteInvocationStrategy.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Optimized thread synchronization in DistributableLockAdapter.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgraded EasyMock to 2.3.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgraded SLF4J to 1.4.2.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgraded JGroups to 2.5 GA.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Revised documentation.
 			</action>
 		</release>
 		<release version="2.0-rc-4" date="2007-07-07">
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				In distributable mode, try to retrieve initial state from any remote node, not just "coordinator".
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixed deadlocking during activation/deactivation in distributable mode caused by redundant secondary notifications.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				In distributable mode, do not send activation notifications to other nodes during cluster startup.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				In distributable mode, do not respond to initial state queries until cluster startup is complete.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgraded SLF4J to 1.4.1.
 			</action>
 		</release>
 		<release version="2.0-rc-3" date="2007-07-02">
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				FailureDetectionTask and SQLProxy.handleFailure() will not deactivate any databases if they all appear to be dead.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Convert dynamic Class.cast() and Class.isInstance() to static cast and instanceof expressions wherever possible.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixed bug during initialization where databases are added as dirty, triggering export of configuration file.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				When adding a database to the cluster, perform duplicate id check before registering database to avoid InstanceAlreadyExistsException.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixed broken error message when attempting to remove a database that is still active.
 			</action>
 		</release>
 		<release version="2.0-rc-2" date="2007-06-25">
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Added toString() to DatabaseClusterMBean interface so that log messages will display cluster id properly.
 			</action>
-			<action dev="pferraro" type="fix" due-to="David White">
+			<action type="fix" dev="pferraro" due-to="David White">
 				Fixed IllegalAccessError in JiBX marshalling during configuration export.n
 			</action>
 			<action dev="pferraro" type="remove">
 				Removed Retrotranslator plugin for java.lang.management.ManagementFactory.
 				This is now natively supported by Retrotranslator.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgraded Retrotranslator to 1.2.2.
 			</action>
 		</release>
 		<release version="2.0-rc-1" date="2007-06-18">
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixed memory leak with CONCUR_READ_ONLY result sets when using ResultSet.getStatement().close().
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Removed problematic singleton references to database clusters in DatabaseClusterFactory.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Require separate XML config file per database cluster.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Consolidated database-cluster and datasource cluster elements into single cluster element, as in 1.1.
 				Removed id attribute from cluster element.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Modified configuration locator logic to first check driver connection properties or datasource config property for resource URL.
 				Default resource name is now ha-jdbc-{0}.xml, where {0} is the cluster id.
 			</action>
-			<action dev="pferraro" type="fix" due-to="Hanson Char">
+			<action type="fix" dev="pferraro" due-to="Hanson Char">
 				Added test for UnsupportedOperationException thrown when Quartz cron expression uses both day-of-week and day-of-month values.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				If a group member leaves, any distributed locks it held must be freed.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				DistributableLockManager uses default vote response processor instead of its own implementation.
 			</action>
 			<action dev="pferraro" type="remove">
 				Removed quoting of cluster ID and database ID in mbean ObjectName.
 				JBoss users no longer need to patiently wait for this long standing jmx-console bug (http://jira.jboss.com/jira/browse/JBAS-2037) to be fixed.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixed NoSuchElementException thrown during database activation when there are no active databases.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Fixed IllegalMonitorStateExceptions in DistributableLockManager resulting from improper use of reentrant locks by multiple threads.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Optimized DistributableLockManager using a single phase VotingAdapter.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				Re-implemented DistributableStateManager to use synchronous MessageDispatcher instead of asynchronous NotificationBus.
 				This will ensure that all nodes are notified of database activation prior to unlocking database tables during synchronization.
 				Changed default jgroups protocol stack to "udp-sync".
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Do not auto-deactivate the last database of a cluster.
 			</action>
-			<action dev="pferraro" type="fix">
+			<action type="fix" dev="pferraro">
 				JGroups 2.5 uses Java 1.5 as a baseline, so retrotranslate this jar as part of 1.4 build.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Modified build to produce 3 different binary distributions, for Java 1.4, 1.5, and 1.6.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgraded SLF4J to 1.4.0.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgraded JiBX to 1.1.5.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgraded JGroups to 2.5.0-cr1.
 			</action>
-			<action dev="pferraro" type="update">
+			<action type="update" dev="pferraro">
 				Upgraded TestNG to 5.6.
 			</action>
 		</release>
