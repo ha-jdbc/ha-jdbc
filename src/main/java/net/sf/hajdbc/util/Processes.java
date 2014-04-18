@@ -5,10 +5,18 @@ import java.io.InputStreamReader;
 import java.security.AccessController;
 import java.security.PrivilegedExceptionAction;
 
+import net.sf.hajdbc.logging.Level;
+import net.sf.hajdbc.logging.Logger;
+import net.sf.hajdbc.logging.LoggerFactory;
+
 public class Processes
 {
+	private static final Logger logger = LoggerFactory.getLogger(Processes.class);
+
 	public static void run(final ProcessBuilder processBuilder) throws Exception
 	{
+		logger.log(Level.DEBUG, Strings.join(processBuilder.command(), " "));
+		
 		PrivilegedExceptionAction<Process> action = new PrivilegedExceptionAction<Process>()
 		{
 			@Override
