@@ -260,13 +260,16 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 			
 			while (!locked)
 			{
-				if (this.dispatcher.isCoordinator())
+				
+				Member coordinator = this.dispatcher.getCoordinator();
+				
+				if (this.dispatcher.getLocal().equals(coordinator))
 				{
 					this.lock.lock();
 					
 					try
 					{
-						locked = this.lockMembers();
+						locked = this.lockMembers(coordinator);
 					}
 					finally
 					{
@@ -278,7 +281,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 				}
 				else
 				{
-					locked = this.lockCoordinator(Long.MAX_VALUE);
+					locked = this.lockCoordinator(coordinator, Long.MAX_VALUE);
 				}
 				
 				if (!locked)
@@ -295,13 +298,16 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 			
 			while (!locked)
 			{
-				if (this.dispatcher.isCoordinator())
+				
+				Member coordinator = this.dispatcher.getCoordinator();
+				
+				if (this.dispatcher.getLocal().equals(coordinator))
 				{
 					this.lock.lockInterruptibly();
 					
 					try
 					{
-						locked = this.lockMembers();
+						locked = this.lockMembers(coordinator);
 					}
 					finally
 					{
@@ -313,7 +319,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 				}
 				else
 				{
-					locked = this.lockCoordinator(Long.MAX_VALUE);
+					locked = this.lockCoordinator(coordinator, Long.MAX_VALUE);
 				}
 				
 				if (Thread.currentThread().isInterrupted())
@@ -333,13 +339,15 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 		{
 			boolean locked = false;
 			
-			if (this.dispatcher.isCoordinator())
+			Member coordinator = this.dispatcher.getCoordinator();
+			
+			if (this.dispatcher.getLocal().equals(coordinator))
 			{
 				if (this.lock.tryLock())
 				{
 					try
 					{
-						locked = this.lockMembers();
+						locked = this.lockMembers(coordinator);
 					}
 					finally
 					{
@@ -352,7 +360,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 			}
 			else
 			{
-				locked = this.lockCoordinator(0);
+				locked = this.lockCoordinator(coordinator, 0);
 			}
 			
 			return locked;
@@ -363,13 +371,15 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 		{
 			boolean locked = false;
 			
-			if (this.dispatcher.isCoordinator())
+			Member coordinator = this.dispatcher.getCoordinator();
+			
+			if (this.dispatcher.getLocal().equals(coordinator))
 			{
 				if (this.lock.tryLock(time, unit))
 				{
 					try
 					{
-						locked = this.lockMembers();
+						locked = this.lockMembers(coordinator);
 					}
 					finally
 					{
@@ -382,17 +392,17 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 			}
 			else
 			{
-				locked = this.lockCoordinator(unit.toMillis(time));
+				locked = this.lockCoordinator(coordinator, unit.toMillis(time));
 			}
 			
 			return locked;
 		}
 
-		private boolean lockMembers()
+		private boolean lockMembers(Member coordinator)
 		{
 			boolean locked = true;
 			
-			Map<Member, Boolean> results = this.dispatcher.executeAll(new MemberAcquireLockCommand(this.descriptor));
+			Map<Member, Boolean> results = this.dispatcher.executeAll(new MemberAcquireLockCommand(this.descriptor), coordinator);
 			
 			for (Map.Entry<Member, Boolean> entry: results.entrySet())
 			{
@@ -401,40 +411,43 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 			
 			if (!locked)
 			{
-				this.unlockMembers();
+				this.unlockMembers(coordinator);
 			}
 			
 			return locked;
 		}
 		
-		private boolean lockCoordinator(long timeout)
+		private boolean lockCoordinator(Member coordinator, long timeout)
 		{
-			return this.dispatcher.executeCoordinator(new CoordinatorAcquireCommand(this.descriptor, timeout));
+			Boolean result = this.dispatcher.execute(new CoordinatorAcquireCommand(this.descriptor, timeout), coordinator);
+			return (result != null) ? result.booleanValue() : false;
 		}
 		
 		@Override
 		public void unlock()
 		{
-			if (this.dispatcher.isCoordinator())
+			Member coordinator = this.dispatcher.getCoordinator();
+			
+			if (this.dispatcher.getLocal().equals(coordinator))
 			{
-				this.unlockMembers();
+				this.unlockMembers(coordinator);
 				
 				this.lock.unlock();
 			}
 			else
 			{
-				this.unlockCoordinator();
+				this.unlockCoordinator(coordinator);
 			}
 		}
 		
-		private void unlockMembers()
+		private void unlockMembers(Member coordinator)
 		{
-			this.dispatcher.executeAll(new MemberReleaseLockCommand(this.descriptor));
+			this.dispatcher.executeAll(new MemberReleaseLockCommand(this.descriptor), coordinator);
 		}
 		
-		private void unlockCoordinator()
+		private void unlockCoordinator(Member coordinator)
 		{
-			this.dispatcher.executeCoordinator(new CoordinatorReleaseCommand(this.descriptor));
+			this.dispatcher.execute(new CoordinatorReleaseCommand(this.descriptor), coordinator);
 		}
 
 		@Override

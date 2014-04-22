@@ -98,7 +98,7 @@ public class JGroupsCommandDispatcher<C> implements RequestHandler, CommandDispa
 	{
 		Channel channel = this.dispatcher.getChannel();
 		
-		channel.setDiscardOwnMessages(true);
+		channel.setDiscardOwnMessages(false);
 		
 		// Connect and fetch state
 		channel.connect(this.id, null, 0);
@@ -124,18 +124,25 @@ public class JGroupsCommandDispatcher<C> implements RequestHandler, CommandDispa
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.distributed.CommandDispatcher#executeAll(net.sf.hajdbc.distributed.Command)
-	 */
 	@Override
-	public <R> Map<Member, R> executeAll(Command<R, C> command)
+	public <R> Map<Member, R> executeAll(Command<R, C> command, Member... excludedMembers)
 	{
 		Message message = new Message(null, this.getLocalAddress(), Objects.serialize(command));
-		
+		RequestOptions options = new RequestOptions(ResponseMode.GET_ALL, this.timeout);
+
+		if ((excludedMembers != null) && (excludedMembers.length > 0))
+		{
+			Address[] exclusions = new Address[excludedMembers.length];
+			for (int i = 0; i < excludedMembers.length; ++i)
+			{
+				exclusions[i] = ((AddressMember) excludedMembers[i]).getAddress();
+			}
+			options.setExclusionList(exclusions);
+		}
+
 		try
 		{
-			Map<Address, Rsp<R>> responses = this.dispatcher.castMessage(null, message, new RequestOptions(ResponseMode.GET_ALL, this.timeout));
+			Map<Address, Rsp<R>> responses = this.dispatcher.castMessage(null, message, options);
 			
 			if (responses == null) return Collections.emptyMap();
 			
@@ -161,31 +168,19 @@ public class JGroupsCommandDispatcher<C> implements RequestHandler, CommandDispa
 	 * @see net.sf.hajdbc.distributed.CommandDispatcher#executeCoordinator(net.sf.hajdbc.distributed.Command)
 	 */
 	@Override
-	public <R> R executeCoordinator(Command<R, C> command)
+	public <R> R execute(Command<R, C> command, Member member)
 	{
-		while (true)
+		Message message = new Message(((AddressMember) member).getAddress(), this.getLocalAddress(), Objects.serialize(command));
+		
+		try
 		{
-			Message message = new Message(this.getCoordinatorAddress(), this.getLocalAddress(), Objects.serialize(command));
-
-			try
-			{
-				return this.dispatcher.sendMessage(message, new RequestOptions(ResponseMode.GET_ALL, this.timeout));
-			}
-			catch (Exception e)
-			{
-				return null;
-			}
+			return this.dispatcher.sendMessage(message, new RequestOptions(ResponseMode.GET_ALL, this.timeout));
 		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.distributed.CommandDispatcher#isCoordinator()
-	 */
-	@Override
-	public boolean isCoordinator()
-	{
-		return this.getLocalAddress().equals(this.getCoordinatorAddress());
+		catch (Exception e)
+		{
+			this.logger.log(Level.WARN, e);
+			return null;
+		}
 	}
 	
 	/**
@@ -193,7 +188,7 @@ public class JGroupsCommandDispatcher<C> implements RequestHandler, CommandDispa
 	 * @see net.sf.hajdbc.distributed.CommandDispatcher#getLocal()
 	 */
 	@Override
-	public Member getLocal()
+	public AddressMember getLocal()
 	{
 		return new AddressMember(this.getLocalAddress());
 	}
@@ -208,7 +203,7 @@ public class JGroupsCommandDispatcher<C> implements RequestHandler, CommandDispa
 	 * @see net.sf.hajdbc.distributed.CommandDispatcher#getCoordinator()
 	 */
 	@Override
-	public Member getCoordinator()
+	public AddressMember getCoordinator()
 	{
 		return new AddressMember(this.getCoordinatorAddress());
 	}
