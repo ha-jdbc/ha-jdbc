@@ -30,26 +30,22 @@ import net.sf.hajdbc.Lifecycle;
 public interface CommandDispatcher<C> extends Lifecycle
 {
 	/**
-	 * Execute the specified command on the group coordinator.
+	 * Execute the specified command on all members, potentially excluding some.
 	 * @param <R> the return value type
 	 * @param command the command to execute
+	 * @param excludedMembers list of members to optionally exclude
 	 * @return a map of command execution results per member.
 	 */
-	<R> Map<Member, R> executeAll(Command<R, C> command);
+	<R> Map<Member, R> executeAll(Command<R, C> command, Member... excludedMembers);
 
 	/**
-	 * Execute the specified command on the coordinator.
+	 * Execute the specified command on the specified member.
 	 * @param <R> the return value type
 	 * @param command the command to execute
+	 * @param member the member on which to execute the command
 	 * @return the result of the command execution
 	 */
-	<R> R executeCoordinator(Command<R, C> command);
-
-	/**
-	 * Indicates whether or not the local member is the group coordinator.
-	 * @return true, if the local member is the group coordinator, false otherwise.
-	 */
-	boolean isCoordinator();
+	<R> R execute(Command<R, C> command, Member member);
 
 	/**
 	 * Returns the local member.
