@@ -46,8 +46,7 @@ import net.sf.hajdbc.state.DatabaseEvent;
 import net.sf.hajdbc.state.StateManager;
 
 /**
- * @author paul
- *
+ * @author Paul Ferraro
  */
 public class DistributedStateManager<Z, D extends Database<Z>> implements StateManager, StateCommandContext<Z, D>, MembershipListener, Stateful
 {
@@ -92,8 +91,6 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 	@Override
 	public void activated(DatabaseEvent event)
 	{
-		this.stateManager.activated(event);
-
 		this.dispatcher.executeAll(new ActivationCommand<Z, D>(event));
 	}
 
@@ -104,8 +101,6 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 	@Override
 	public void deactivated(DatabaseEvent event)
 	{
-		this.stateManager.deactivated(event);
-
 		this.dispatcher.executeAll(new DeactivationCommand<Z, D>(event));
 	}
 
@@ -117,8 +112,6 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 	public void afterInvocation(InvocationEvent event)
 	{
 		this.dispatcher.executeAll(new PostInvocationCommand<Z, D>(this.getRemoteDescriptor(event)));
-		
-		this.stateManager.afterInvocation(event);
 	}
 
 	/**
@@ -129,8 +122,6 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 	public void afterInvoker(InvokerEvent event)
 	{
 		this.dispatcher.executeAll(new InvokerCommand<Z, D>(this.getRemoteDescriptor(event)));
-		
-		this.stateManager.afterInvoker(event);
 	}
 
 	/**
@@ -140,8 +131,6 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 	@Override
 	public void beforeInvocation(InvocationEvent event)
 	{
-		this.stateManager.beforeInvocation(event);
-		
 		this.dispatcher.executeAll(new PreInvocationCommand<Z, D>(this.getRemoteDescriptor(event)));
 	}
 
@@ -152,8 +141,6 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 	@Override
 	public void beforeInvoker(InvokerEvent event)
 	{
-		this.stateManager.beforeInvoker(event);
-		
 		this.dispatcher.executeAll(new InvokerCommand<Z, D>(this.getRemoteDescriptor(event)));
 	}
 
@@ -192,7 +179,7 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 	@Override
 	public boolean isEnabled()
 	{
-		return this.stateManager.isEnabled() && this.dispatcher.isCoordinator();
+		return this.stateManager.isEnabled() && this.dispatcher.getLocal().equals(this.dispatcher.getCoordinator());
 	}
 
 	/**
@@ -282,7 +269,7 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 	@Override
 	public void removed(Member member)
 	{
-		if (this.dispatcher.isCoordinator())
+		if (this.dispatcher.getLocal().equals(this.dispatcher.getCoordinator()))
 		{
 			Map<InvocationEvent, Map<String, InvokerEvent>> invokers = this.remoteInvokerMap.remove(member);
 			

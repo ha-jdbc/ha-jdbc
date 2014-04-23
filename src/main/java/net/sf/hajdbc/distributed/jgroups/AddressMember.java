@@ -42,6 +42,11 @@ public class AddressMember implements Member
 		this.address = address;
 	}
 
+	public Address getAddress()
+	{
+		return this.address;
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * @see java.lang.Object#equals(java.lang.Object)

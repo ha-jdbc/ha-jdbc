@@ -64,7 +64,7 @@ public class SimpleTest
 	public void sqlite() throws Exception
 	{
 		SQLiteStateManagerFactory factory = new SQLiteStateManagerFactory();
-		factory.setLocationPattern("target/sqlite/{0}");
+		factory.setLocationPattern("./target/sqlite/{0}");
 		test(factory);
 	}
 	
@@ -72,7 +72,7 @@ public class SimpleTest
 	public void h2() throws Exception
 	{
 		SQLStateManagerFactory factory = new SQLStateManagerFactory();
-		factory.setUrlPattern("jdbc:h2:target/h2/{0}");
+		factory.setUrlPattern("jdbc:h2:./target/h2/{0}");
 		test(factory);
 	}
 	
@@ -80,7 +80,7 @@ public class SimpleTest
 	public void hsqldb() throws Exception
 	{
 		SQLStateManagerFactory factory = new SQLStateManagerFactory();
-		factory.setUrlPattern("jdbc:hsqldb:target/hsqldb/{0}");
+		factory.setUrlPattern("jdbc:hsqldb:./target/hsqldb/{0}");
 		test(factory);
 	}
 	
@@ -88,7 +88,7 @@ public class SimpleTest
 	public void berkeleydb() throws Exception
 	{
 		BerkeleyDBStateManagerFactory factory = new BerkeleyDBStateManagerFactory();
-		factory.setLocationPattern("target/bdb/{0}");
+		factory.setLocationPattern("./target/bdb/{0}");
 		test(factory);
 	}
 	
@@ -96,7 +96,7 @@ public class SimpleTest
 	public void derby() throws Exception
 	{
 		SQLStateManagerFactory factory = new SQLStateManagerFactory();
-		factory.setUrlPattern("jdbc:derby:target/derby/{0};create=true");
+		factory.setUrlPattern("jdbc:derby:./target/derby/{0};create=true");
 		test(factory);
 	}
 	
