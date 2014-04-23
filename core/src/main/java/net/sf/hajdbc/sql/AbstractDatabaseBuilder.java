@@ -61,7 +61,12 @@ public abstract class AbstractDatabaseBuilder<Z, D extends Database<Z>> implemen
 			{
 				return decoder.decode(password);
 			}
-			
+
+			@Override
+			public String getEncodedPassword()
+			{
+				return password;
+			}
 		};
 		return this;
 	}

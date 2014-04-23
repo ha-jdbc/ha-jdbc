@@ -17,6 +17,13 @@
  */
 package net.sf.hajdbc.xml;
 
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.beans.PropertyEditor;
+import java.beans.PropertyEditorManager;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.SQLException;
@@ -27,13 +34,17 @@ import java.util.Map;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.XMLStreamWriter;
 
+import net.sf.hajdbc.Credentials;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseBuilder;
 import net.sf.hajdbc.DatabaseClusterConfiguration;
 import net.sf.hajdbc.DatabaseClusterConfigurationBuilder;
 import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
+import net.sf.hajdbc.Identifiable;
 import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.Version;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
@@ -44,13 +55,13 @@ import net.sf.hajdbc.util.SystemProperties;
  * {@link DatabaseClusterConfigurationFactory} that parses an xml configuration file.
  * @author Paul Ferraro
  */
-public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> implements DatabaseClusterConfigurationFactory<Z, D>
+public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> implements DatabaseClusterConfigurationFactory<Z, D>, DatabaseClusterConfigurationWriter<Z, D>, Constants
 {
 	private static final long serialVersionUID = -8796872297122349961L;
 	
-	private static final String CONFIG_PROPERTY_FORMAT = "ha-jdbc.{0}.configuration"; //$NON-NLS-1$
-	private static final String CONFIG_PROPERTY = "ha-jdbc.configuration"; //$NON-NLS-1$
-	private static final String DEFAULT_RESOURCE = "ha-jdbc-{0}.xml"; //$NON-NLS-1$
+	private static final String CONFIG_PROPERTY_FORMAT = "ha-jdbc.{0}.configuration";
+	private static final String CONFIG_PROPERTY = "ha-jdbc.configuration";
+	private static final String DEFAULT_RESOURCE = "ha-jdbc-{0}.xml";
 
 	private static final Logger logger = LoggerFactory.getLogger(XMLDatabaseClusterConfigurationFactory.class);
 	
@@ -170,5 +181,116 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 	public void export(DatabaseClusterConfiguration<Z, D> configuration)
 	{
 //		JAXB.marshal(configuration, this.streamFactory.createResult());
+	}
+
+	@Override
+	public void write(XMLStreamWriter writer, DatabaseClusterConfiguration<Z, D> config) throws XMLStreamException
+	{
+		writer.writeStartDocument();
+		writer.setDefaultNamespace(Namespace.CURRENT_VERSION.getURI());
+		writer.writeStartElement(ROOT);
+		write(writer, Element.DISTRIBUTABLE, config.getDispatcherFactory());
+		for (SynchronizationStrategy strategy: config.getSynchronizationStrategyMap().values())
+		{
+			write(writer, Element.SYNC, strategy);
+		}
+		write(writer, Element.STATE, config.getStateManagerFactory());
+		write(writer, Element.LOCK, config.getLockManagerFactory());
+		writer.writeStartElement(Element.CLUSTER.getLocalName());
+		writeAttribute(writer, ClusterAttribute.ALLOW_EMPTY_CLUSTER, config.isEmptyClusterAllowed());
+		writeAttribute(writer, ClusterAttribute.AUTO_ACTIVATE_SCHEDULE, config.getAutoActivationExpression());
+		writeAttribute(writer, ClusterAttribute.BALANCER, config.getBalancerFactory());
+		writeAttribute(writer, ClusterAttribute.DEFAULT_SYNC, config.getDefaultSynchronizationStrategy());
+		writeAttribute(writer, ClusterAttribute.DETECT_IDENTITY_COLUMNS, config.isIdentityColumnDetectionEnabled());
+		writeAttribute(writer, ClusterAttribute.DETECT_SEQUENCES, config.isSequenceDetectionEnabled());
+		writeAttribute(writer, ClusterAttribute.DIALECT, config.getDialectFactory());
+		writeAttribute(writer, ClusterAttribute.DURABILITY, config.getDurabilityFactory());
+		writeAttribute(writer, ClusterAttribute.EVAL_CURRENT_DATE, config.isCurrentDateEvaluationEnabled());
+		writeAttribute(writer, ClusterAttribute.EVAL_CURRENT_TIME, config.isCurrentTimeEvaluationEnabled());
+		writeAttribute(writer, ClusterAttribute.EVAL_CURRENT_TIMESTAMP, config.isCurrentTimestampEvaluationEnabled());
+		writeAttribute(writer, ClusterAttribute.EVAL_RAND, config.isRandEvaluationEnabled());
+		writeAttribute(writer, ClusterAttribute.FAILURE_DETECT_SCHEDULE, config.getFailureDetectionExpression());
+		writeAttribute(writer, ClusterAttribute.INPUT_SINK, config.getInputSinkProvider());
+		writeAttribute(writer, ClusterAttribute.META_DATA_CACHE, config.getDatabaseMetaDataCacheFactory());
+		writeAttribute(writer, ClusterAttribute.TRANSACTION_MODE, config.getTransactionMode());
+		for (D database: config.getDatabaseMap().values())
+		{
+			writer.writeStartElement(ClusterElement.DATABASE.getLocalName());
+			writer.writeAttribute(DatabaseAttribute.ID.getLocalName(), database.getId());
+			writeAttribute(writer, DatabaseAttribute.LOCAL, database.isLocal());
+			writeAttribute(writer, DatabaseAttribute.WEIGHT, Integer.valueOf(database.getWeight()));
+			Credentials credentials = database.getCredentials();
+			if (credentials != null)
+			{
+				writer.writeStartElement(DatabaseElement.USER.getLocalName());
+				writer.writeCharacters(credentials.getUser());
+				writer.writeEndElement();
+				writer.writeStartElement(DatabaseElement.PASSWORD.getLocalName());
+				writer.writeCharacters(credentials.getEncodedPassword());
+				writer.writeEndElement();
+			}
+			writer.writeEndElement();
+		}
+		writer.writeEndElement();
+		writer.writeEndElement();
+		writer.writeEndDocument();
+	}
+
+	private static void writeAttribute(XMLStreamWriter writer, Named named, Object value) throws XMLStreamException
+	{
+		if (value != null)
+		{
+			writer.writeAttribute(named.getLocalName(), value.toString());
+		}
+	}
+
+	private static void writeAttribute(XMLStreamWriter writer, Named named, Identifiable value) throws XMLStreamException
+	{
+		if (value != null)
+		{
+			writer.writeAttribute(named.getLocalName(), value.getId());
+		}
+	}
+
+	private static void writeAttribute(XMLStreamWriter writer, Named named, boolean value) throws XMLStreamException
+	{
+		writer.writeAttribute(named.getLocalName(), String.valueOf(value));
+	}
+
+	private static void write(XMLStreamWriter writer, Named named, Identifiable object) throws XMLStreamException
+	{
+		if (object != null)
+		{
+			writer.writeStartElement(named.getLocalName());
+			writer.writeAttribute(ID, object.getId());
+			try
+			{
+				for (PropertyDescriptor descriptor: Introspector.getBeanInfo(object.getClass()).getPropertyDescriptors())
+				{
+					Method readMethod = descriptor.getReadMethod();
+					if ((readMethod != null) && (descriptor.getWriteMethod() != null))
+					{
+						Object value = readMethod.invoke(object);
+						if (value != null)
+						{
+							PropertyEditor editor = PropertyEditorManager.findEditor(descriptor.getPropertyType());
+							if (editor != null)
+							{
+								editor.setValue(value);
+								writer.writeStartElement(PROPERTY);
+								writer.writeAttribute(NAME, descriptor.getName());
+								writer.writeCharacters(editor.getAsText());
+								writer.writeEndElement();
+							}
+						}
+					}
+				}
+			}
+			catch (IllegalAccessException | InvocationTargetException | IntrospectionException e)
+			{
+				throw new XMLStreamException(e);
+			}
+			writer.writeEndElement();
+		}
 	}
 }

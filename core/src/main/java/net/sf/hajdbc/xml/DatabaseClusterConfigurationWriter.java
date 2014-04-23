@@ -15,9 +15,18 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sf.hajdbc;
+package net.sf.hajdbc.xml;
 
-public interface DatabaseBuilderFactory<Z, D extends Database<Z>, B extends DatabaseBuilder<Z, D>>
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
+import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseClusterConfiguration;
+
+/**
+ * @author Paul Ferraro
+ */
+public interface DatabaseClusterConfigurationWriter<Z, D extends Database<Z>>
 {
-	B createBuilder(String id);
+	void write(XMLStreamWriter writer, DatabaseClusterConfiguration<Z, D> config) throws XMLStreamException;
 }

@@ -1,56 +1,176 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<xs:schema targetNamespace="urn:ha-jdbc:cluster:3.1" xmlns:tns="urn:ha-jdbc:cluster:3.1" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0">
+<xs:schema targetNamespace="urn:ha-jdbc:cluster:3.0" xmlns:tns="urn:ha-jdbc:cluster:3.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0">
 
 	<xs:element name="ha-jdbc" type="tns:configuration"/>
 
 	<xs:complexType name="configuration">
 		<xs:sequence><!-- Ideally we would use xs:all, but this is only valid in XSD 1.1 -->
-			<xs:element name="distributable" type="tns:identifiable-descriptor" minOccurs="0"/>
-			<xs:element name="sync" type="tns:identified-descriptor" minOccurs="0" maxOccurs="unbounded"/>
-			<xs:element name="state" type="tns:identifiable-descriptor" minOccurs="0"/>
-			<xs:element name="lock" type="tns:identifiable-descriptor" minOccurs="0"/>
-			<xs:element name="cluster" type="tns:cluster"/>
+			<xs:element name="distributable" type="tns:identifiable-descriptor" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Enables support for access to this database cluster by multiple virtual machines.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="sync" type="tns:identified-descriptor" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Defines a synchronization strategy.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="state" type="tns:identifiable-descriptor" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Defines the state manager used by this database cluster.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="lock" type="tns:identifiable-descriptor" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Defines the lock manager used by this database cluster.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="cluster" type="tns:cluster">
+				<xs:annotation>
+					<xs:documentation>Defines the database cluster.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
 
 	<xs:complexType name="cluster">
 		<xs:sequence>
-			<xs:element name="database" type="tns:database" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="database" type="tns:database" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Defines a database that is a member of this cluster.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
 		</xs:sequence>
-		<xs:attribute name="default-sync" type="xs:string" use="required"/>
-		<xs:attribute name="balancer" type="xs:string"/>
-		<xs:attribute name="meta-data-cache" type="xs:string"/>
-		<xs:attribute name="dialect" type="xs:string"/>
-		<xs:attribute name="durability" type="xs:string"/>
-		<xs:attribute name="input-sink" type="xs:string"/>
-		<xs:attribute name="transaction-mode" type="tns:transaction-mode"/>
-		<xs:attribute name="auto-activate-schedule" type="xs:string"/>
-		<xs:attribute name="failure-detect-schedule" type="xs:string"/>
-		<xs:attribute name="eval-current-date" type="xs:boolean"/>
-		<xs:attribute name="eval-current-time" type="xs:boolean"/>
-		<xs:attribute name="eval-current-timestamp" type="xs:boolean"/>
-		<xs:attribute name="eval-rand" type="xs:boolean"/>
-		<xs:attribute name="detect-identity-columns" type="xs:boolean"/>
-		<xs:attribute name="detect-sequences" type="xs:boolean"/>
-		<xs:attribute name="allow-empty-cluster" type="xs:boolean"/>
+		<xs:attribute name="default-sync" type="xs:string" use="required">
+			<xs:annotation>
+				<xs:documentation>The default synchronization strategy to used during auto-activation.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="balancer" type="xs:string" default="load">
+			<xs:annotation>
+				<xs:documentation>Defines the mechanism used to distribute read requests.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="meta-data-cache" type="xs:string" default="eager">
+			<xs:annotation>
+				<xs:documentation>Defines the strategy for caching meta data used by HA-JDBC.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="dialect" type="xs:string" default="standard">
+			<xs:annotation>
+				<xs:documentation>Defines the dialect of the databases that compose the cluster.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="durability" type="xs:string" default="coarse">
+			<xs:annotation>
+				<xs:documentation>Defines the level of durability.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="input-sink" type="xs:string" default="file">
+			<xs:annotation>
+				<xs:documentation>Defines the mechanism used to sink LOB data for </xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="transaction-mode" type="tns:transaction-mode" default="serial">
+			<xs:annotation>
+				<xs:documentation>Indicates whether write statements should execute on the primary copy and backup databases in parallel or serially.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="auto-activate-schedule" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>If specified, HA-JDBC will attempt to activate any inactive databases according to  cron schedule.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="failure-detect-schedule" type="xs:string">
+			<xs:annotation>
+				<xs:documentation></xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="eval-current-date" type="xs:boolean">
+			<xs:annotation>
+				<xs:documentation>Indicates whether or not CURRENT_DATE functions should be evaluated on the client, so that the same value is applied to each database.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="eval-current-time" type="xs:boolean" default="false">
+			<xs:annotation>
+				<xs:documentation>Indicates whether or not CURRENT_TIME functions should be evaluated on the client, so that the same value is applied to each database.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="eval-current-timestamp" type="xs:boolean" default="false">
+			<xs:annotation>
+				<xs:documentation>Indicates whether or not CURRENT_TIMESTAMP functions should be evaluated on the client, so that the same value is applied to each database.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="eval-rand" type="xs:boolean" default="false">
+			<xs:annotation>
+				<xs:documentation>Indicates whether or not RAND functions should be evaluated on the client, so that the same value is applied to each database.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="detect-identity-columns" type="xs:boolean" default="false">
+			<xs:annotation>
+				<xs:documentation></xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="detect-sequences" type="xs:boolean" default="false">
+			<xs:annotation>
+				<xs:documentation></xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="allow-empty-cluster" type="xs:boolean" default="false">
+			<xs:annotation>
+				<xs:documentation></xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
 	</xs:complexType>
 
 	<xs:complexType name="database">
 		<xs:sequence><!-- Ideally we would use xs:all, but this is only valid in XSD 1.1 -->
-			<xs:element name="user" type="xs:string" minOccurs="0"/>
-			<xs:element name="password" type="xs:string" minOccurs="0"/>
-			<xs:element name="property" type="tns:property" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="user" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation></xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="password" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation></xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="property" type="tns:property" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation></xs:documentation>
+				</xs:annotation>
+			</xs:element>
 		</xs:sequence>
-		<xs:attribute name="id" type="xs:string" use="required"/>
-		<xs:attribute name="location" type="xs:string" use="required"/>
-		<xs:attribute name="weight" type="xs:int"/>
-		<xs:attribute name="local" type="xs:boolean"/>
+		<xs:attribute name="id" type="xs:string" use="required">
+			<xs:annotation>
+				<xs:documentation></xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="location" type="xs:string" use="required">
+			<xs:annotation>
+				<xs:documentation></xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="weight" type="xs:int" default="1">
+			<xs:annotation>
+				<xs:documentation></xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="local" type="xs:boolean" default="false">
+			<xs:annotation>
+				<xs:documentation></xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
 	</xs:complexType>
 
 	<xs:complexType name="property">
 		<xs:simpleContent>
 			<xs:extension base="xs:string">
-				<xs:attribute name="name" type="xs:string" use="required"/>
+				<xs:attribute name="name" type="xs:string" use="required">
+					<xs:annotation>
+						<xs:documentation></xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
 			</xs:extension>
 		</xs:simpleContent>
 	</xs:complexType>
@@ -58,7 +178,11 @@
 	<xs:complexType name="identified-descriptor">
 		<xs:complexContent>
 			<xs:extension base="tns:descriptor">
-				<xs:attribute name="id" type="xs:string" use="required"/>
+				<xs:attribute name="id" type="xs:string" use="required">
+					<xs:annotation>
+						<xs:documentation></xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
@@ -66,21 +190,37 @@
 	<xs:complexType name="identifiable-descriptor">
 		<xs:complexContent>
 			<xs:extension base="tns:descriptor">
-				<xs:attribute name="id" type="xs:string"/>
+				<xs:attribute name="id" type="xs:string">
+					<xs:annotation>
+						<xs:documentation></xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
 
 	<xs:complexType name="descriptor" abstract="true">
 		<xs:sequence>
-			<xs:element name="property" type="tns:property" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="property" type="tns:property" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation></xs:documentation>
+				</xs:annotation>
+			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
 
 	<xs:simpleType name="transaction-mode">
 		<xs:restriction base="xs:string">
-			<xs:enumeration value="parallel"/>
-			<xs:enumeration value="serial"/>
+			<xs:enumeration value="parallel">
+				<xs:annotation>
+					<xs:documentation></xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="serial">
+				<xs:annotation>
+					<xs:documentation></xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
 		</xs:restriction>
 	</xs:simpleType>
 </xs:schema>
