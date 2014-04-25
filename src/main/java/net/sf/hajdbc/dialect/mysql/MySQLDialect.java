@@ -210,14 +210,14 @@ public class MySQLDialect extends StandardDialect implements DumpRestoreSupport
 	public <Z, D extends Database<Z>> void dump(D database, Decoder decoder, File file) throws Exception
 	{
 		ConnectionProperties properties = this.getConnectionProperties(database, decoder);
-		Processes.run(setPassword(new ProcessBuilder("mysqldump", "-h", properties.getHost(), "-P", properties.getPort(), "-u", properties.getUser(), "-r", file.getPath(), properties.getDatabase()), properties));
+		Processes.run(setPassword(new ProcessBuilder("mysqldump", "-C", "-h", properties.getHost(), "-P", properties.getPort(), "-u", properties.getUser(), "-r", file.getPath(), properties.getDatabase()), properties));
 	}
 
 	@Override
 	public <Z, D extends Database<Z>> void restore(D database, Decoder decoder, File file) throws Exception
 	{
 		ConnectionProperties properties = this.getConnectionProperties(database, decoder);
-		Processes.run(setPassword(new ProcessBuilder("mysql", "-h", properties.getHost(), "-P", properties.getPort(), "-u", properties.getUser(), properties.getDatabase(), "<", file.getPath()), properties));
+		Processes.run(setPassword(new ProcessBuilder("mysql", "-h", properties.getHost(), "-P", properties.getPort(), "-u", properties.getUser(), properties.getDatabase()), properties), file);
 	}
 	
 	private static ProcessBuilder setPassword(ProcessBuilder builder, ConnectionProperties properties)
