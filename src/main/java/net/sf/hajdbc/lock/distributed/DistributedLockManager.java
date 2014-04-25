@@ -260,7 +260,6 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 			
 			while (!locked)
 			{
-				
 				Member coordinator = this.dispatcher.getCoordinator();
 				
 				if (this.dispatcher.getLocal().equals(coordinator))
@@ -298,7 +297,6 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 			
 			while (!locked)
 			{
-				
 				Member coordinator = this.dispatcher.getCoordinator();
 				
 				if (this.dispatcher.getLocal().equals(coordinator))
