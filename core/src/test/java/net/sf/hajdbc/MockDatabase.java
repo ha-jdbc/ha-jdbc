@@ -19,6 +19,7 @@ package net.sf.hajdbc;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Properties;
 
 import net.sf.hajdbc.codec.Decoder;
 import net.sf.hajdbc.sql.AbstractDatabase;
@@ -67,5 +68,17 @@ public class MockDatabase extends AbstractDatabase<Void>
 		{
 			return super.hashCode();
 		}
+	}
+
+	@Override
+	public String getLocation()
+	{
+		return null;
+	}
+
+	@Override
+	public Properties getProperties()
+	{
+		return null;
 	}
 }

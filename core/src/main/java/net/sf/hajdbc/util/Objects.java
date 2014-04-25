@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
-import java.security.PrivilegedAction;
 import java.util.Arrays;
 
 /**
@@ -135,9 +134,9 @@ public class Objects
 	 */
 	public static <T> T readObject(ObjectInput input, Class<T> targetClass)
 	{
-		ClassLoader originalLoader = getThreadContextClassLoader();
+//		ClassLoader originalLoader = getThreadContextClassLoader();
 		
-		setThreadContextClassLoader(targetClass.getClassLoader());
+//		setThreadContextClassLoader(targetClass.getClassLoader());
 		
 		try
 		{
@@ -151,17 +150,17 @@ public class Objects
 		{
 			throw new IllegalStateException(e);
 		}
-		finally
-		{
-			setThreadContextClassLoader(originalLoader);
-		}
+//		finally
+//		{
+//			setThreadContextClassLoader(originalLoader);
+//		}
 	}
 	
 	private Objects()
 	{
 		// Hide
 	}
-	
+/*
 	private static ClassLoader getThreadContextClassLoader()
 	{
 		PrivilegedAction<ClassLoader> action = new PrivilegedAction<ClassLoader>()
@@ -190,4 +189,5 @@ public class Objects
 		
 		Security.run(action);
 	}
+*/
 }

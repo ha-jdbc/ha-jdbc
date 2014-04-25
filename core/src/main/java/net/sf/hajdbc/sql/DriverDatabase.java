@@ -48,12 +48,14 @@ public class DriverDatabase extends AbstractDatabase<Driver>
 		this.url = url;
 		this.properties = properties;
 	}
-	
-	public String getUrl()
+
+	@Override
+	public String getLocation()
 	{
 		return this.url;
 	}
 
+	@Override
 	public Properties getProperties()
 	{
 		return this.properties;

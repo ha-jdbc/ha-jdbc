@@ -33,6 +33,9 @@ import net.sf.hajdbc.configuration.ServiceBuilder;
 import net.sf.hajdbc.sql.TransactionModeEnum;
 import net.sf.hajdbc.util.ServiceLoaders;
 
+/**
+ * @author Paul Ferraro
+ */
 public class DatabaseClusterConfigurationReader_3_0<Z, D extends Database<Z>, B extends DatabaseBuilder<Z, D>> implements DatabaseClusterConfigurationReader<Z, D, B>, Constants
 {
 	public static final DatabaseClusterConfigurationReaderFactory FACTORY = new DatabaseClusterConfigurationReaderFactory()

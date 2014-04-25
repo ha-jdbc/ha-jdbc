@@ -93,7 +93,7 @@ public class DriverDatabaseBuilder extends AbstractDatabaseBuilder<Driver, Drive
 	public DriverDatabaseBuilder read(DriverDatabase database)
 	{
 		super.read(database);
-		this.location = database.getUrl();
+		this.location = database.getLocation();
 		this.properties = new Properties(database.getProperties());
 		return this;
 	}

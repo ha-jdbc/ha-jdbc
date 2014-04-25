@@ -129,13 +129,16 @@ public abstract class CommonDataSourceDatabaseBuilder<Z extends CommonDataSource
 						if (value != null)
 						{
 							PropertyEditor editor = PropertyEditorManager.findEditor(descriptor.getPropertyType());
-							editor.setAsText(value);
-							descriptor.getWriteMethod().invoke(dataSource, editor.getValue());
+							if (editor != null)
+							{
+								editor.setAsText(value);
+								descriptor.getWriteMethod().invoke(dataSource, editor.getValue());
+							}
 						}
 					}
 				}
 			}
-			catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IntrospectionException | InvocationTargetException e)
+			catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IntrospectionException | IllegalArgumentException | InvocationTargetException e)
 			{
 				throw new SQLException(e);
 			}

@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.sql.SQLException;
 import java.util.UUID;
 
 import net.sf.hajdbc.util.Objects;
@@ -61,8 +62,8 @@ public class InvokerEventTest
 	public void serializationWithException()
 	{
 		InvokerEvent event1 = new InvokerEventImpl(UUID.randomUUID(), Durability.Phase.COMMIT, "1");
-		event1.setResult(new InvokerResultImpl(new Exception()));
-		InvokerEvent event2 = Objects.deserialize(Objects.serialize(event1), InvokerEvent.class);
+		event1.setResult(new InvokerResultImpl(new SQLException()));
+		InvokerEvent event2 = Objects.deserialize(Objects.serialize(event1), event1.getClass());
 		assertEquals(event1, event2);
 		assertEquals(event1.getTransactionId(), event2.getTransactionId());
 		assertEquals(event1.getPhase(), event2.getPhase());

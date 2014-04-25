@@ -34,7 +34,7 @@ import net.sf.hajdbc.management.MBean;
  */
 @MBean
 @Description("Database accessed via a DataSource")
-public class DataSourceDatabase extends AbstractDatabase<DataSource>
+public class DataSourceDatabase extends CommonDataSourceDatabase<DataSource>
 {
 	public DataSourceDatabase(String id, DataSource dataSource, Credentials credentials, int weight, boolean local)
 	{

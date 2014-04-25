@@ -24,6 +24,9 @@ import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseClusterConfigurationBuilder;
 import net.sf.hajdbc.DatabaseBuilder;
 
+/**
+ * @author Paul Ferraro
+ */
 public interface DatabaseClusterConfigurationReader<Z, D extends Database<Z>, B extends DatabaseBuilder<Z, D>>
 {
 	void read(XMLStreamReader reader, DatabaseClusterConfigurationBuilder<Z, D, B> builder) throws XMLStreamException;

@@ -163,7 +163,7 @@ public final class Driver extends AbstractDriver
 			@Override
 			public Connection invoke(DriverDatabase database, java.sql.Driver driver) throws SQLException
 			{
-				return driver.connect(database.getUrl(), properties);
+				return driver.connect(database.getLocation(), properties);
 			}
 		};
 		
@@ -191,7 +191,7 @@ public final class Driver extends AbstractDriver
 			@Override
 			public DriverPropertyInfo[] invoke(DriverDatabase database, java.sql.Driver driver) throws SQLException
 			{
-				return driver.getPropertyInfo(database.getUrl(), properties);
+				return driver.getPropertyInfo(database.getLocation(), properties);
 			}
 		};
 		

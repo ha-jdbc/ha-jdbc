@@ -80,11 +80,11 @@ public class XMLDatabaseClusterConfigurationFactoryTest
 	
 			DriverDatabase db1 = configuration.getDatabaseMap().get("db1");
 			assertSame(driver, db1.getConnectionSource());
-			assertEquals(url1, db1.getUrl());
+			assertEquals(url1, db1.getLocation());
 			assertEquals("value1", db1.getProperties().getProperty("name"));
 			DriverDatabase db2 = configuration.getDatabaseMap().get("db2");
 			assertSame(driver, db2.getConnectionSource());
-			assertEquals(url2, db2.getUrl());
+			assertEquals(url2, db2.getLocation());
 			assertEquals("value2", db2.getProperties().getProperty("name"));
 		}
 		finally

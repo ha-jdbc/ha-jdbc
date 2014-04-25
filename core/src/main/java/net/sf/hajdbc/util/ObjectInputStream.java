@@ -39,7 +39,7 @@ public class ObjectInputStream extends java.io.ObjectInputStream
 	@Override
 	protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException
 	{
-		return this.loader.loadClass(desc.getName());
+		return Class.forName(desc.getName(), false, this.loader);
 	}
 
 	@Override
@@ -48,7 +48,7 @@ public class ObjectInputStream extends java.io.ObjectInputStream
 		Class<?>[] interfaces = new Class[names.length];
 		for (int i = 0; i < names.length; ++i)
 		{
-			interfaces[i] = this.loader.loadClass(names[i]);
+			interfaces[i] = Class.forName(names[i], false, this.loader);
 		}
 		return Proxy.getProxyClass(this.loader, interfaces);
 	}
