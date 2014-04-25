@@ -3,7 +3,9 @@ package net.sf.hajdbc.util;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
+import java.util.Map;
 
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
@@ -13,6 +15,19 @@ public class Processes
 {
 	private static final Logger logger = LoggerFactory.getLogger(Processes.class);
 
+	public static Map<String, String> environment(final ProcessBuilder builder)
+	{
+		PrivilegedAction<Map<String, String>> action = new PrivilegedAction<Map<String, String>>()
+		{
+			@Override
+			public Map<String, String> run()
+			{
+				return builder.environment();
+			}
+		};
+		return AccessController.doPrivileged(action);
+	}
+	
 	public static void run(final ProcessBuilder processBuilder) throws Exception
 	{
 		processBuilder.redirectErrorStream(true);

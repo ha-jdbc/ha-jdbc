@@ -240,14 +240,16 @@ public class PostgreSQLDialect extends StandardDialect implements DumpRestoreSup
 	public <Z, D extends Database<Z>> void dump(D database, Decoder decoder, File file) throws Exception
 	{
 		ConnectionProperties properties = this.getConnectionProperties(database, decoder);
-		Processes.run(setPassword(new ProcessBuilder("pg_dump", "-h", properties.getHost(), "-p", properties.getPort(), "-U", properties.getUser(), "-f", file.getPath(), "-F", "tar", properties.getDatabase()), properties));
+		ProcessBuilder builder = new ProcessBuilder("pg_dump", "-h", properties.getHost(), "-p", properties.getPort(), "-U", properties.getUser(), "-f", file.getPath(), "-F", "tar", properties.getDatabase());
+		Processes.run(setPassword(builder, properties));
 	}
 
 	@Override
 	public <Z, D extends Database<Z>> void restore(D database, Decoder decoder, File file) throws Exception
 	{
 		ConnectionProperties properties = this.getConnectionProperties(database, decoder);
-		Processes.run(setPassword(new ProcessBuilder("pg_restore", "-h", properties.getHost(), "-p", properties.getPort(), "-U", properties.getUser(), "-d", properties.getDatabase(), "-c", file.getPath()), properties));
+		ProcessBuilder builder = new ProcessBuilder("pg_restore", "-h", properties.getHost(), "-p", properties.getPort(), "-U", properties.getUser(), "-d", properties.getDatabase(), "-c", file.getPath());
+		Processes.run(setPassword(builder, properties));
 	}
 	
 	private static ProcessBuilder setPassword(ProcessBuilder builder, ConnectionProperties properties)
@@ -255,7 +257,7 @@ public class PostgreSQLDialect extends StandardDialect implements DumpRestoreSup
 		String password = properties.getPassword();
 		if ((password != null) && !PASSWORD_FILE.exists())
 		{
-			builder.environment().put("PGPASSWORD", properties.getPassword());
+			Processes.environment(builder).put("PGPASSWORD", properties.getPassword());
 		}
 		
 		return builder;
