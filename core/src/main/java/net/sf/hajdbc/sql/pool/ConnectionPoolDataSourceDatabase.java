@@ -27,7 +27,7 @@ import net.sf.hajdbc.Credentials;
 import net.sf.hajdbc.codec.Decoder;
 import net.sf.hajdbc.management.Description;
 import net.sf.hajdbc.management.MBean;
-import net.sf.hajdbc.sql.AbstractDatabase;
+import net.sf.hajdbc.sql.CommonDataSourceDatabase;
 
 /**
  * A database described by a {@link ConnectionPoolDataSource}.
@@ -35,7 +35,7 @@ import net.sf.hajdbc.sql.AbstractDatabase;
  */
 @MBean
 @Description("Database accessed via a server-side ConnectionPoolDataSource")
-public class ConnectionPoolDataSourceDatabase extends AbstractDatabase<ConnectionPoolDataSource>
+public class ConnectionPoolDataSourceDatabase extends CommonDataSourceDatabase<ConnectionPoolDataSource>
 {
 	public ConnectionPoolDataSourceDatabase(String id, ConnectionPoolDataSource dataSource, Credentials credentials, int weight, boolean local)
 	{

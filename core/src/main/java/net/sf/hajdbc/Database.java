@@ -19,6 +19,7 @@ package net.sf.hajdbc;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Properties;
 
 import net.sf.hajdbc.codec.Decoder;
 
@@ -40,4 +41,8 @@ public interface Database<Z> extends Comparable<Database<Z>>
 	boolean isLocal();
 
 	Connection connect(Decoder decoder) throws SQLException;
+
+	String getLocation();
+
+	Properties getProperties();
 }

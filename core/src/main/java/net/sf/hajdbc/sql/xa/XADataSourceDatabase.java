@@ -27,7 +27,7 @@ import net.sf.hajdbc.Credentials;
 import net.sf.hajdbc.codec.Decoder;
 import net.sf.hajdbc.management.Description;
 import net.sf.hajdbc.management.MBean;
-import net.sf.hajdbc.sql.AbstractDatabase;
+import net.sf.hajdbc.sql.CommonDataSourceDatabase;
 
 /**
  * A database described by an {@link XADataSource}.
@@ -35,7 +35,7 @@ import net.sf.hajdbc.sql.AbstractDatabase;
  */
 @MBean
 @Description("Database accessed via a server-side XADataSource")
-public class XADataSourceDatabase extends AbstractDatabase<XADataSource>
+public class XADataSourceDatabase extends CommonDataSourceDatabase<XADataSource>
 {
 	private boolean force2PC = false;
 	

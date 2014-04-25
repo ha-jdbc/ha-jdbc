@@ -17,6 +17,7 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 
 import net.sf.hajdbc.TransactionMode;
@@ -41,5 +42,11 @@ public enum TransactionModeEnum implements TransactionMode
 	public ExecutorService getTransactionExecutor(ExecutorService executor, boolean end)
 	{
 		return this.synchronous ? new SynchronousExecutor(executor, end) : executor;
+	}
+
+	@Override
+	public String toString()
+	{
+		return this.name().toLowerCase(Locale.US);
 	}
 }

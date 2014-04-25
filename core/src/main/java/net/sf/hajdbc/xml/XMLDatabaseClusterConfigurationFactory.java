@@ -30,8 +30,10 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
@@ -150,6 +152,7 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 			}
 			
 			namespace.getReaderFactory().<Z, D, B>createReader().read(reader, builder);
+			reader.close();
 			return builder.build();
 		}
 		catch (XMLStreamException e)
@@ -180,58 +183,82 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 	
 	public void export(DatabaseClusterConfiguration<Z, D> configuration)
 	{
-//		JAXB.marshal(configuration, this.streamFactory.createResult());
+		try
+		{
+			XMLOutputFactory factory = XMLOutputFactory.newFactory();
+			XMLStreamWriter writer = factory.createXMLStreamWriter(this.streamFactory.createResult());
+			this.write(new FormattedXMLStreamWriter(writer), configuration);
+			writer.flush();
+			writer.close();
+		}
+		catch (XMLStreamException e)
+		{
+			logger.log(Level.WARN, e);
+		}
 	}
 
 	@Override
 	public void write(XMLStreamWriter writer, DatabaseClusterConfiguration<Z, D> config) throws XMLStreamException
 	{
 		writer.writeStartDocument();
-		writer.setDefaultNamespace(Namespace.CURRENT_VERSION.getURI());
 		writer.writeStartElement(ROOT);
-		write(writer, Element.DISTRIBUTABLE, config.getDispatcherFactory());
-		for (SynchronizationStrategy strategy: config.getSynchronizationStrategyMap().values())
+		writer.writeDefaultNamespace(Namespace.CURRENT_VERSION.getURI());
 		{
-			write(writer, Element.SYNC, strategy);
-		}
-		write(writer, Element.STATE, config.getStateManagerFactory());
-		write(writer, Element.LOCK, config.getLockManagerFactory());
-		writer.writeStartElement(Element.CLUSTER.getLocalName());
-		writeAttribute(writer, ClusterAttribute.ALLOW_EMPTY_CLUSTER, config.isEmptyClusterAllowed());
-		writeAttribute(writer, ClusterAttribute.AUTO_ACTIVATE_SCHEDULE, config.getAutoActivationExpression());
-		writeAttribute(writer, ClusterAttribute.BALANCER, config.getBalancerFactory());
-		writeAttribute(writer, ClusterAttribute.DEFAULT_SYNC, config.getDefaultSynchronizationStrategy());
-		writeAttribute(writer, ClusterAttribute.DETECT_IDENTITY_COLUMNS, config.isIdentityColumnDetectionEnabled());
-		writeAttribute(writer, ClusterAttribute.DETECT_SEQUENCES, config.isSequenceDetectionEnabled());
-		writeAttribute(writer, ClusterAttribute.DIALECT, config.getDialectFactory());
-		writeAttribute(writer, ClusterAttribute.DURABILITY, config.getDurabilityFactory());
-		writeAttribute(writer, ClusterAttribute.EVAL_CURRENT_DATE, config.isCurrentDateEvaluationEnabled());
-		writeAttribute(writer, ClusterAttribute.EVAL_CURRENT_TIME, config.isCurrentTimeEvaluationEnabled());
-		writeAttribute(writer, ClusterAttribute.EVAL_CURRENT_TIMESTAMP, config.isCurrentTimestampEvaluationEnabled());
-		writeAttribute(writer, ClusterAttribute.EVAL_RAND, config.isRandEvaluationEnabled());
-		writeAttribute(writer, ClusterAttribute.FAILURE_DETECT_SCHEDULE, config.getFailureDetectionExpression());
-		writeAttribute(writer, ClusterAttribute.INPUT_SINK, config.getInputSinkProvider());
-		writeAttribute(writer, ClusterAttribute.META_DATA_CACHE, config.getDatabaseMetaDataCacheFactory());
-		writeAttribute(writer, ClusterAttribute.TRANSACTION_MODE, config.getTransactionMode());
-		for (D database: config.getDatabaseMap().values())
-		{
-			writer.writeStartElement(ClusterElement.DATABASE.getLocalName());
-			writer.writeAttribute(DatabaseAttribute.ID.getLocalName(), database.getId());
-			writeAttribute(writer, DatabaseAttribute.LOCAL, database.isLocal());
-			writeAttribute(writer, DatabaseAttribute.WEIGHT, Integer.valueOf(database.getWeight()));
-			Credentials credentials = database.getCredentials();
-			if (credentials != null)
+			write(writer, Element.DISTRIBUTABLE, config.getDispatcherFactory());
+			for (SynchronizationStrategy strategy: config.getSynchronizationStrategyMap().values())
 			{
-				writer.writeStartElement(DatabaseElement.USER.getLocalName());
-				writer.writeCharacters(credentials.getUser());
-				writer.writeEndElement();
-				writer.writeStartElement(DatabaseElement.PASSWORD.getLocalName());
-				writer.writeCharacters(credentials.getEncodedPassword());
-				writer.writeEndElement();
+				write(writer, Element.SYNC, strategy);
+			}
+			write(writer, Element.STATE, config.getStateManagerFactory());
+			write(writer, Element.LOCK, config.getLockManagerFactory());
+			writer.writeStartElement(Element.CLUSTER.getLocalName());
+			{
+				writeAttribute(writer, ClusterAttribute.ALLOW_EMPTY_CLUSTER, config.isEmptyClusterAllowed());
+				writeAttribute(writer, ClusterAttribute.AUTO_ACTIVATE_SCHEDULE, config.getAutoActivationExpression());
+				writeAttribute(writer, ClusterAttribute.BALANCER, config.getBalancerFactory());
+				writeAttribute(writer, ClusterAttribute.DEFAULT_SYNC, config.getDefaultSynchronizationStrategy());
+				writeAttribute(writer, ClusterAttribute.DETECT_IDENTITY_COLUMNS, config.isIdentityColumnDetectionEnabled());
+				writeAttribute(writer, ClusterAttribute.DETECT_SEQUENCES, config.isSequenceDetectionEnabled());
+				writeAttribute(writer, ClusterAttribute.DIALECT, config.getDialectFactory());
+				writeAttribute(writer, ClusterAttribute.DURABILITY, config.getDurabilityFactory());
+				writeAttribute(writer, ClusterAttribute.EVAL_CURRENT_DATE, config.isCurrentDateEvaluationEnabled());
+				writeAttribute(writer, ClusterAttribute.EVAL_CURRENT_TIME, config.isCurrentTimeEvaluationEnabled());
+				writeAttribute(writer, ClusterAttribute.EVAL_CURRENT_TIMESTAMP, config.isCurrentTimestampEvaluationEnabled());
+				writeAttribute(writer, ClusterAttribute.EVAL_RAND, config.isRandEvaluationEnabled());
+				writeAttribute(writer, ClusterAttribute.FAILURE_DETECT_SCHEDULE, config.getFailureDetectionExpression());
+				writeAttribute(writer, ClusterAttribute.INPUT_SINK, config.getInputSinkProvider());
+				writeAttribute(writer, ClusterAttribute.META_DATA_CACHE, config.getDatabaseMetaDataCacheFactory());
+				writeAttribute(writer, ClusterAttribute.TRANSACTION_MODE, config.getTransactionMode());
+				for (D database: config.getDatabaseMap().values())
+				{
+					writer.writeStartElement(ClusterElement.DATABASE.getLocalName());
+					writer.writeAttribute(DatabaseAttribute.ID.getLocalName(), database.getId());
+					writeAttribute(writer, DatabaseAttribute.LOCATION, database.getLocation());
+					writeAttribute(writer, DatabaseAttribute.LOCAL, database.isLocal());
+					writeAttribute(writer, DatabaseAttribute.WEIGHT, Integer.valueOf(database.getWeight()));
+					Credentials credentials = database.getCredentials();
+					if (credentials != null)
+					{
+						writer.writeStartElement(DatabaseElement.USER.getLocalName());
+						writer.writeCharacters(credentials.getUser());
+						writer.writeEndElement();
+						writer.writeStartElement(DatabaseElement.PASSWORD.getLocalName());
+						writer.writeCharacters(credentials.getEncodedPassword());
+						writer.writeEndElement();
+					}
+					Properties properties = database.getProperties();
+					for (String name: properties.stringPropertyNames())
+					{
+						writer.writeStartElement(DatabaseElement.PROPERTY.getLocalName());
+						writer.writeAttribute(NAME, name);
+						writer.writeCharacters(properties.getProperty(name));
+						writer.writeEndElement();
+					}
+					writer.writeEndElement();
+				}
 			}
 			writer.writeEndElement();
 		}
-		writer.writeEndElement();
 		writer.writeEndElement();
 		writer.writeEndDocument();
 	}

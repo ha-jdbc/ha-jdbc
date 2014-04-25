@@ -523,7 +523,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	{
 		this.pool = this.poolFactory.createPool(new ConnectionPoolProvider(this));
 		
-		DialectFactory factory = ServiceLoaders.findService(new IdentifiableMatcher<DialectFactory>(DriverDatabase.parseVendor(this.database.getUrl())), DialectFactory.class);
+		DialectFactory factory = ServiceLoaders.findService(new IdentifiableMatcher<DialectFactory>(DriverDatabase.parseVendor(this.database.getLocation())), DialectFactory.class);
 		if (factory == null)
 		{
 			// Use default dialect
