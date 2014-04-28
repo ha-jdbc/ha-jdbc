@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import net.sf.hajdbc.Credentials;
+import net.sf.hajdbc.Locality;
 import net.sf.hajdbc.codec.Decoder;
 import net.sf.hajdbc.management.Description;
 import net.sf.hajdbc.management.MBean;
@@ -42,9 +43,9 @@ public class DriverDatabase extends AbstractDatabase<Driver>
 	private final String url;
 	private final Properties properties;
 
-	public DriverDatabase(String id, Driver driver, String url, Properties properties, Credentials credentials, int weight, boolean local)
+	public DriverDatabase(String id, Driver driver, String url, Properties properties, Credentials credentials, int weight, Locality locality)
 	{
-		super(id, driver, credentials, weight, local);
+		super(id, driver, credentials, weight, locality);
 		this.url = url;
 		this.properties = properties;
 	}

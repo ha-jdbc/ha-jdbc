@@ -31,6 +31,6 @@ public class DataSourceDatabaseBuilder extends CommonDataSourceDatabaseBuilder<D
 	@Override
 	public DataSourceDatabase build() throws SQLException
 	{
-		return new DataSourceDatabase(this.id, this.getDataSource(), this.credentials, this.weight, this.local);
+		return new DataSourceDatabase(this.id, this.getDataSource(), this.credentials, this.weight, this.locality);
 	}
 }

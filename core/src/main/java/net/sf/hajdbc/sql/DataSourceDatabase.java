@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 
 import net.sf.hajdbc.Credentials;
+import net.sf.hajdbc.Locality;
 import net.sf.hajdbc.codec.Decoder;
 import net.sf.hajdbc.management.Description;
 import net.sf.hajdbc.management.MBean;
@@ -36,9 +37,9 @@ import net.sf.hajdbc.management.MBean;
 @Description("Database accessed via a DataSource")
 public class DataSourceDatabase extends CommonDataSourceDatabase<DataSource>
 {
-	public DataSourceDatabase(String id, DataSource dataSource, Credentials credentials, int weight, boolean local)
+	public DataSourceDatabase(String id, DataSource dataSource, Credentials credentials, int weight, Locality locality)
 	{
-		super(id, dataSource, credentials, weight, local);
+		super(id, dataSource, credentials, weight, locality);
 	}
 
 	@Override

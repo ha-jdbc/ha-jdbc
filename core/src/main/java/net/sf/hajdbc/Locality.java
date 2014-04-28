@@ -15,24 +15,32 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sf.hajdbc.sql.pool;
+package net.sf.hajdbc;
 
-import java.sql.SQLException;
+import java.util.Locale;
 
-import javax.sql.ConnectionPoolDataSource;
-
-import net.sf.hajdbc.sql.CommonDataSourceDatabaseBuilder;
-
-public class ConnectionPoolDataSourceDatabaseBuilder extends CommonDataSourceDatabaseBuilder<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase>
+public enum Locality
 {
-	public ConnectionPoolDataSourceDatabaseBuilder(String id)
+	REMOTE(false),
+	LOCAL(true),
+	EMBEDDED(true),
+	;
+
+	private final boolean local;
+
+	private Locality(boolean local)
 	{
-		super(id, ConnectionPoolDataSource.class);
+		this.local = local;
+	}
+
+	public boolean isLocal()
+	{
+		return this.local;
 	}
 
 	@Override
-	public ConnectionPoolDataSourceDatabase build() throws SQLException
+	public String toString()
 	{
-		return new ConnectionPoolDataSourceDatabase(this.id, this.getDataSource(), this.credentials, this.weight, this.locality);
+		return this.name().toLowerCase(Locale.US);
 	}
 }

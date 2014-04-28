@@ -12,12 +12,13 @@ import java.util.Properties;
 import javax.sql.CommonDataSource;
 
 import net.sf.hajdbc.Credentials;
+import net.sf.hajdbc.Locality;
 
 public abstract class CommonDataSourceDatabase<Z extends CommonDataSource> extends AbstractDatabase<Z>
 {
-	protected CommonDataSourceDatabase(String id, Z connectionSource, Credentials credentials, int weight, boolean local)
+	protected CommonDataSourceDatabase(String id, Z connectionSource, Credentials credentials, int weight, Locality locality)
 	{
-		super(id, connectionSource, credentials, weight, local);
+		super(id, connectionSource, credentials, weight, locality);
 	}
 
 	@Override

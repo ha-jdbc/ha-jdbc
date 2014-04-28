@@ -24,6 +24,7 @@ import javax.sql.ConnectionPoolDataSource;
 import javax.sql.PooledConnection;
 
 import net.sf.hajdbc.Credentials;
+import net.sf.hajdbc.Locality;
 import net.sf.hajdbc.codec.Decoder;
 import net.sf.hajdbc.management.Description;
 import net.sf.hajdbc.management.MBean;
@@ -37,9 +38,9 @@ import net.sf.hajdbc.sql.CommonDataSourceDatabase;
 @Description("Database accessed via a server-side ConnectionPoolDataSource")
 public class ConnectionPoolDataSourceDatabase extends CommonDataSourceDatabase<ConnectionPoolDataSource>
 {
-	public ConnectionPoolDataSourceDatabase(String id, ConnectionPoolDataSource dataSource, Credentials credentials, int weight, boolean local)
+	public ConnectionPoolDataSourceDatabase(String id, ConnectionPoolDataSource dataSource, Credentials credentials, int weight, Locality locality)
 	{
-		super(id, dataSource, credentials, weight, local);
+		super(id, dataSource, credentials, weight, locality);
 	}
 
 	@Override

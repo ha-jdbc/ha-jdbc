@@ -44,6 +44,7 @@ import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseBuilder;
 import net.sf.hajdbc.DatabaseClusterConfiguration;
 import net.sf.hajdbc.DatabaseClusterConfigurationBuilder;
+import net.sf.hajdbc.Locality;
 import net.sf.hajdbc.MockDataSource;
 import net.sf.hajdbc.MockDriver;
 import net.sf.hajdbc.SynchronizationStrategy;
@@ -187,14 +188,14 @@ public class XMLDatabaseClusterConfigurationFactoryTest
 		assertNotNull(db1);
 		assertEquals("db1", db1.getId());
 		assertEquals(1, db1.getWeight());
-		assertFalse(db1.isLocal());
+		assertSame(Locality.REMOTE, db1.getLocality());
 		
 		D db2 = databases.get("db2");
 		
 		assertNotNull(db2);
 		assertEquals("db2", db2.getId());
 		assertEquals(1, db2.getWeight());
-		assertFalse(db2.isLocal());
+		assertSame(Locality.REMOTE, db2.getLocality());
 		
 		reset(streamFactory);
 		

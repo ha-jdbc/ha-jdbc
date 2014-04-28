@@ -22,7 +22,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.Locality;
 
 public class DriverDatabaseBuilder extends AbstractDatabaseBuilder<Driver, DriverDatabase>
 {
@@ -83,9 +83,9 @@ public class DriverDatabaseBuilder extends AbstractDatabaseBuilder<Driver, Drive
 	}
 
 	@Override
-	public DriverDatabaseBuilder local(boolean local)
+	public DriverDatabaseBuilder locality(Locality locality)
 	{
-		super.local(local);
+		super.locality(locality);
 		return this;
 	}
 
@@ -104,14 +104,15 @@ public class DriverDatabaseBuilder extends AbstractDatabaseBuilder<Driver, Drive
 		String url = this.location;
 		if (url == null)
 		{
-			throw new SQLException(String.format("No JDBC url specified."));
+			throw new SQLException("No location specified");
 		}
+		
 		Driver driver = this.connectionSource;
 		if ((driver != null) && !driver.acceptsURL(url))
 		{
-			throw new SQLException(Messages.JDBC_URL_REJECTED.getMessage(url));
+			throw new SQLException(driver.getClass().getName() + " driver does not accept " + url);
 		}
 		Driver connectionSource = (driver == null) ? DriverManager.getDriver(url) : driver;
-		return new DriverDatabase(this.id, connectionSource, url, new Properties(this.properties), this.credentials, this.weight, this.local);
+		return new DriverDatabase(this.id, connectionSource, url, new Properties(this.properties), this.credentials, this.weight, this.locality);
 	}
 }

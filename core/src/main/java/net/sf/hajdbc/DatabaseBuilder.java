@@ -31,5 +31,5 @@ public interface DatabaseBuilder<Z, D extends Database<Z>> extends PropertiesBui
 
 	DatabaseBuilder<Z, D> weight(int weight);
 
-	DatabaseBuilder<Z, D> local(boolean local);
+	DatabaseBuilder<Z, D> locality(Locality locality);
 }

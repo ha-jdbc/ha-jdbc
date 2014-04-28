@@ -17,8 +17,14 @@
  */
 package net.sf.hajdbc.xml;
 
+import java.util.Locale;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseBuilder;
+import net.sf.hajdbc.Locality;
 
 /**
  * @author Paul Ferraro
@@ -33,4 +39,39 @@ public class DatabaseClusterConfigurationReader_3_1<Z, D extends Database<Z>, B 
 			return new DatabaseClusterConfigurationReader_3_1<>();
 		}
 	};
+
+	@Override
+	void readDatabaseAttributes(XMLStreamReader reader, B builder) throws XMLStreamException
+	{
+		for (int i = 0; i < reader.getAttributeCount(); ++i)
+		{
+			String value = reader.getAttributeValue(i);
+			switch (reader.getAttributeLocalName(i))
+			{
+				case ID:
+				{
+					break;
+				}
+				case WEIGHT:
+				{
+					builder.weight(Integer.parseInt(value));
+					break;
+				}
+				case LOCALITY:
+				{
+					builder.locality(Locality.valueOf(value.toUpperCase(Locale.US)));
+					break;
+				}
+				case LOCATION:
+				{
+					builder.location(value);
+					break;
+				}
+				default:
+				{
+					throw new XMLStreamException();
+				}
+			}
+		}
+	}
 }

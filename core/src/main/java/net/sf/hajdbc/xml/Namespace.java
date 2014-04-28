@@ -28,10 +28,10 @@ import org.xml.sax.SAXException;
 public enum Namespace
 {
 	VERSION_3_0(3, 0, DatabaseClusterConfigurationReader_3_0.FACTORY),
-//	VERSION_3_1(3, 1, DatabaseClusterConfigurationReader_3_1.FACTORY),
+	VERSION_3_1(3, 1, DatabaseClusterConfigurationReader_3_1.FACTORY),
 	;
 
-	public static final Namespace CURRENT_VERSION = VERSION_3_0;
+	public static final Namespace CURRENT_VERSION = VERSION_3_1;
 
 	private final int major;
 	private final int minor;

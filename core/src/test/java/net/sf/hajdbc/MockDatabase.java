@@ -42,7 +42,7 @@ public class MockDatabase extends AbstractDatabase<Void>
 	
 	public MockDatabase(String id, int weight)
 	{
-		super(id, null, null, weight, false);
+		super(id, null, null, weight, Locality.REMOTE);
 	}
 
 	@Override
