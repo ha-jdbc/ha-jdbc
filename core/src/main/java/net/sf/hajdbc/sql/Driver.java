@@ -29,7 +29,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import net.sf.hajdbc.AbstractDriver;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.DatabaseClusterFactory;
@@ -136,7 +135,7 @@ public final class Driver extends AbstractDriver
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.AbstractDriver#getUrlPattern()
+	 * @see net.sf.hajdbc.sql.AbstractDriver#getUrlPattern()
 	 */
 	@Override
 	protected Pattern getUrlPattern()
