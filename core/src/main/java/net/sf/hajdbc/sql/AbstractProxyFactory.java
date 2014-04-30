@@ -27,11 +27,12 @@ import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.ExceptionFactory;
 import net.sf.hajdbc.ExceptionType;
-import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
+import net.sf.hajdbc.messages.Messages;
+import net.sf.hajdbc.messages.MessagesFactory;
 
 /**
  * 
@@ -39,6 +40,7 @@ import net.sf.hajdbc.logging.LoggerFactory;
  */
 public abstract class AbstractProxyFactory<Z, D extends Database<Z>, TE extends Exception, T, E extends Exception> implements ProxyFactory<Z, D, T, E>
 {
+	protected Messages messages = MessagesFactory.getMessages();
 	protected Logger logger = LoggerFactory.getLogger(this.getClass());
 	
 	private final DatabaseCluster<Z, D> cluster;
@@ -130,7 +132,7 @@ public abstract class AbstractProxyFactory<Z, D extends Database<Z>, TE extends 
 				{
 					if (!this.map.isEmpty() && this.cluster.deactivate(database, this.cluster.getStateManager()))
 					{
-						this.logger.log(Level.WARN, e, Messages.SQL_OBJECT_INIT_FAILED.getMessage(), this.getClass().getName(), database);
+						this.logger.log(Level.WARN, e, this.messages.proxyCreationFailed(this.cluster, database, this.getClass()));
 					}
 				}
 			}

@@ -25,12 +25,16 @@ import javax.xml.stream.XMLStreamReader;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseBuilder;
 import net.sf.hajdbc.Locality;
+import net.sf.hajdbc.messages.Messages;
+import net.sf.hajdbc.messages.MessagesFactory;
 
 /**
  * @author Paul Ferraro
  */
 public class DatabaseClusterConfigurationReader_3_1<Z, D extends Database<Z>, B extends DatabaseBuilder<Z, D>> extends DatabaseClusterConfigurationReader_3_0<Z, D, B>
 {
+	private static Messages messages = MessagesFactory.getMessages();
+	
 	public static final DatabaseClusterConfigurationReaderFactory FACTORY = new DatabaseClusterConfigurationReaderFactory()
 	{
 		@Override
@@ -52,6 +56,11 @@ public class DatabaseClusterConfigurationReader_3_1<Z, D extends Database<Z>, B 
 				{
 					break;
 				}
+				case LOCATION:
+				{
+					builder.location(value);
+					break;
+				}
 				case WEIGHT:
 				{
 					builder.weight(Integer.parseInt(value));
@@ -62,14 +71,9 @@ public class DatabaseClusterConfigurationReader_3_1<Z, D extends Database<Z>, B 
 					builder.locality(Locality.valueOf(value.toUpperCase(Locale.US)));
 					break;
 				}
-				case LOCATION:
-				{
-					builder.location(value);
-					break;
-				}
 				default:
 				{
-					throw new XMLStreamException();
+					throw new XMLStreamException(messages.unexpectedAttribute(reader, i));
 				}
 			}
 		}

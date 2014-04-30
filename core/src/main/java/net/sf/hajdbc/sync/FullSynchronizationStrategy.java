@@ -31,12 +31,13 @@ import java.util.concurrent.Future;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.ExceptionType;
-import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
+import net.sf.hajdbc.messages.Messages;
+import net.sf.hajdbc.messages.MessagesFactory;
 import net.sf.hajdbc.util.Strings;
 
 /**
@@ -65,6 +66,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy, Tab
 {
 	private static final long serialVersionUID = 9190347092842178162L;
 
+	static Messages messages = MessagesFactory.getMessages();
 	static Logger logger = LoggerFactory.getLogger(FullSynchronizationStrategy.class);
 
 	private SynchronizationStrategy strategy = new PerTableSynchronizationStrategy(this);
@@ -131,7 +133,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy, Tab
 				logger.log(Level.DEBUG, deleteSQL);
 				int deletedRows = deleteStatement.executeUpdate(deleteSQL);
 		
-				logger.log(Level.INFO, Messages.DELETE_COUNT.getMessage(), deletedRows, tableName);
+				logger.log(Level.INFO, messages.deleteCount(table, deletedRows));
 			}
 			
 			logger.log(Level.DEBUG, insertSQL);
@@ -182,7 +184,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy, Tab
 					insertStatement.executeBatch();
 				}
 		
-				logger.log(Level.INFO, Messages.INSERT_COUNT.getMessage(), statementCount, table);
+				logger.log(Level.INFO, messages.insertCount(table, statementCount));
 			}
 			catch (ExecutionException e)
 			{

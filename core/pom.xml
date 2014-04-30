@@ -47,6 +47,13 @@
 			<version>3.4.3.Final</version>
 			<optional>true</optional>
 		</dependency>
+		<!-- Optional i18n dependency -->
+		<dependency>
+			<groupId>com.googlecode.gettext-commons</groupId>
+			<artifactId>gettext-commons</artifactId>
+			<version>0.9.8</version>
+			<optional>true</optional>
+		</dependency>
 		<!-- Optional logging dependencies -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -261,4 +268,35 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<!-- Profile that generates resource bundles for i18n -->
+			<id>i18n</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.googlecode.gettext-commons</groupId>
+						<artifactId>gettext-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>gettext</id>
+								<phase>process-resources</phase>
+								<goals>
+									<goal>merge</goal>
+									<goal>dist</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<poDirectory>${project.basedir}/src/main/po</poDirectory>
+							<keysFile>ha-jdbc.pot</keysFile>
+							<targetBundle>net.sf.hajdbc.messages.i18n.I18nMessages</targetBundle>
+							<outputFormat>properties</outputFormat>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>

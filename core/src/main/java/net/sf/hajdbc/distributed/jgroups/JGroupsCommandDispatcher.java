@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicReference;
 
-import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.distributed.Command;
 import net.sf.hajdbc.distributed.CommandDispatcher;
 import net.sf.hajdbc.distributed.Member;
@@ -222,7 +221,7 @@ public class JGroupsCommandDispatcher<C> implements RequestHandler, CommandDispa
 	{
 		Command<Object, C> command = Objects.deserialize(message.getRawBuffer(), Command.class);
 
-		this.logger.log(Level.DEBUG, Messages.COMMAND_RECEIVED.getMessage(command, message.getSrc()));
+		this.logger.log(Level.DEBUG, "{0} received from {1}", command, message.getSrc());
 		
 		return command.execute(this.context);
 	}

@@ -24,9 +24,10 @@ import java.sql.SQLException;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseProperties;
-import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.cache.DatabaseMetaDataCache;
 import net.sf.hajdbc.dialect.Dialect;
+import net.sf.hajdbc.messages.Messages;
+import net.sf.hajdbc.messages.MessagesFactory;
 
 /**
  * DatabaseMetaDataCache implementation that eagerly caches data when first flushed.
@@ -37,6 +38,8 @@ import net.sf.hajdbc.dialect.Dialect;
  */
 public class SharedEagerDatabaseMetaDataCache<Z, D extends Database<Z>> implements DatabaseMetaDataCache<Z, D>
 {
+	private static final Messages messages = MessagesFactory.getMessages();
+
 	private final DatabaseCluster<Z, D> cluster;
 
 	private volatile DatabaseProperties properties;
@@ -56,7 +59,7 @@ public class SharedEagerDatabaseMetaDataCache<Z, D extends Database<Z>> implemen
 		
 		if (database == null)
 		{
-			throw new SQLException(Messages.NO_ACTIVE_DATABASES.getMessage());
+			throw new SQLException(messages.noActiveDatabases(this.cluster));
 		}
 		
 		this.setDatabaseProperties(database.connect(this.cluster.getDecoder()));

@@ -1,0 +1,221 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2014-04-30 13:52-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:27
+#, java-format
+msgid "Unsupported namespace <{2} xmlns=\"{3}\"/> found at [{0}:{1}]"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:34
+#, java-format
+msgid "Unexpected <{2}/> attribute found at [{0}:{1}]"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:41
+#, java-format
+msgid "Unexpected <{2} {3}=\"...\"/> attribute found at [{0}:{1}]"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:48
+#, java-format
+msgid "Invalid value for <{2} {3}=\"{4}\"/> found at [{0}:{1}]"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:55
+#, java-format
+msgid "<{2} {3}=\"...\"/> attribute is missing at [{0}:{1}]"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:61
+#, java-format
+msgid "{1} is not a valid JavaBean property of {0}"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:67
+#, java-format
+msgid "\"{1}\" is not a valid value for {0}"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:73
+#, java-format
+msgid "{0} is not one of the available synchronization strategies: {1}"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:79
+msgid "A database cluster must define at least one synchronization strategy"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:85
+msgid "A database cluster must define at least one database"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:91
+#, java-format
+msgid "Failed to locate {0}"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:97
+#, java-format
+msgid "Initializing HA-JDBC {0} from {1}"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:103
+#, java-format
+msgid "Database cluster {0} is not active"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:109
+#, java-format
+msgid "Database cluster {0} has no active databases"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:115
+#, java-format
+msgid "Activated database {1} from cluster {0}"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:121
+#, java-format
+msgid "Deactivated database {1} from cluster {0}"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:127
+#, java-format
+msgid ""
+"Deactivated database {1} from cluster {0} due to inconsistent operations "
+"results: expected [{2}], actual [{3}]"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:133
+#, java-format
+msgid ""
+"Database {1} from cluster {0} could not be removed because it is still "
+"active."
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:139
+#, java-format
+msgid "{1} is not a valid database of cluster {0}"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:145
+#, java-format
+msgid "Failed to activate database {1} from cluster {0}"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:151
+#, java-format
+msgid ""
+"Deactivated database {1} from cluster {0} due to {2} proxy creation failure"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:157
+#, java-format
+msgid ""
+"Failed to locate schema for table {1} for cluster {0}.  Verify "
+"implementation of {2}.getDefaultSchemas()"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:163
+#, java-format
+msgid ""
+"Starting synchronization of database {1} from cluster {0} using {2} "
+"synchronization strategy"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:169
+#, java-format
+msgid ""
+"Completed synchronization of database {1} from cluster {0} using {2} "
+"synchronization strategy"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:175
+#, java-format
+msgid "Failed to register driver {0}"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:181
+#, java-format
+msgid "Database {0} does not define a location"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:187
+#, java-format
+msgid "Database {0} defines an invalid location: {1}"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:193
+#, java-format
+msgid ""
+"Database cluster {0} will use initial cluster state {1} obtained from {2}"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:199
+#, java-format
+msgid "Database cluster {0} will use initial cluster state {1}"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:205
+#, java-format
+msgid "Database cluster {0} found no initial cluster state"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:211
+#, java-format
+msgid ""
+"Table {1} does not define a primary key, a requirement of the {0} "
+"synchronization strategy"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:217
+#, java-format
+msgid "Inserted {1} rows into {0}"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:223
+#, java-format
+msgid "Updated {1} rows in {0}"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:229
+#, java-format
+msgid "Deleted {1} rows from {0}"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:235
+#, java-format
+msgid "The {0} dialect does not yet implement dump-restore support"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:241
+#, java-format
+msgid ""
+"Next value ({2}) for sequence {0} from database {1} does not match next "
+"value ({4}) from database {3}"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:247
+msgid "Failed to detect an embedded database driver on the classpath"
+msgstr ""
+
+#: net/sf/hajdbc/messages/simple/SimpleMessages.java:253
+#, java-format
+msgid "State for database cluster {0} will be persisted to {1}"
+msgstr ""

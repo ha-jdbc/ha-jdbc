@@ -23,9 +23,13 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import net.sf.hajdbc.Locality;
+import net.sf.hajdbc.messages.Messages;
+import net.sf.hajdbc.messages.MessagesFactory;
 
 public class DriverDatabaseBuilder extends AbstractDatabaseBuilder<Driver, DriverDatabase>
 {
+	private static final Messages messages = MessagesFactory.getMessages();
+
 	public DriverDatabaseBuilder(String id)
 	{
 		super(id);
@@ -104,13 +108,13 @@ public class DriverDatabaseBuilder extends AbstractDatabaseBuilder<Driver, Drive
 		String url = this.location;
 		if (url == null)
 		{
-			throw new SQLException("No location specified");
+			throw new SQLException(messages.noLocation(this.id));
 		}
 		
 		Driver driver = this.connectionSource;
 		if ((driver != null) && !driver.acceptsURL(url))
 		{
-			throw new SQLException(driver.getClass().getName() + " driver does not accept " + url);
+			throw new SQLException(messages.invalidLocation(this.id, url));
 		}
 		Driver connectionSource = (driver == null) ? DriverManager.getDriver(url) : driver;
 		return new DriverDatabase(this.id, connectionSource, url, new Properties(this.properties), this.credentials, this.weight, this.locality);

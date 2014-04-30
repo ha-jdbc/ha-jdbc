@@ -32,7 +32,8 @@ import java.util.concurrent.Future;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.ExceptionFactory;
-import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.messages.Messages;
+import net.sf.hajdbc.messages.MessagesFactory;
 import net.sf.hajdbc.sql.ProxyFactory;
 
 /**
@@ -40,6 +41,8 @@ import net.sf.hajdbc.sql.ProxyFactory;
  */
 public class AllResultsCollector implements InvokeOnManyInvocationStrategy.ResultsCollector
 {
+	private static final Messages messages = MessagesFactory.getMessages();
+
 	public static interface ExecutorProvider
 	{
 		<Z, D extends Database<Z>> ExecutorService getExecutor(DatabaseCluster<Z, D> cluster);
@@ -64,7 +67,7 @@ public class AllResultsCollector implements InvokeOnManyInvocationStrategy.Resul
 		
 		if (databaseSet.isEmpty())
 		{
-			exceptionFactory.createException(Messages.NO_ACTIVE_DATABASES.getMessage(cluster));
+			exceptionFactory.createException(messages.noActiveDatabases(cluster));
 		}
 
 		int size = databaseSet.size();

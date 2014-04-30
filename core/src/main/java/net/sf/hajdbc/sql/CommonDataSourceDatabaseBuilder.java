@@ -30,9 +30,13 @@ import javax.sql.CommonDataSource;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.Locality;
+import net.sf.hajdbc.messages.Messages;
+import net.sf.hajdbc.messages.MessagesFactory;
 
 public abstract class CommonDataSourceDatabaseBuilder<Z extends CommonDataSource, D extends Database<Z>> extends AbstractDatabaseBuilder<Z, D>
 {
+	private static final Messages messages = MessagesFactory.getMessages();
+
 	private final Class<Z> dataSourceClass;
 
 	public CommonDataSourceDatabaseBuilder(String id, Class<Z> dataSourceClass)
@@ -113,7 +117,7 @@ public abstract class CommonDataSourceDatabaseBuilder<Z extends CommonDataSource
 			String location = this.location;
 			if (location == null)
 			{
-				throw new SQLException("No location specified");
+				throw new SQLException(messages.noLocation(this.id));
 			}
 			try
 			{

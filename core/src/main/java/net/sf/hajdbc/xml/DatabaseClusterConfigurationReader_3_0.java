@@ -31,6 +31,8 @@ import net.sf.hajdbc.Identifiable;
 import net.sf.hajdbc.IdentifiableMatcher;
 import net.sf.hajdbc.Locality;
 import net.sf.hajdbc.configuration.ServiceBuilder;
+import net.sf.hajdbc.messages.Messages;
+import net.sf.hajdbc.messages.MessagesFactory;
 import net.sf.hajdbc.sql.TransactionModeEnum;
 import net.sf.hajdbc.util.ServiceLoaders;
 
@@ -40,6 +42,8 @@ import net.sf.hajdbc.util.ServiceLoaders;
 @SuppressWarnings("deprecation")
 public class DatabaseClusterConfigurationReader_3_0<Z, D extends Database<Z>, B extends DatabaseBuilder<Z, D>> implements DatabaseClusterConfigurationReader<Z, D, B>, Constants
 {
+	private static Messages messages = MessagesFactory.getMessages();
+
 	public static final DatabaseClusterConfigurationReaderFactory FACTORY = new DatabaseClusterConfigurationReaderFactory()
 	{
 		@Override
@@ -87,7 +91,7 @@ public class DatabaseClusterConfigurationReader_3_0<Z, D extends Database<Z>, B 
 				}
 				default:
 				{
-					throw new XMLStreamException();
+					throw new XMLStreamException(messages.unexpectedElement(reader));
 				}
 			}
 		}
@@ -188,7 +192,7 @@ public class DatabaseClusterConfigurationReader_3_0<Z, D extends Database<Z>, B 
 				}
 				default:
 				{
-					throw new XMLStreamException();
+					throw new XMLStreamException(messages.unexpectedAttribute(reader, i));
 				}
 			}
 		}
@@ -208,7 +212,7 @@ public class DatabaseClusterConfigurationReader_3_0<Z, D extends Database<Z>, B 
 				}
 				default:
 				{
-					throw new XMLStreamException();
+					throw new XMLStreamException(messages.unexpectedElement(reader));
 				}
 			}
 		}
@@ -231,6 +235,11 @@ public class DatabaseClusterConfigurationReader_3_0<Z, D extends Database<Z>, B 
 				{
 					break;
 				}
+				case LOCATION:
+				{
+					builder.location(value);
+					break;
+				}
 				case WEIGHT:
 				{
 					builder.weight(Integer.parseInt(value));
@@ -241,14 +250,9 @@ public class DatabaseClusterConfigurationReader_3_0<Z, D extends Database<Z>, B 
 					builder.locality(Boolean.parseBoolean(value) ? Locality.LOCAL : Locality.REMOTE);
 					break;
 				}
-				case LOCATION:
-				{
-					builder.location(value);
-					break;
-				}
 				default:
 				{
-					throw new XMLStreamException();
+					throw new XMLStreamException(messages.unexpectedAttribute(reader, i));
 				}
 			}
 		}
@@ -280,7 +284,7 @@ public class DatabaseClusterConfigurationReader_3_0<Z, D extends Database<Z>, B 
 				}
 				default:
 				{
-					throw new XMLStreamException();
+					throw new XMLStreamException(messages.unexpectedElement(reader));
 				}
 			}
 		}
@@ -309,7 +313,7 @@ public class DatabaseClusterConfigurationReader_3_0<Z, D extends Database<Z>, B 
 				}
 				default:
 				{
-					throw new XMLStreamException();
+					throw new XMLStreamException(messages.unexpectedElement(reader));
 				}
 			}
 		}
@@ -327,7 +331,7 @@ public class DatabaseClusterConfigurationReader_3_0<Z, D extends Database<Z>, B 
 		{
 			if (defaultValue == null)
 			{
-				throw new XMLStreamException();
+				throw new XMLStreamException(messages.missingRequiredAttribute(reader, name));
 			}
 			return defaultValue;
 		}

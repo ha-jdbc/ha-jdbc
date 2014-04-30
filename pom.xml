@@ -252,6 +252,23 @@
 		</pluginManagement>
 	</build>
 
+	<profiles>
+		<profile>
+			<id>i18n</id>
+			<build>
+				<pluginManagement>
+					<plugins>
+						<plugin>
+							<groupId>com.googlecode.gettext-commons</groupId>
+							<artifactId>gettext-maven-plugin</artifactId>
+							<version>1.2.4</version>
+						</plugin>
+					</plugins>
+				</pluginManagement>
+			</build>
+		</profile>
+	</profiles>
+
 	<scm>
 		<connection>scm:git:git://github.com/ha-jdbc/ha-jdbc.git</connection>
 		<developerConnection>scm:git:git@github.com:ha-jdbc/ha-jdbc.git</developerConnection>

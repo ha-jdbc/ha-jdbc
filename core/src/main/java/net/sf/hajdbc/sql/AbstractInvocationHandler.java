@@ -32,7 +32,6 @@ import java.util.SortedMap;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.ExceptionFactory;
-import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.invocation.AllResultsCollector;
 import net.sf.hajdbc.invocation.InvocationStrategies;
 import net.sf.hajdbc.invocation.InvocationStrategy;
@@ -41,6 +40,8 @@ import net.sf.hajdbc.invocation.SimpleInvoker;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
+import net.sf.hajdbc.messages.Messages;
+import net.sf.hajdbc.messages.MessagesFactory;
 import net.sf.hajdbc.sql.serial.SerialLocatorFactories;
 import net.sf.hajdbc.sql.serial.SerialLocatorFactory;
 import net.sf.hajdbc.util.reflect.Methods;
@@ -51,6 +52,8 @@ import net.sf.hajdbc.util.reflect.Methods;
  */
 public class AbstractInvocationHandler<Z, D extends Database<Z>, T, E extends Exception, F extends ProxyFactory<Z, D, T, E>> implements InvocationHandler<Z, D, T, E, F>
 {
+	protected final Messages messages = MessagesFactory.getMessages();
+
 	private static final Method equalsMethod = Methods.getMethod(Object.class, "equals", Object.class);
 	private static final Method hashCodeMethod = Methods.getMethod(Object.class, "hashCode");
 	private static final Method toStringMethod = Methods.getMethod(Object.class, "toString");
@@ -79,7 +82,7 @@ public class AbstractInvocationHandler<Z, D extends Database<Z>, T, E extends Ex
 		
 		if (!cluster.isActive())
 		{
-			throw new SQLException(Messages.CLUSTER_NOT_ACTIVE.getMessage(cluster));
+			throw new SQLException(this.messages.notActive(cluster));
 		}
 		
 		return this.invokeOnProxy(this.proxyClass.cast(proxy), method, args);
@@ -206,7 +209,7 @@ public class AbstractInvocationHandler<Z, D extends Database<Z>, T, E extends Ex
 		
 		if (resultMap.isEmpty())
 		{
-			throw this.proxyFactory.getExceptionFactory().createException(Messages.NO_ACTIVE_DATABASES.getMessage(cluster));
+			throw this.proxyFactory.getExceptionFactory().createException(this.messages.noActiveDatabases(cluster));
 		}
 		
 		Iterator<Map.Entry<D, R>> results = resultMap.entrySet().iterator();
@@ -224,7 +227,7 @@ public class AbstractInvocationHandler<Z, D extends Database<Z>, T, E extends Ex
 				
 				if (cluster.deactivate(database, cluster.getStateManager()))
 				{
-					this.logger.log(Level.ERROR, Messages.DATABASE_INCONSISTENT.getMessage(), database, cluster, primaryResult, result);
+					this.logger.log(Level.ERROR, this.messages.inconsistent(cluster, database, primaryResult, result));
 				}
 			}
 		}

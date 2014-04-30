@@ -34,7 +34,7 @@ import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterConfiguration;
 import net.sf.hajdbc.DatabaseClusterConfigurationListener;
 import net.sf.hajdbc.DatabaseClusterListener;
-import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.Locality;
 import net.sf.hajdbc.SynchronizationListener;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.TransactionMode;
@@ -58,6 +58,8 @@ import net.sf.hajdbc.management.MBean;
 import net.sf.hajdbc.management.MBeanRegistrar;
 import net.sf.hajdbc.management.ManagedAttribute;
 import net.sf.hajdbc.management.ManagedOperation;
+import net.sf.hajdbc.messages.Messages;
+import net.sf.hajdbc.messages.MessagesFactory;
 import net.sf.hajdbc.state.DatabaseEvent;
 import net.sf.hajdbc.state.StateManager;
 import net.sf.hajdbc.state.distributed.DistributedStateManager;
@@ -75,6 +77,7 @@ import net.sf.hajdbc.util.concurrent.cron.CronThreadPoolExecutor;
 @MBean
 public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCluster<Z, D>
 {
+	static final Messages messages = MessagesFactory.getMessages();
 	static final Logger logger = LoggerFactory.getLogger(DatabaseClusterImpl.class);
 	
 	private final String id;
@@ -153,19 +156,20 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		
 		if (strategy == null)
 		{
-			throw new IllegalArgumentException(Messages.INVALID_SYNC_STRATEGY.getMessage(strategyId));
+			throw new IllegalArgumentException(messages.invalidSyncStrategy(strategyId, this.configuration.getSynchronizationStrategyMap().keySet()));
 		}
 		
+		D database = this.getDatabase(databaseId);
 		try
 		{
-			if (this.activate(this.getDatabase(databaseId), strategy))
+			if (this.activate(database, strategy))
 			{
-				logger.log(Level.INFO, Messages.DATABASE_ACTIVATED.getMessage(this, databaseId));
+				logger.log(Level.INFO, messages.activated(this, database));
 			}
 		}
 		catch (SQLException e)
 		{
-			logger.log(Level.WARN, e, Messages.DATABASE_ACTIVATE_FAILED.getMessage(this, databaseId));
+			logger.log(Level.WARN, e, messages.activationFailed(this, database));
 			
 			SQLException exception = e.getNextException();
 			
@@ -278,7 +282,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		
 		if (this.balancer.contains(database))
 		{
-			throw new IllegalStateException(Messages.DATABASE_STILL_ACTIVE.getMessage(this, databaseId));
+			throw new IllegalStateException(messages.stillActive(this, database));
 		}
 
 		this.registrar.unregister(this, database);
@@ -501,7 +505,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		
 		if (database == null)
 		{
-			throw new IllegalArgumentException(Messages.INVALID_DATABASE.getMessage(this, id));
+			throw new IllegalArgumentException(messages.invalidDatabase(this, id));
 		}
 		
 		return database;
@@ -700,22 +704,19 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		
 		if (!databases.isEmpty())
 		{
+			messages.initialClusterState(this, databases);
+			
 			for (String databaseId: databases)
 			{
 				D database = this.getDatabase(databaseId);
 				
-				if (database != null)
-				{
-					this.balancer.add(database);
-				}
-				else
-				{
-					logger.log(Level.WARN, Messages.DATABASE_IGNORED.getMessage(), this, databaseId);
-				}
+				this.balancer.add(database);
 			}
 		}
 		else
 		{
+			messages.initialClusterStateEmpty(this);
+			
 			for (D database: this.configuration.getDatabaseMap().values())
 			{
 				if (this.isAlive(database, Level.WARN))
@@ -790,10 +791,10 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		
 		if (this.balancer != null)
 		{
-			// Proactively deactivate any local databases
+			// Proactively deactivate any embedded databases
 			for (D database: this.balancer)
 			{
-				if (database.isLocal())
+				if (database.getLocality() == Locality.EMBEDDED)
 				{
 					this.deactivate(database, this.stateManager);
 				}
@@ -867,7 +868,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 				{
 					DatabaseEvent event = new DatabaseEvent(database);
 					
-					logger.log(Level.INFO, Messages.DATABASE_SYNC_START.getMessage(this, database));
+					logger.log(Level.INFO, messages.synchronizationBegin(this, database, strategy));
 					
 					for (SynchronizationListener listener: this.synchronizationListeners)
 					{
@@ -876,7 +877,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 					
 					strategy.synchronize(context);
 	
-					logger.log(Level.INFO, Messages.DATABASE_SYNC_END.getMessage(this, database));
+					logger.log(Level.INFO, messages.synchronizationEnd(this, database, strategy));
 					
 					for (SynchronizationListener listener: this.synchronizationListeners)
 					{
@@ -922,7 +923,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 					{
 						if (DatabaseClusterImpl.this.deactivate(database, DatabaseClusterImpl.this.getStateManager()))
 						{
-							logger.log(Level.ERROR, Messages.DATABASE_DEACTIVATED.getMessage(), database, DatabaseClusterImpl.this);
+							logger.log(Level.ERROR, messages.deactivated(DatabaseClusterImpl.this, database));
 						}
 					}
 				}
@@ -951,7 +952,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 							{
 								if (DatabaseClusterImpl.this.activate(database, DatabaseClusterImpl.this.configuration.getSynchronizationStrategyMap().get(DatabaseClusterImpl.this.configuration.getDefaultSynchronizationStrategy())))
 								{
-									logger.log(Level.INFO, Messages.DATABASE_ACTIVATED.getMessage(), database, DatabaseClusterImpl.this);
+									logger.log(Level.INFO, messages.activated(DatabaseClusterImpl.this, database));
 								}
 							}
 							catch (SQLException e)

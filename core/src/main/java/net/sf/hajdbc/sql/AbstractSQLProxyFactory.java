@@ -31,7 +31,6 @@ import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseProperties;
 import net.sf.hajdbc.IdentityColumnSupport;
-import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.dialect.Dialect;
@@ -124,7 +123,7 @@ public abstract class AbstractSQLProxyFactory<Z, D extends Database<Z>, P, T> ex
 						
 						if (tableProperties == null)
 						{
-							throw new SQLException(Messages.SCHEMA_LOOKUP_FAILED.getMessage(table, cluster, cluster.getDialect().getClass().getName() + ".getDefaultSchemas()"));
+							throw new SQLException(this.messages.schemaLookupFailed(cluster, table));
 						}
 						
 						if (!tableProperties.getIdentityColumns().isEmpty())

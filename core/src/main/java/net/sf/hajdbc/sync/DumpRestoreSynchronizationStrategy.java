@@ -24,7 +24,8 @@ import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DumpRestoreSupport;
 import net.sf.hajdbc.ExceptionType;
-import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.messages.Messages;
+import net.sf.hajdbc.messages.MessagesFactory;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.codec.Decoder;
 import net.sf.hajdbc.dialect.Dialect;
@@ -36,6 +37,8 @@ import net.sf.hajdbc.util.Files;
  */
 public class DumpRestoreSynchronizationStrategy implements SynchronizationStrategy
 {
+	private static final Messages messages = MessagesFactory.getMessages();
+
 	private static final long serialVersionUID = 5743532034969216540L;
 	private static final String DUMP_FILE_SUFFIX = ".dump";
 
@@ -76,7 +79,7 @@ public class DumpRestoreSynchronizationStrategy implements SynchronizationStrate
 		
 		if (support == null)
 		{
-			throw new SQLException(Messages.DUMP_RESTORE_UNSUPPORTED.getMessage(dialect));
+			throw new SQLException(messages.dumpRestoreNotSupported(dialect));
 		}
 		
 		try

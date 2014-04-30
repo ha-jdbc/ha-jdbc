@@ -45,12 +45,13 @@ import net.sf.hajdbc.DatabaseClusterConfiguration;
 import net.sf.hajdbc.DatabaseClusterConfigurationBuilder;
 import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.Identifiable;
-import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.Version;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
+import net.sf.hajdbc.messages.Messages;
+import net.sf.hajdbc.messages.MessagesFactory;
 import net.sf.hajdbc.util.SystemProperties;
 
 /**
@@ -66,6 +67,7 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 	private static final String DEFAULT_RESOURCE = "ha-jdbc-{0}.xml";
 
 	private static final Logger logger = LoggerFactory.getLogger(XMLDatabaseClusterConfigurationFactory.class);
+	private static final Messages messages = MessagesFactory.getMessages();
 	
 	private final XMLStreamFactory streamFactory;
 	private final Map<String, Namespace> namespaces = new HashMap<>();
@@ -107,7 +109,7 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 				if (url != null) return url;
 			}
 		}
-		throw new IllegalArgumentException(Messages.CONFIG_NOT_FOUND.getMessage(resource));
+		throw new IllegalArgumentException(messages.resourceNotFound(resource));
 	}
 
 	public XMLDatabaseClusterConfigurationFactory(String id, String resource)
@@ -137,7 +139,7 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 	@Override
 	public <B extends DatabaseBuilder<Z, D>> DatabaseClusterConfiguration<Z, D> createConfiguration(DatabaseClusterConfigurationBuilder<Z, D, B> builder) throws SQLException
 	{
-		logger.log(Level.INFO, Messages.HA_JDBC_INIT.getMessage(), Version.CURRENT, this.streamFactory);
+		logger.log(Level.INFO, messages.init(Version.CURRENT, this.streamFactory));
 		
 		try
 		{
@@ -148,7 +150,7 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 			
 			if (namespace == null)
 			{
-				throw new SQLException("Unsupported namespace: " + uri);
+				throw new XMLStreamException(messages.unsupportedNamespace(reader));
 			}
 			
 			namespace.getReaderFactory().<Z, D, B>createReader().read(reader, builder);
