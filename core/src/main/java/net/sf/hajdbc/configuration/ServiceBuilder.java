@@ -28,10 +28,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.sf.hajdbc.Identifiable;
-import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.messages.Messages;
+import net.sf.hajdbc.messages.MessagesFactory;
 
 public class ServiceBuilder<T extends Identifiable> extends SimpleServiceBuilder<T> implements PropertiesBuilder<T>
 {
+	private static final Messages messages = MessagesFactory.getMessages();
+
 	private final Map<String, String> properties = new HashMap<>();
 
 	public ServiceBuilder(Class<T> serviceClass, String id)
@@ -87,19 +90,20 @@ public class ServiceBuilder<T extends Identifiable> extends SimpleServiceBuilder
 				Map.Entry<PropertyDescriptor, PropertyEditor> entry = descriptors.get(name);
 				if (entry == null)
 				{
-					throw new IllegalArgumentException(Messages.INVALID_PROPERTY.getMessage(name, service.getClass().getName()));
+					throw new IllegalArgumentException(messages.invalidJavaBeanProperty(service.getClass(), name));
 				}
 				PropertyDescriptor descriptor = entry.getKey();
 				PropertyEditor editor = entry.getValue();
 	
 				try
 				{
-					editor.setAsText(property.getValue());
+					editor.setAsText(value);
 				}
-				catch (Exception e)
+				catch (IllegalArgumentException e)
 				{
-					throw new IllegalArgumentException(Messages.INVALID_PROPERTY_VALUE.getMessage(value, name, service.getClass().getName()));
+					throw new IllegalArgumentException(messages.invalidJavaBeanPropertyValue(descriptor, value), e);
 				}
+
 				try
 				{
 					descriptor.getWriteMethod().invoke(service, editor.getValue());

@@ -33,6 +33,6 @@ public class ConnectionPoolDataSourceDatabaseBuilder extends CommonDataSourceDat
 	@Override
 	public ConnectionPoolDataSourceDatabase build() throws SQLException
 	{
-		return new ConnectionPoolDataSourceDatabase(this.id, this.getDataSource(), this.credentials, this.weight, this.local);
+		return new ConnectionPoolDataSourceDatabase(this.id, this.getDataSource(), this.credentials, this.weight, this.locality);
 	}
 }

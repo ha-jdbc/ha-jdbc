@@ -24,12 +24,13 @@ import java.util.TreeMap;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.ExceptionFactory;
-import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.balancer.Balancer;
 import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
+import net.sf.hajdbc.messages.Messages;
+import net.sf.hajdbc.messages.MessagesFactory;
 import net.sf.hajdbc.sql.ProxyFactory;
 import net.sf.hajdbc.state.StateManager;
 
@@ -38,7 +39,8 @@ import net.sf.hajdbc.state.StateManager;
  */
 public class InvokeOnAnyInvocationStrategy implements InvocationStrategy
 {
-	private static Logger logger = LoggerFactory.getLogger(ExistingResultsCollector.class);
+	private static final Messages messages = MessagesFactory.getMessages();
+	private static final Logger logger = LoggerFactory.getLogger(ExistingResultsCollector.class);
 
 	private final InvocationStrategy strategy;
 	
@@ -85,7 +87,7 @@ public class InvokeOnAnyInvocationStrategy implements InvocationStrategy
 						{
 							if (cluster.deactivate(database, stateManager))
 							{
-								logger.log(Level.ERROR, exception, Messages.DATABASE_DEACTIVATED.getMessage(), database, cluster);
+								logger.log(Level.ERROR, exception, messages.deactivated(cluster, database));
 							}
 						}
 						else

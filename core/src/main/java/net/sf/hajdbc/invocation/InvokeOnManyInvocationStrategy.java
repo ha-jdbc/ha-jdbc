@@ -25,11 +25,12 @@ import java.util.SortedMap;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.ExceptionFactory;
-import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
+import net.sf.hajdbc.messages.Messages;
+import net.sf.hajdbc.messages.MessagesFactory;
 import net.sf.hajdbc.sql.ProxyFactory;
 import net.sf.hajdbc.state.StateManager;
 
@@ -39,7 +40,8 @@ import net.sf.hajdbc.state.StateManager;
  */
 public class InvokeOnManyInvocationStrategy implements InvocationStrategy
 {
-	private static Logger logger = LoggerFactory.getLogger(InvokeOnManyInvocationStrategy.class);
+	private static final Messages messages = MessagesFactory.getMessages();
+	private static final Logger logger = LoggerFactory.getLogger(InvokeOnManyInvocationStrategy.class);
 	
 	public static interface ResultsCollector
 	{
@@ -91,7 +93,7 @@ public class InvokeOnManyInvocationStrategy implements InvocationStrategy
 					
 					if (cluster.deactivate(failedDatabase, stateManager))
 					{
-						logger.log(Level.ERROR, exception, Messages.DATABASE_DEACTIVATED.getMessage(), failedDatabase, cluster);
+						logger.log(Level.ERROR, exception, messages.deactivated(cluster, failedDatabase));
 					}
 				}
 			}
@@ -115,7 +117,7 @@ public class InvokeOnManyInvocationStrategy implements InvocationStrategy
 							
 							if (cluster.deactivate(database, stateManager))
 							{
-								logger.log(Level.ERROR, exception, Messages.DATABASE_INCONSISTENT.getMessage(), database, cluster, primaryException, exception);
+								logger.log(Level.ERROR, exception, messages.inconsistent(cluster, database, primaryException, exception));
 							}
 						}
 					}
@@ -127,7 +129,7 @@ public class InvokeOnManyInvocationStrategy implements InvocationStrategy
 						
 						if (cluster.deactivate(database, stateManager))
 						{
-							logger.log(Level.ERROR, Messages.DATABASE_INCONSISTENT.getMessage(), database, cluster, primaryException, entry.getValue());
+							logger.log(Level.ERROR, messages.inconsistent(cluster, database, primaryException, entry.getValue()));
 						}
 					}
 					
@@ -143,7 +145,7 @@ public class InvokeOnManyInvocationStrategy implements InvocationStrategy
 				
 				if (cluster.deactivate(database, stateManager))
 				{
-					logger.log(Level.ERROR, exception, Messages.DATABASE_DEACTIVATED.getMessage(), database, cluster);
+					logger.log(Level.ERROR, exception, messages.deactivated(cluster, database));
 				}
 			}
 		}

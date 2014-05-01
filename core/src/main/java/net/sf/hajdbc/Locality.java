@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (C) 2012  Paul Ferraro
+ * Copyright (C) 2014  Paul Ferraro
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -17,42 +17,30 @@
  */
 package net.sf.hajdbc;
 
-import java.util.Collections;
-import java.util.ResourceBundle;
+import java.util.Locale;
 
-import org.junit.Assert;
-import org.junit.Test;
-
-public class MessagesTest
+public enum Locality
 {
-	@Test
-	public void verifyEnum()
+	REMOTE(false),
+	LOCAL(true),
+	EMBEDDED(true),
+	;
+
+	private final boolean local;
+
+	private Locality(boolean local)
 	{
-		for (Messages value: Messages.values())
-		{
-			Assert.assertNotNull(value.name(), value.getMessage());
-		}
+		this.local = local;
 	}
-	
-	@Test
-	public void verifyResourceBundle()
+
+	public boolean isLocal()
 	{
-		ResourceBundle resource = ResourceBundle.getBundle(Messages.class.getName());
-		
-		for (String key: Collections.list(resource.getKeys()))
-		{
-			boolean found = false;
-			
-			for (Messages value: Messages.values())
-			{
-				if (value.toString().equals(key))
-				{
-					found = true;
-					break;
-				}
-			}
-			
-			Assert.assertTrue(key, found);
-		}
+		return this.local;
+	}
+
+	@Override
+	public String toString()
+	{
+		return this.name().toLowerCase(Locale.US);
 	}
 }

@@ -38,7 +38,7 @@ public interface Database<Z> extends Comparable<Database<Z>>
 	int getWeight();
 	void setWeight(int weight);
 
-	boolean isLocal();
+	Locality getLocality();
 
 	Connection connect(Decoder decoder) throws SQLException;
 

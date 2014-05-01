@@ -19,7 +19,6 @@ package net.sf.hajdbc.cache;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -154,7 +153,7 @@ public abstract class AbstractDatabaseProperties implements DatabaseProperties
 				return name;
 			}
 		}
-		throw new SQLException("No native type found for " + Arrays.asList(types));
+		throw new IllegalStateException();
 	}
 	
 	protected abstract Map<Integer, Entry<String, Integer>> types() throws SQLException;

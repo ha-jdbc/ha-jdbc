@@ -6,6 +6,7 @@ import java.util.Properties;
 import net.sf.hajdbc.Credentials;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseBuilder;
+import net.sf.hajdbc.Locality;
 import net.sf.hajdbc.codec.Decoder;
 
 public abstract class AbstractDatabaseBuilder<Z, D extends Database<Z>> implements DatabaseBuilder<Z, D>
@@ -17,7 +18,7 @@ public abstract class AbstractDatabaseBuilder<Z, D extends Database<Z>> implemen
 	protected volatile Properties properties = new Properties();
 	protected volatile Credentials credentials;
 	protected volatile int weight = 1;
-	protected volatile boolean local = false;
+	protected volatile Locality locality = Locality.REMOTE;
 	
 	protected AbstractDatabaseBuilder(String id)
 	{
@@ -79,9 +80,9 @@ public abstract class AbstractDatabaseBuilder<Z, D extends Database<Z>> implemen
 	}
 
 	@Override
-	public DatabaseBuilder<Z, D> local(boolean local)
+	public DatabaseBuilder<Z, D> locality(Locality locality)
 	{
-		this.local = local;
+		this.locality = locality;
 		return this;
 	}
 
@@ -91,7 +92,7 @@ public abstract class AbstractDatabaseBuilder<Z, D extends Database<Z>> implemen
 		this.connectionSource = database.getConnectionSource();
 		this.credentials = database.getCredentials();
 		this.weight = database.getWeight();
-		this.local = database.isLocal();
+		this.locality = database.getLocality();
 		return this;
 	}
 }

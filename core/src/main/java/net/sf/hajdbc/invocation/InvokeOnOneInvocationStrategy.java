@@ -23,12 +23,13 @@ import java.util.TreeMap;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.ExceptionFactory;
-import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.balancer.Balancer;
 import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
+import net.sf.hajdbc.messages.Messages;
+import net.sf.hajdbc.messages.MessagesFactory;
 import net.sf.hajdbc.sql.ProxyFactory;
 import net.sf.hajdbc.state.StateManager;
 
@@ -38,6 +39,7 @@ import net.sf.hajdbc.state.StateManager;
  */
 public class InvokeOnOneInvocationStrategy implements InvocationStrategy
 {
+	private static final Messages messages = MessagesFactory.getMessages();
 	private static Logger logger = LoggerFactory.getLogger(InvokeOnOneInvocationStrategy.class);
 	
 	public static interface DatabaseSelector
@@ -70,7 +72,7 @@ public class InvokeOnOneInvocationStrategy implements InvocationStrategy
 			
 			if (database == null)
 			{
-				throw exceptionFactory.createException(Messages.NO_ACTIVE_DATABASES.getMessage(cluster));
+				throw exceptionFactory.createException(messages.noActiveDatabases(cluster));
 			}
 			
 			T object = factory.get(database);
@@ -94,7 +96,7 @@ public class InvokeOnOneInvocationStrategy implements InvocationStrategy
 					{
 						if (cluster.deactivate(database, stateManager))
 						{
-							logger.log(Level.ERROR, exception, Messages.DATABASE_DEACTIVATED.getMessage(), database, cluster);
+							logger.log(Level.ERROR, exception, messages.deactivated(cluster, database));
 						}
 					}
 					else

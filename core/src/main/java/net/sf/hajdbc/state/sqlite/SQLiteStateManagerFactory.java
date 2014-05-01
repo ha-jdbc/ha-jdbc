@@ -22,6 +22,11 @@ import java.text.MessageFormat;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.logging.Level;
+import net.sf.hajdbc.logging.Logger;
+import net.sf.hajdbc.logging.LoggerFactory;
+import net.sf.hajdbc.messages.Messages;
+import net.sf.hajdbc.messages.MessagesFactory;
 import net.sf.hajdbc.pool.generic.GenericObjectPoolConfiguration;
 import net.sf.hajdbc.pool.generic.GenericObjectPoolFactory;
 import net.sf.hajdbc.state.StateManager;
@@ -31,6 +36,9 @@ import net.sf.hajdbc.util.Strings;
 public class SQLiteStateManagerFactory extends GenericObjectPoolConfiguration implements StateManagerFactory
 {
 	private static final long serialVersionUID = 8990527398117188315L;
+	
+	private static final Messages messages = MessagesFactory.getMessages();
+	private static final Logger logger = LoggerFactory.getLogger(SQLiteStateManagerFactory.class);
 
 	private String locationPattern = "{1}/{0}";
 
@@ -44,6 +52,9 @@ public class SQLiteStateManagerFactory extends GenericObjectPoolConfiguration im
 	public <Z, D extends Database<Z>> StateManager createStateManager(DatabaseCluster<Z, D> cluster)
 	{
 		String location = MessageFormat.format(this.locationPattern, cluster.getId(), Strings.HA_JDBC_HOME);
+		
+		logger.log(Level.INFO, messages.clusterStatePersistence(cluster, location));
+		
 		return new SQLiteStateManager<>(cluster, new File(location), new GenericObjectPoolFactory(this));
 	}
 

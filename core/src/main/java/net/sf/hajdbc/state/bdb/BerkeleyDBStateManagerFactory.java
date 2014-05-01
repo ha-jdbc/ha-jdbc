@@ -22,6 +22,11 @@ import java.text.MessageFormat;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.logging.Level;
+import net.sf.hajdbc.logging.Logger;
+import net.sf.hajdbc.logging.LoggerFactory;
+import net.sf.hajdbc.messages.Messages;
+import net.sf.hajdbc.messages.MessagesFactory;
 import net.sf.hajdbc.pool.generic.GenericObjectPoolConfiguration;
 import net.sf.hajdbc.pool.generic.GenericObjectPoolFactory;
 import net.sf.hajdbc.state.StateManager;
@@ -34,6 +39,9 @@ public class BerkeleyDBStateManagerFactory extends GenericObjectPoolConfiguratio
 {
 	private static final long serialVersionUID = 7138340006866127561L;
 	
+	private static final Messages messages = MessagesFactory.getMessages();
+	private static final Logger logger = LoggerFactory.getLogger(BerkeleyDBStateManagerFactory.class);
+
 	private String locationPattern = "{1}/{0}";
 	
 	@Override
@@ -47,6 +55,9 @@ public class BerkeleyDBStateManagerFactory extends GenericObjectPoolConfiguratio
 	{
 		String location = MessageFormat.format(this.locationPattern, cluster.getId(), Strings.HA_JDBC_HOME);
 		EnvironmentConfig config = new EnvironmentConfig().setAllowCreate(true).setTransactional(true);
+		
+		logger.log(Level.INFO, messages.clusterStatePersistence(cluster, location));
+		
 		return new BerkeleyDBStateManager(cluster, new File(location), config, new GenericObjectPoolFactory(this));
 	}
 	

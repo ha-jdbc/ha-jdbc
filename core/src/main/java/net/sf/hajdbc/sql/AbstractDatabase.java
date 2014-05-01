@@ -19,6 +19,7 @@ package net.sf.hajdbc.sql;
 
 import net.sf.hajdbc.Credentials;
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.Locality;
 import net.sf.hajdbc.management.Description;
 import net.sf.hajdbc.management.ManagedAttribute;
 
@@ -31,16 +32,16 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	private final String id;
 	private final Z connectionSource;
 	private final Credentials credentials;
-	private final boolean local;
+	private final Locality locality;
 	private volatile int weight;
 
-	protected AbstractDatabase(String id, Z connectionSource, Credentials credentials, int weight, boolean local)
+	protected AbstractDatabase(String id, Z connectionSource, Credentials credentials, int weight, Locality locality)
 	{
 		this.id = id;
 		this.connectionSource = connectionSource;
 		this.credentials = credentials;
 		this.weight = weight;
-		this.local = local;
+		this.locality = locality;
 	}
 	
 	@ManagedAttribute
@@ -82,9 +83,9 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	@ManagedAttribute
 	@Description("")
 	@Override
-	public boolean isLocal()
+	public Locality getLocality()
 	{
-		return this.local;
+		return this.locality;
 	}
 
 	@Override

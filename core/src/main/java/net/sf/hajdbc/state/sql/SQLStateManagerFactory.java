@@ -28,6 +28,8 @@ import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
+import net.sf.hajdbc.messages.Messages;
+import net.sf.hajdbc.messages.MessagesFactory;
 import net.sf.hajdbc.pool.generic.GenericObjectPoolConfiguration;
 import net.sf.hajdbc.pool.generic.GenericObjectPoolFactory;
 import net.sf.hajdbc.sql.DriverDatabase;
@@ -43,7 +45,8 @@ public class SQLStateManagerFactory extends GenericObjectPoolConfiguration imple
 {
 	private static final long serialVersionUID = -544548607415128414L;
 	
-	private Logger logger = LoggerFactory.getLogger(this.getClass());
+	private static final Messages messages = MessagesFactory.getMessages();
+	private static final Logger logger = LoggerFactory.getLogger(SQLStateManagerFactory.class);
 	
 	enum EmbeddedVendor
 	{
@@ -109,7 +112,7 @@ public class SQLStateManagerFactory extends GenericObjectPoolConfiguration imple
 	{
 		if (this.urlPattern == null)
 		{
-			throw new IllegalArgumentException("No embedded database driver was detected on the classpath.");
+			throw new IllegalArgumentException(messages.noEmbeddedDriverFound());
 		}
 		
 		String url = MessageFormat.format(this.urlPattern, cluster.getId(), Strings.HA_JDBC_HOME);
@@ -121,7 +124,7 @@ public class SQLStateManagerFactory extends GenericObjectPoolConfiguration imple
 		}
 		DriverDatabase database = builder.build();
 		
-		this.logger.log(Level.INFO, "State for database cluster {0} will be persisted to {1}", cluster, url);
+		logger.log(Level.INFO, messages.clusterStatePersistence(cluster, url));
 		
 		return new SQLStateManager<>(cluster, database, new GenericObjectPoolFactory(this));
 	}

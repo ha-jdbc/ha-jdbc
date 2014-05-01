@@ -30,7 +30,6 @@ import java.util.concurrent.ConcurrentMap;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.distributed.CommandDispatcher;
 import net.sf.hajdbc.distributed.CommandDispatcherFactory;
 import net.sf.hajdbc.distributed.Member;
@@ -42,6 +41,8 @@ import net.sf.hajdbc.durability.InvokerEvent;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
+import net.sf.hajdbc.messages.Messages;
+import net.sf.hajdbc.messages.MessagesFactory;
 import net.sf.hajdbc.state.DatabaseEvent;
 import net.sf.hajdbc.state.StateManager;
 
@@ -50,7 +51,9 @@ import net.sf.hajdbc.state.StateManager;
  */
 public class DistributedStateManager<Z, D extends Database<Z>> implements StateManager, StateCommandContext<Z, D>, MembershipListener, Stateful
 {
+	private final Messages messages = MessagesFactory.getMessages();
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
 	private final DatabaseCluster<Z, D> cluster;
 	private final StateManager stateManager;
 	private final CommandDispatcher<StateCommandContext<Z, D>> dispatcher;
@@ -230,7 +233,7 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 				databases.add(input.readUTF());
 			}
 			
-			this.logger.log(Level.INFO, Messages.INITIAL_CLUSTER_STATE_REMOTE.getMessage(databases, this.dispatcher.getCoordinator()));
+			this.logger.log(Level.INFO, this.messages.initialClusterState(this.cluster, databases, this.dispatcher.getCoordinator()));
 			
 			this.stateManager.setActiveDatabases(databases);
 		}

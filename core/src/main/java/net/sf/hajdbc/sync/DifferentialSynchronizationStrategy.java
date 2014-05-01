@@ -34,13 +34,14 @@ import java.util.regex.Pattern;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.ExceptionType;
-import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.UniqueConstraint;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
+import net.sf.hajdbc.messages.Messages;
+import net.sf.hajdbc.messages.MessagesFactory;
 import net.sf.hajdbc.util.Objects;
 import net.sf.hajdbc.util.Strings;
 
@@ -74,6 +75,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 {
 	private static final long serialVersionUID = -2785092229503649831L;
 
+	static Messages messages = MessagesFactory.getMessages();
 	static Logger logger = LoggerFactory.getLogger(DifferentialSynchronizationStrategy.class);
 
 	private final SynchronizationStrategy strategy = new PerTableSynchronizationStrategy(this);
@@ -142,7 +144,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		
 		if (primaryKey == null)
 		{
-			throw new SQLException(Messages.PRIMARY_KEY_REQUIRED.getMessage(this.getClass().getName(), tableName));
+			throw new SQLException(messages.primaryKeyRequired(this, table));
 		}
 		
 		List<String> primaryKeyColumns = primaryKey.getColumnList();
@@ -474,9 +476,9 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 											}
 										}
 										
-										logger.log(Level.INFO, Messages.INSERT_COUNT.getMessage(), insertCount, tableName);
-										logger.log(Level.INFO, Messages.UPDATE_COUNT.getMessage(), updateCount, tableName);
-										logger.log(Level.INFO, Messages.DELETE_COUNT.getMessage(), deleteCount, tableName);
+										logger.log(Level.INFO, messages.insertCount(table, insertCount));
+										logger.log(Level.INFO, messages.updateCount(table, insertCount));
+										logger.log(Level.INFO, messages.deleteCount(table, insertCount));
 									}
 								}
 							}

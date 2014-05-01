@@ -24,6 +24,7 @@ import javax.sql.XAConnection;
 import javax.sql.XADataSource;
 
 import net.sf.hajdbc.Credentials;
+import net.sf.hajdbc.Locality;
 import net.sf.hajdbc.codec.Decoder;
 import net.sf.hajdbc.management.Description;
 import net.sf.hajdbc.management.MBean;
@@ -39,9 +40,9 @@ public class XADataSourceDatabase extends CommonDataSourceDatabase<XADataSource>
 {
 	private boolean force2PC = false;
 	
-	public XADataSourceDatabase(String id, XADataSource dataSource, Credentials credentials, int weight, boolean local, boolean force2PC)
+	public XADataSourceDatabase(String id, XADataSource dataSource, Credentials credentials, int weight, Locality locality, boolean force2PC)
 	{
-		super(id, dataSource, credentials, weight, local);
+		super(id, dataSource, credentials, weight, locality);
 		this.force2PC = force2PC;
 	}
 

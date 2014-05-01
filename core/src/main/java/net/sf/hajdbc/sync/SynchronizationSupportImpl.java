@@ -36,7 +36,6 @@ import net.sf.hajdbc.Database;
 import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.IdentityColumnSupport;
-import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.TableProperties;
@@ -45,6 +44,8 @@ import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
+import net.sf.hajdbc.messages.Messages;
+import net.sf.hajdbc.messages.MessagesFactory;
 import net.sf.hajdbc.util.Strings;
 
 /**
@@ -53,7 +54,8 @@ import net.sf.hajdbc.util.Strings;
  */
 public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements SynchronizationSupport
 {
-	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+	private static final Messages messages = MessagesFactory.getMessages();
+	private static final Logger logger = LoggerFactory.getLogger(SynchronizationSupport.class);
 	
 	private final SynchronizationContext<Z, D> context;
 	
@@ -85,7 +87,7 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 					{
 						String sql = dialect.getDropForeignKeyConstraintSQL(constraint);
 						
-						this.logger.log(Level.DEBUG, sql);
+						logger.log(Level.DEBUG, sql);
 						
 						statement.addBatch(sql);
 					}
@@ -122,7 +124,7 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 					{
 						String sql = dialect.getCreateForeignKeyConstraintSQL(constraint);
 						
-						this.logger.log(Level.DEBUG, sql);
+						logger.log(Level.DEBUG, sql);
 						
 						statement.addBatch(sql);
 					}
@@ -165,7 +167,7 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 				{
 					final String sql = support.getNextSequenceValueSQL(sequence);
 					
-					this.logger.log(Level.DEBUG, sql);
+					logger.log(Level.DEBUG, sql);
 
 					for (final D database: databases)
 					{
@@ -205,7 +207,7 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 								
 								if (!value.equals(sourceValue))
 								{
-									throw new SQLException(Messages.SEQUENCE_OUT_OF_SYNC.getMessage(sequence, database, value, sourceDatabase, sourceValue));
+									throw new SQLException(messages.sequenceOutOfSync(sequence, sourceDatabase, sourceValue, database, value));
 								}
 							}
 						}
@@ -228,7 +230,7 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 					{
 						String sql = support.getAlterSequenceSQL(sequence, sequenceMap.get(sequence) + 1);
 						
-						this.logger.log(Level.DEBUG, sql);
+						logger.log(Level.DEBUG, sql);
 						
 						targetStatement.addBatch(sql);
 					}
@@ -262,7 +264,7 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 						{
 							String selectSQL = MessageFormat.format("SELECT max({0}) FROM {1}", Strings.join(columns, "), max("), table.getName()); //$NON-NLS-1$ //$NON-NLS-2$
 							
-							this.logger.log(Level.DEBUG, selectSQL);
+							logger.log(Level.DEBUG, selectSQL);
 							
 							Map<String, Long> map = new HashMap<>();
 							
@@ -287,7 +289,7 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 									
 									if (alterSQL != null)
 									{
-										this.logger.log(Level.DEBUG, alterSQL);
+										logger.log(Level.DEBUG, alterSQL);
 										
 										targetStatement.addBatch(alterSQL);
 									}
@@ -325,7 +327,7 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 					{
 						String sql = dialect.getDropUniqueConstraintSQL(constraint);
 						
-						this.logger.log(Level.DEBUG, sql);
+						logger.log(Level.DEBUG, sql);
 						
 						statement.addBatch(sql);
 					}
@@ -364,7 +366,7 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 					{
 						String sql = dialect.getCreateUniqueConstraintSQL(constraint);
 						
-						this.logger.log(Level.DEBUG, sql);
+						logger.log(Level.DEBUG, sql);
 						
 						statement.addBatch(sql);
 					}
@@ -392,7 +394,7 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 		}
 		catch (SQLException e)
 		{
-			this.logger.log(Level.WARN, e);
+			logger.log(Level.WARN, e);
 		}
 	}
 

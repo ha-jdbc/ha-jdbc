@@ -29,15 +29,21 @@ import net.sf.hajdbc.DatabaseClusterConfigurationBuilder;
 import net.sf.hajdbc.DatabaseBuilder;
 import net.sf.hajdbc.Identifiable;
 import net.sf.hajdbc.IdentifiableMatcher;
+import net.sf.hajdbc.Locality;
 import net.sf.hajdbc.configuration.ServiceBuilder;
+import net.sf.hajdbc.messages.Messages;
+import net.sf.hajdbc.messages.MessagesFactory;
 import net.sf.hajdbc.sql.TransactionModeEnum;
 import net.sf.hajdbc.util.ServiceLoaders;
 
 /**
  * @author Paul Ferraro
  */
+@SuppressWarnings("deprecation")
 public class DatabaseClusterConfigurationReader_3_0<Z, D extends Database<Z>, B extends DatabaseBuilder<Z, D>> implements DatabaseClusterConfigurationReader<Z, D, B>, Constants
 {
+	private static Messages messages = MessagesFactory.getMessages();
+
 	public static final DatabaseClusterConfigurationReaderFactory FACTORY = new DatabaseClusterConfigurationReaderFactory()
 	{
 		@Override
@@ -52,12 +58,7 @@ public class DatabaseClusterConfigurationReader_3_0<Z, D extends Database<Z>, B 
 	{
 		while (reader.nextTag() != END_ELEMENT)
 		{
-			Element element = Element.forName(reader.getLocalName());
-			if (element == null)
-			{
-				throw new XMLStreamException();
-			}
-			switch (element)
+			switch (reader.getLocalName())
 			{
 				case DISTRIBUTABLE:
 				{
@@ -88,22 +89,26 @@ public class DatabaseClusterConfigurationReader_3_0<Z, D extends Database<Z>, B 
 					readCluster(reader, builder);
 					break;
 				}
+				default:
+				{
+					throw new XMLStreamException(messages.unexpectedElement(reader));
+				}
 			}
 		}
 	}
 
 	void readCluster(XMLStreamReader reader, DatabaseClusterConfigurationBuilder<Z, D, B> builder) throws XMLStreamException
 	{
-		requireAttributeValue(reader, ClusterAttribute.DEFAULT_SYNC.getLocalName());
+		this.readClusterAttributes(reader, builder);
+		this.readClusterElements(reader, builder);
+	}
+	
+	void readClusterAttributes(XMLStreamReader reader, DatabaseClusterConfigurationBuilder<Z, D, B> builder) throws XMLStreamException
+	{
 		for (int i = 0; i < reader.getAttributeCount(); ++i)
 		{
-			ClusterAttribute attribute = ClusterAttribute.forName(reader.getAttributeLocalName(i));
-			if (attribute == null)
-			{
-				throw new XMLStreamException();
-			}
 			String value = reader.getAttributeValue(i);
-			switch (attribute)
+			switch (reader.getAttributeLocalName(i))
 			{
 				case DEFAULT_SYNC:
 				{
@@ -185,16 +190,19 @@ public class DatabaseClusterConfigurationReader_3_0<Z, D extends Database<Z>, B 
 					builder.allowEmptyCluster(Boolean.parseBoolean(value));
 					break;
 				}
+				default:
+				{
+					throw new XMLStreamException(messages.unexpectedAttribute(reader, i));
+				}
 			}
 		}
+	}
+	
+	void readClusterElements(XMLStreamReader reader, DatabaseClusterConfigurationBuilder<Z, D, B> builder) throws XMLStreamException
+	{
 		while (reader.nextTag() != END_ELEMENT)
 		{
-			ClusterElement element = ClusterElement.forName(reader.getLocalName());
-			if (element == null)
-			{
-				throw new XMLStreamException();
-			}
-			switch (element)
+			switch (reader.getLocalName())
 			{
 				case DATABASE:
 				{
@@ -202,24 +210,36 @@ public class DatabaseClusterConfigurationReader_3_0<Z, D extends Database<Z>, B 
 					this.readDatabase(reader, builder.addDatabase(id));
 					break;
 				}
+				default:
+				{
+					throw new XMLStreamException(messages.unexpectedElement(reader));
+				}
 			}
 		}
 	}
 
 	void readDatabase(XMLStreamReader reader, B builder) throws XMLStreamException
 	{
-		builder.location(requireAttributeValue(reader, DatabaseAttribute.LOCATION.getLocalName()));
-
+		this.readDatabaseAttributes(reader, builder);
+		this.readDatabaseElements(reader, builder);
+	}
+	
+	void readDatabaseAttributes(XMLStreamReader reader, B builder) throws XMLStreamException
+	{
 		for (int i = 0; i < reader.getAttributeCount(); ++i)
 		{
-			DatabaseAttribute attribute = DatabaseAttribute.forName(reader.getAttributeLocalName(i));
-			if (attribute == null)
-			{
-				throw new XMLStreamException();
-			}
 			String value = reader.getAttributeValue(i);
-			switch (attribute)
+			switch (reader.getAttributeLocalName(i))
 			{
+				case ID:
+				{
+					break;
+				}
+				case LOCATION:
+				{
+					builder.location(value);
+					break;
+				}
 				case WEIGHT:
 				{
 					builder.weight(Integer.parseInt(value));
@@ -227,27 +247,24 @@ public class DatabaseClusterConfigurationReader_3_0<Z, D extends Database<Z>, B 
 				}
 				case LOCAL:
 				{
-					builder.local(Boolean.parseBoolean(value));
+					builder.locality(Boolean.parseBoolean(value) ? Locality.LOCAL : Locality.REMOTE);
 					break;
 				}
-				case ID:
-				case LOCATION:
+				default:
 				{
-					// Already read
-					break;
+					throw new XMLStreamException(messages.unexpectedAttribute(reader, i));
 				}
 			}
 		}
+	}
+	
+	void readDatabaseElements(XMLStreamReader reader, B builder) throws XMLStreamException
+	{
 		String user = null;
 		String password = null;
 		while (reader.nextTag() != END_ELEMENT)
 		{
-			DatabaseElement element = DatabaseElement.forName(reader.getLocalName());
-			if (element == null)
-			{
-				throw new XMLStreamException();
-			}
-			switch (element)
+			switch (reader.getLocalName())
 			{
 				case USER:
 				{
@@ -264,6 +281,10 @@ public class DatabaseClusterConfigurationReader_3_0<Z, D extends Database<Z>, B 
 					String name = requireAttributeValue(reader, NAME);
 					builder.property(name, reader.getElementText());
 					break;
+				}
+				default:
+				{
+					throw new XMLStreamException(messages.unexpectedElement(reader));
 				}
 			}
 		}
@@ -282,33 +303,35 @@ public class DatabaseClusterConfigurationReader_3_0<Z, D extends Database<Z>, B 
 	{
 		while (reader.nextTag() != END_ELEMENT)
 		{
-			verifyElement(reader, PROPERTY);
-			String name = requireAttributeValue(reader, NAME);
-			builder.property(name, reader.getElementText());
+			switch (reader.getLocalName())
+			{
+				case PROPERTY:
+				{
+					String name = requireAttributeValue(reader, NAME);
+					builder.property(name, reader.getElementText());
+					break;
+				}
+				default:
+				{
+					throw new XMLStreamException(messages.unexpectedElement(reader));
+				}
+			}
 		}
 	}
 
-	static void verifyElement(XMLStreamReader reader, String name)
-	{
-		if (!reader.getLocalName().equals(name))
-		{
-			throw new IllegalArgumentException();
-		}
-	}
-
-	static String requireAttributeValue(XMLStreamReader reader, String name)
+	static String requireAttributeValue(XMLStreamReader reader, String name) throws XMLStreamException
 	{
 		return requireAttributeValue(reader, name, null);
 	}
 
-	static String requireAttributeValue(XMLStreamReader reader, String name, String defaultValue)
+	static String requireAttributeValue(XMLStreamReader reader, String name, String defaultValue) throws XMLStreamException
 	{
 		String value = reader.getAttributeValue(null, name);
 		if (value == null)
 		{
 			if (defaultValue == null)
 			{
-				throw new IllegalArgumentException();
+				throw new XMLStreamException(messages.missingRequiredAttribute(reader, name));
 			}
 			return defaultValue;
 		}

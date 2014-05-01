@@ -48,6 +48,8 @@ import net.sf.hajdbc.lock.LockManagerFactory;
 import net.sf.hajdbc.lock.semaphore.SemaphoreLockManagerFactory;
 import net.sf.hajdbc.management.DefaultMBeanRegistrarFactory;
 import net.sf.hajdbc.management.MBeanRegistrarFactory;
+import net.sf.hajdbc.messages.Messages;
+import net.sf.hajdbc.messages.MessagesFactory;
 import net.sf.hajdbc.sql.DefaultExecutorServiceProvider;
 import net.sf.hajdbc.sql.TransactionModeEnum;
 import net.sf.hajdbc.state.StateManagerFactory;
@@ -57,10 +59,12 @@ import net.sf.hajdbc.util.concurrent.cron.CronExpressionBuilder;
 
 public class DatabaseClusterConfigurationBuilder<Z, D extends Database<Z>, B extends DatabaseBuilder<Z, D>> implements Builder<DatabaseClusterConfiguration<Z, D>>
 {
+	private static final Messages messages = MessagesFactory.getMessages();
+
 	private final DatabaseBuilderFactory<Z, D, B> factory;
 	
 	private final List<Builder<SynchronizationStrategy>> synchronizationStrategyBuilders = new LinkedList<>();
-	private final List<Builder<D>> databaseConfigurationBuilders = new LinkedList<>();
+	private final List<Builder<D>> databaseBuilders = new LinkedList<>();
 
 	private volatile Builder<CommandDispatcherFactory> commandDispatcherFactoryBuilder;
 	private volatile Builder<StateManagerFactory> stateManagerFactoryBuilder = new SimpleBuilder<StateManagerFactory>(new SQLStateManagerFactory());
@@ -205,7 +209,7 @@ public class DatabaseClusterConfigurationBuilder<Z, D extends Database<Z>, B ext
 	public B addDatabase(String id)
 	{
 		B builder = this.factory.createBuilder(id);
-		this.databaseConfigurationBuilders.add(builder);
+		this.databaseBuilders.add(builder);
 		return builder;
 	}
 	
@@ -406,7 +410,12 @@ public class DatabaseClusterConfigurationBuilder<Z, D extends Database<Z>, B ext
 		final boolean detectIdentityColumns = this.detectIdentityColumns;
 		final boolean detectSequences = this.detectSequences;
 		final boolean allowEmptyCluster = this.allowEmptyCluster;
-
+		
+		if (this.synchronizationStrategyBuilders.isEmpty())
+		{
+			throw new SQLException(messages.noSyncStrategies());
+		}
+		
 		final Map<String, SynchronizationStrategy> syncStrategies = new HashMap<>();
 		for (Builder<SynchronizationStrategy> builder: this.synchronizationStrategyBuilders)
 		{
@@ -416,11 +425,16 @@ public class DatabaseClusterConfigurationBuilder<Z, D extends Database<Z>, B ext
 		
 		if (!syncStrategies.containsKey(defaultSynchronizationStrategy))
 		{
-			throw new SQLException(Messages.INVALID_SYNC_STRATEGY.getMessage(defaultSynchronizationStrategy));
+			throw new SQLException(messages.invalidSyncStrategy(defaultSynchronizationStrategy, syncStrategies.keySet()));
+		}
+		
+		if (this.databaseBuilders.isEmpty())
+		{
+			throw new SQLException(messages.noDatabases());
 		}
 		
 		final ConcurrentMap<String, D> databases = new ConcurrentHashMap<>();
-		for (Builder<D> builder: this.databaseConfigurationBuilders)
+		for (Builder<D> builder: this.databaseBuilders)
 		{
 			D database = builder.build();
 			databases.put(database.getId(), database);

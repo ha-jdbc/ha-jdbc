@@ -222,12 +222,12 @@ public class MySQLDialect extends StandardDialect implements DumpRestoreSupport
 		Processes.run(setPassword(builder, properties));
 	}
 	
-	private static ProcessBuilder setPassword(ProcessBuilder builder, ConnectionProperties properties)
+	private static ProcessBuilder setPassword(final ProcessBuilder builder, final ConnectionProperties properties)
 	{
 		String password = properties.getPassword();
 		if ((password != null) && !PASSWORD_FILE.exists())
 		{
-			builder.environment().put("MYSQL_PWD", properties.getPassword());
+			Processes.environment(builder).put("MYSQL_PWD", properties.getPassword());
 		}
 		
 		return builder;

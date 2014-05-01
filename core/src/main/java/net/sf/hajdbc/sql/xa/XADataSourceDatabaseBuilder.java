@@ -41,6 +41,6 @@ public class XADataSourceDatabaseBuilder extends CommonDataSourceDatabaseBuilder
 	@Override
 	public XADataSourceDatabase build() throws SQLException
 	{
-		return new XADataSourceDatabase(this.id, this.getDataSource(), this.credentials, this.weight, this.local, this.force2PC);
+		return new XADataSourceDatabase(this.id, this.getDataSource(), this.credentials, this.weight, this.locality, this.force2PC);
 	}
 }

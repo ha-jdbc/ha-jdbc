@@ -45,12 +45,13 @@ import net.sf.hajdbc.DatabaseClusterConfiguration;
 import net.sf.hajdbc.DatabaseClusterConfigurationBuilder;
 import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.Identifiable;
-import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.Version;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
+import net.sf.hajdbc.messages.Messages;
+import net.sf.hajdbc.messages.MessagesFactory;
 import net.sf.hajdbc.util.SystemProperties;
 
 /**
@@ -66,6 +67,7 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 	private static final String DEFAULT_RESOURCE = "ha-jdbc-{0}.xml";
 
 	private static final Logger logger = LoggerFactory.getLogger(XMLDatabaseClusterConfigurationFactory.class);
+	private static final Messages messages = MessagesFactory.getMessages();
 	
 	private final XMLStreamFactory streamFactory;
 	private final Map<String, Namespace> namespaces = new HashMap<>();
@@ -107,7 +109,7 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 				if (url != null) return url;
 			}
 		}
-		throw new IllegalArgumentException(Messages.CONFIG_NOT_FOUND.getMessage(resource));
+		throw new IllegalArgumentException(messages.resourceNotFound(resource));
 	}
 
 	public XMLDatabaseClusterConfigurationFactory(String id, String resource)
@@ -137,7 +139,7 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 	@Override
 	public <B extends DatabaseBuilder<Z, D>> DatabaseClusterConfiguration<Z, D> createConfiguration(DatabaseClusterConfigurationBuilder<Z, D, B> builder) throws SQLException
 	{
-		logger.log(Level.INFO, Messages.HA_JDBC_INIT.getMessage(), Version.CURRENT, this.streamFactory);
+		logger.log(Level.INFO, messages.init(Version.CURRENT, this.streamFactory));
 		
 		try
 		{
@@ -148,7 +150,7 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 			
 			if (namespace == null)
 			{
-				throw new SQLException("Unsupported namespace: " + uri);
+				throw new XMLStreamException(messages.unsupportedNamespace(reader));
 			}
 			
 			namespace.getReaderFactory().<Z, D, B>createReader().read(reader, builder);
@@ -204,52 +206,52 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 		writer.writeStartElement(ROOT);
 		writer.writeDefaultNamespace(Namespace.CURRENT_VERSION.getURI());
 		{
-			write(writer, Element.DISTRIBUTABLE, config.getDispatcherFactory());
+			write(writer, DISTRIBUTABLE, config.getDispatcherFactory());
 			for (SynchronizationStrategy strategy: config.getSynchronizationStrategyMap().values())
 			{
-				write(writer, Element.SYNC, strategy);
+				write(writer, SYNC, strategy);
 			}
-			write(writer, Element.STATE, config.getStateManagerFactory());
-			write(writer, Element.LOCK, config.getLockManagerFactory());
-			writer.writeStartElement(Element.CLUSTER.getLocalName());
+			write(writer, STATE, config.getStateManagerFactory());
+			write(writer, LOCK, config.getLockManagerFactory());
+			writer.writeStartElement(CLUSTER);
 			{
-				writeAttribute(writer, ClusterAttribute.ALLOW_EMPTY_CLUSTER, config.isEmptyClusterAllowed());
-				writeAttribute(writer, ClusterAttribute.AUTO_ACTIVATE_SCHEDULE, config.getAutoActivationExpression());
-				writeAttribute(writer, ClusterAttribute.BALANCER, config.getBalancerFactory());
-				writeAttribute(writer, ClusterAttribute.DEFAULT_SYNC, config.getDefaultSynchronizationStrategy());
-				writeAttribute(writer, ClusterAttribute.DETECT_IDENTITY_COLUMNS, config.isIdentityColumnDetectionEnabled());
-				writeAttribute(writer, ClusterAttribute.DETECT_SEQUENCES, config.isSequenceDetectionEnabled());
-				writeAttribute(writer, ClusterAttribute.DIALECT, config.getDialectFactory());
-				writeAttribute(writer, ClusterAttribute.DURABILITY, config.getDurabilityFactory());
-				writeAttribute(writer, ClusterAttribute.EVAL_CURRENT_DATE, config.isCurrentDateEvaluationEnabled());
-				writeAttribute(writer, ClusterAttribute.EVAL_CURRENT_TIME, config.isCurrentTimeEvaluationEnabled());
-				writeAttribute(writer, ClusterAttribute.EVAL_CURRENT_TIMESTAMP, config.isCurrentTimestampEvaluationEnabled());
-				writeAttribute(writer, ClusterAttribute.EVAL_RAND, config.isRandEvaluationEnabled());
-				writeAttribute(writer, ClusterAttribute.FAILURE_DETECT_SCHEDULE, config.getFailureDetectionExpression());
-				writeAttribute(writer, ClusterAttribute.INPUT_SINK, config.getInputSinkProvider());
-				writeAttribute(writer, ClusterAttribute.META_DATA_CACHE, config.getDatabaseMetaDataCacheFactory());
-				writeAttribute(writer, ClusterAttribute.TRANSACTION_MODE, config.getTransactionMode());
+				writeAttribute(writer, ALLOW_EMPTY_CLUSTER, config.isEmptyClusterAllowed());
+				writeAttribute(writer, AUTO_ACTIVATE_SCHEDULE, config.getAutoActivationExpression());
+				writeAttribute(writer, BALANCER, config.getBalancerFactory());
+				writeAttribute(writer, DEFAULT_SYNC, config.getDefaultSynchronizationStrategy());
+				writeAttribute(writer, DETECT_IDENTITY_COLUMNS, config.isIdentityColumnDetectionEnabled());
+				writeAttribute(writer, DETECT_SEQUENCES, config.isSequenceDetectionEnabled());
+				writeAttribute(writer, DIALECT, config.getDialectFactory());
+				writeAttribute(writer, DURABILITY, config.getDurabilityFactory());
+				writeAttribute(writer, EVAL_CURRENT_DATE, config.isCurrentDateEvaluationEnabled());
+				writeAttribute(writer, EVAL_CURRENT_TIME, config.isCurrentTimeEvaluationEnabled());
+				writeAttribute(writer, EVAL_CURRENT_TIMESTAMP, config.isCurrentTimestampEvaluationEnabled());
+				writeAttribute(writer, EVAL_RAND, config.isRandEvaluationEnabled());
+				writeAttribute(writer, FAILURE_DETECT_SCHEDULE, config.getFailureDetectionExpression());
+				writeAttribute(writer, INPUT_SINK, config.getInputSinkProvider());
+				writeAttribute(writer, META_DATA_CACHE, config.getDatabaseMetaDataCacheFactory());
+				writeAttribute(writer, TRANSACTION_MODE, config.getTransactionMode());
 				for (D database: config.getDatabaseMap().values())
 				{
-					writer.writeStartElement(ClusterElement.DATABASE.getLocalName());
-					writer.writeAttribute(DatabaseAttribute.ID.getLocalName(), database.getId());
-					writeAttribute(writer, DatabaseAttribute.LOCATION, database.getLocation());
-					writeAttribute(writer, DatabaseAttribute.LOCAL, database.isLocal());
-					writeAttribute(writer, DatabaseAttribute.WEIGHT, Integer.valueOf(database.getWeight()));
+					writer.writeStartElement(DATABASE);
+					writer.writeAttribute(ID, database.getId());
+					writeAttribute(writer, LOCATION, database.getLocation());
+					writeAttribute(writer, LOCALITY, database.getLocality());
+					writeAttribute(writer, WEIGHT, Integer.valueOf(database.getWeight()));
 					Credentials credentials = database.getCredentials();
 					if (credentials != null)
 					{
-						writer.writeStartElement(DatabaseElement.USER.getLocalName());
+						writer.writeStartElement(USER);
 						writer.writeCharacters(credentials.getUser());
 						writer.writeEndElement();
-						writer.writeStartElement(DatabaseElement.PASSWORD.getLocalName());
+						writer.writeStartElement(PASSWORD);
 						writer.writeCharacters(credentials.getEncodedPassword());
 						writer.writeEndElement();
 					}
 					Properties properties = database.getProperties();
 					for (String name: properties.stringPropertyNames())
 					{
-						writer.writeStartElement(DatabaseElement.PROPERTY.getLocalName());
+						writer.writeStartElement(PROPERTY);
 						writer.writeAttribute(NAME, name);
 						writer.writeCharacters(properties.getProperty(name));
 						writer.writeEndElement();
@@ -263,32 +265,32 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 		writer.writeEndDocument();
 	}
 
-	private static void writeAttribute(XMLStreamWriter writer, Named named, Object value) throws XMLStreamException
+	private static void writeAttribute(XMLStreamWriter writer, String name, Object value) throws XMLStreamException
 	{
 		if (value != null)
 		{
-			writer.writeAttribute(named.getLocalName(), value.toString());
+			writer.writeAttribute(name, value.toString());
 		}
 	}
 
-	private static void writeAttribute(XMLStreamWriter writer, Named named, Identifiable value) throws XMLStreamException
+	private static void writeAttribute(XMLStreamWriter writer, String name, Identifiable value) throws XMLStreamException
 	{
 		if (value != null)
 		{
-			writer.writeAttribute(named.getLocalName(), value.getId());
+			writer.writeAttribute(name, value.getId());
 		}
 	}
 
-	private static void writeAttribute(XMLStreamWriter writer, Named named, boolean value) throws XMLStreamException
+	private static void writeAttribute(XMLStreamWriter writer, String name, boolean value) throws XMLStreamException
 	{
-		writer.writeAttribute(named.getLocalName(), String.valueOf(value));
+		writer.writeAttribute(name, String.valueOf(value));
 	}
 
-	private static void write(XMLStreamWriter writer, Named named, Identifiable object) throws XMLStreamException
+	private static void write(XMLStreamWriter writer, String name, Identifiable object) throws XMLStreamException
 	{
 		if (object != null)
 		{
-			writer.writeStartElement(named.getLocalName());
+			writer.writeStartElement(name);
 			writer.writeAttribute(ID, object.getId());
 			try
 			{

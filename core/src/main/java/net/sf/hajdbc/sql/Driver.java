@@ -29,18 +29,18 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import net.sf.hajdbc.AbstractDriver;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.DatabaseClusterFactory;
 import net.sf.hajdbc.ExceptionType;
-import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SimpleDatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.invocation.InvocationStrategies;
 import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
+import net.sf.hajdbc.messages.Messages;
+import net.sf.hajdbc.messages.MessagesFactory;
 import net.sf.hajdbc.util.TimePeriod;
 import net.sf.hajdbc.util.concurrent.MapRegistryStoreFactory;
 import net.sf.hajdbc.util.concurrent.LifecycleRegistry;
@@ -54,6 +54,8 @@ public final class Driver extends AbstractDriver
 {
 	private static final Pattern URL_PATTERN = Pattern.compile("jdbc:ha-jdbc:(?://)?([^/]+)(?:/.+)?");
 	private static final String CONFIG = "config";
+
+	private static final Messages messages = MessagesFactory.getMessages();
 	private static final Logger logger = LoggerFactory.getLogger(Driver.class);
 
 	static volatile TimePeriod timeout = new TimePeriod(10, TimeUnit.SECONDS);
@@ -93,7 +95,7 @@ public final class Driver extends AbstractDriver
 		}
 		catch (SQLException e)
 		{
-			logger.log(Level.ERROR, Messages.DRIVER_REGISTER_FAILED.getMessage(Driver.class.getName()), e);
+			logger.log(Level.ERROR, messages.registerDriverFailed(Driver.class), e);
 		}
 	}
 	
@@ -133,7 +135,7 @@ public final class Driver extends AbstractDriver
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.AbstractDriver#getUrlPattern()
+	 * @see net.sf.hajdbc.sql.AbstractDriver#getUrlPattern()
 	 */
 	@Override
 	protected Pattern getUrlPattern()
