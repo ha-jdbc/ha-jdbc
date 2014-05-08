@@ -237,18 +237,40 @@ public class PostgreSQLDialect extends StandardDialect implements DumpRestoreSup
 	}
 
 	@Override
-	public <Z, D extends Database<Z>> void dump(D database, Decoder decoder, File file) throws Exception
+	public <Z, D extends Database<Z>> void dump(D database, Decoder decoder, File file, boolean dataOnly) throws Exception
 	{
 		ConnectionProperties properties = this.getConnectionProperties(database, decoder);
-		ProcessBuilder builder = new ProcessBuilder("pg_dump", "-h", properties.getHost(), "-p", properties.getPort(), "-U", properties.getUser(), "-f", file.getPath(), "-F", "tar", properties.getDatabase());
+		ProcessBuilder builder = new ProcessBuilder("pg_dump");
+		List<String> args = builder.command();
+		args.add("--host=" + properties.getHost());
+		args.add("--port=" + properties.getPort());
+		args.add("--username=" + properties.getUser());
+		args.add("--no-password");
+		args.add("--file=" + file.getPath());
+		args.add("--format=tar");
+		args.add(properties.getDatabase());
 		Processes.run(setPassword(builder, properties));
 	}
 
 	@Override
-	public <Z, D extends Database<Z>> void restore(D database, Decoder decoder, File file) throws Exception
+	public <Z, D extends Database<Z>> void restore(D database, Decoder decoder, File file, boolean dataOnly) throws Exception
 	{
 		ConnectionProperties properties = this.getConnectionProperties(database, decoder);
-		ProcessBuilder builder = new ProcessBuilder("pg_restore", "-h", properties.getHost(), "-p", properties.getPort(), "-U", properties.getUser(), "-d", properties.getDatabase(), "-c", file.getPath());
+		ProcessBuilder builder = new ProcessBuilder("pg_restore");
+		List<String> args = builder.command();
+		args.add("--host=" + properties.getHost());
+		args.add("--port=" + properties.getPort());
+		args.add("--username=" + properties.getUser());
+		args.add("--no-password");
+		args.add("--dbname=" + properties.getDatabase());
+		args.add("--clean");
+		if (dataOnly)
+		{
+			args.add("--data-only");
+			args.add("--disable-triggers"); // Used to prevent integrity constraints during restoration of data
+			args.add("--superuser=" + properties.getUser()); // Required by --disable-triggers
+		}
+		args.add(file.getPath());
 		Processes.run(setPassword(builder, properties));
 	}
 	
@@ -259,7 +281,6 @@ public class PostgreSQLDialect extends StandardDialect implements DumpRestoreSup
 		{
 			Processes.environment(builder).put("PGPASSWORD", properties.getPassword());
 		}
-		
 		return builder;
 	}
 
