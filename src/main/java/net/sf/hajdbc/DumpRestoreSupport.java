@@ -26,7 +26,7 @@ import net.sf.hajdbc.codec.Decoder;
  */
 public interface DumpRestoreSupport
 {
-	<Z, D extends Database<Z>> void dump(D database, Decoder decoder, File file) throws Exception;
+	<Z, D extends Database<Z>> void dump(D database, Decoder decoder, File file, boolean dataOnly) throws Exception;
 
-	<Z, D extends Database<Z>> void restore(D database, Decoder decoder, File file) throws Exception;
+	<Z, D extends Database<Z>> void restore(D database, Decoder decoder, File file, boolean dataOnly) throws Exception;
 }

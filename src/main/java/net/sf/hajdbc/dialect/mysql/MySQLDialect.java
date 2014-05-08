@@ -207,17 +207,36 @@ public class MySQLDialect extends StandardDialect implements DumpRestoreSupport
 	}
 
 	@Override
-	public <Z, D extends Database<Z>> void dump(D database, Decoder decoder, File file) throws Exception
+	public <Z, D extends Database<Z>> void dump(D database, Decoder decoder, File file, boolean dataOnly) throws Exception
 	{
 		ConnectionProperties properties = this.getConnectionProperties(database, decoder);
-		Processes.run(setPassword(new ProcessBuilder("mysqldump", "-C", "-h", properties.getHost(), "-P", properties.getPort(), "-u", properties.getUser(), "-r", file.getPath(), properties.getDatabase()), properties));
+		ProcessBuilder builder = new ProcessBuilder("mysqldump");
+		List<String> args = builder.command();
+		args.add("--host=" + properties.getHost());
+		args.add("--port=" + properties.getPort());
+		args.add("--user=" + properties.getUser());
+		args.add("--result-file=" + file.getPath());
+		args.add("--compress");
+		if (dataOnly)
+		{
+			args.add("--no-create-info");
+			args.add("--skip-triggers");
+		}
+		args.add(properties.getDatabase());
+		Processes.run(setPassword(builder, properties));
 	}
 
 	@Override
-	public <Z, D extends Database<Z>> void restore(D database, Decoder decoder, File file) throws Exception
+	public <Z, D extends Database<Z>> void restore(D database, Decoder decoder, File file, boolean dataOnly) throws Exception
 	{
 		ConnectionProperties properties = this.getConnectionProperties(database, decoder);
-		Processes.run(setPassword(new ProcessBuilder("mysql", "-h", properties.getHost(), "-P", properties.getPort(), "-u", properties.getUser(), properties.getDatabase()), properties), file);
+		ProcessBuilder builder = new ProcessBuilder("mysql");
+		List<String> args = builder.command();
+		args.add("--host=" + properties.getHost());
+		args.add("--port=" + properties.getPort());
+		args.add("--user=" + properties.getUser());
+		args.add(properties.getDatabase());
+		Processes.run(setPassword(builder, properties), file);
 	}
 	
 	private static ProcessBuilder setPassword(final ProcessBuilder builder, final ConnectionProperties properties)
@@ -227,7 +246,6 @@ public class MySQLDialect extends StandardDialect implements DumpRestoreSupport
 		{
 			Processes.environment(builder).put("MYSQL_PWD", properties.getPassword());
 		}
-		
 		return builder;
 	}
 }
