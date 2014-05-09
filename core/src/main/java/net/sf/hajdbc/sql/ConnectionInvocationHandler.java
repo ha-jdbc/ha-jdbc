@@ -43,8 +43,8 @@ import net.sf.hajdbc.util.reflect.Methods;
  */
 public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends ChildInvocationHandler<Z, D, P, SQLException, Connection, SQLException, ConnectionProxyFactory<Z, D, P>>
 {
-	private static final Set<Method> driverReadMethodSet = Methods.findMethods(Connection.class, "createStruct", "getAutoCommit", "getCatalog", "getClientInfo", "getHoldability", "getNetworkTimeout", "getSchema", "getTypeMap", "getWarnings", "isClosed", "isCloseOnCompletion", "isReadOnly", "nativeSQL");
-	private static final Set<Method> databaseReadMethodSet = Methods.findMethods(Connection.class, "getTransactionIsolation", "isValid");
+	private static final Set<Method> driverReadMethodSet = Methods.findMethods(Connection.class, "createStruct", "getAutoCommit", "getCatalog", "getClientInfo", "getHoldability", "getNetworkTimeout", "getSchema", "getTransactionIsolation", "getTypeMap", "getWarnings", "isClosed", "isCloseOnCompletion", "isReadOnly", "nativeSQL");
+	private static final Set<Method> databaseReadMethodSet = Methods.findMethods(Connection.class, "isValid");
 	private static final Set<Method> driverWriterMethodSet = Methods.findMethods(Connection.class, "abort", "clearWarnings", "closeOnCompletion", "setClientInfo", "setHoldability", "setNetworkTimeout", "setSchema", "setTypeMap");
 	private static final Set<Method> createStatementMethodSet = Methods.findMethods(Connection.class, "createStatement");
 	private static final Set<Method> prepareStatementMethodSet = Methods.findMethods(Connection.class, "prepareStatement");

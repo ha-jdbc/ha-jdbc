@@ -33,10 +33,10 @@ public class DeactivationCommand<Z, D extends Database<Z>> extends StateCommand<
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.state.distributed.StateCommand#execute(net.sf.hajdbc.Database, net.sf.hajdbc.DatabaseCluster, net.sf.hajdbc.state.StateManager)
+	 * @see net.sf.hajdbc.state.distributed.StateCommand#execute(net.sf.hajdbc.DatabaseCluster, net.sf.hajdbc.state.StateManager, net.sf.hajdbc.Database)
 	 */
 	@Override
-	protected boolean execute(D database, DatabaseCluster<Z, D> cluster, StateManager stateManager)
+	protected boolean execute(DatabaseCluster<Z, D> cluster, StateManager stateManager, D database)
 	{
 		return cluster.deactivate(database, stateManager);
 	}

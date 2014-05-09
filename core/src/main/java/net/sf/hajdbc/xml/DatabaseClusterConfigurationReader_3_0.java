@@ -296,7 +296,7 @@ public class DatabaseClusterConfigurationReader_3_0<Z, D extends Database<Z>, B 
 
 	static <T extends Identifiable> T load(Class<T> serviceClass, String id)
 	{
-		return ServiceLoaders.findRequiredService(new IdentifiableMatcher<T>(id), serviceClass);
+		return ServiceLoaders.findRequiredService(serviceClass, new IdentifiableMatcher<T>(id));
 	}
 
 	static <T extends Identifiable> void read(XMLStreamReader reader, ServiceBuilder<T> builder) throws XMLStreamException

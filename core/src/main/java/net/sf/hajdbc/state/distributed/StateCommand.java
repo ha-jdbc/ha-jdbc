@@ -47,10 +47,10 @@ public abstract class StateCommand<Z, D extends Database<Z>> implements Command<
 	{
 		DatabaseCluster<Z, D> cluster = context.getDatabaseCluster();
 		
-		return this.execute(cluster.getDatabase(this.event.getSource()), cluster, context.getLocalStateManager());
+		return this.execute(cluster, context.getLocalStateManager(), cluster.getDatabase(this.event.getSource()));
 	}
 
-	protected abstract boolean execute(D database, DatabaseCluster<Z, D> cluster, StateManager stateManager);
+	protected abstract boolean execute(DatabaseCluster<Z, D> cluster, StateManager stateManager, D database);
 
 	/**
 	 * {@inheritDoc}

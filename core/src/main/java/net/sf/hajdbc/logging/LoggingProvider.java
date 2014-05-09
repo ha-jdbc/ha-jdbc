@@ -17,15 +17,13 @@
  */
 package net.sf.hajdbc.logging;
 
+import net.sf.hajdbc.Provider;
+
 /**
  * Logging provider abstraction of logging service provider interface.
  * @author Paul Ferraro
  */
-public interface LoggingProvider
+public interface LoggingProvider extends Provider
 {
-	boolean isEnabled();
-	
 	Logger getLogger(Class<?> targetClass);
-	
-	String getName();
 }

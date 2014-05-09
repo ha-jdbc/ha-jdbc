@@ -42,6 +42,6 @@ public class SimpleServiceBuilder<T extends Identifiable> implements Builder<T>
 	@Override
 	public T build()
 	{
-		return ServiceLoaders.findRequiredService(new IdentifiableMatcher<T>(this.id), this.serviceClass);
+		return ServiceLoaders.findRequiredService(this.serviceClass, new IdentifiableMatcher<T>(this.id));
 	}
 }

@@ -84,7 +84,7 @@ public class DatabaseClusterConfigurationBuilder<Z, D extends Database<Z>, B ext
 	private volatile CronExpressionBuilder failureDetectScheduleBuilder = new CronExpressionBuilder();
 	
 	private volatile String defaultSynchronizationStrategy;
-	private volatile TransactionModeEnum transactionMode = TransactionModeEnum.SERIAL;
+	private volatile TransactionMode transactionMode = TransactionModeEnum.SERIAL;
 	private volatile boolean evalCurrentDate = false;
 	private volatile boolean evalCurrentTime = false;
 	private volatile boolean evalCurrentTimestamp = false;
@@ -268,12 +268,6 @@ public class DatabaseClusterConfigurationBuilder<Z, D extends Database<Z>, B ext
 		this.durabilityFactoryBuilder = new SimpleBuilder<>(factory);
 		return this;
 	}
-
-	public DatabaseClusterConfigurationBuilder<Z, D, B> durability(InputSinkProvider provider)
-	{
-		this.inputSinkProviderBuilder = new SimpleBuilder<>(provider);
-		return this;
-	}
 	
 	public DatabaseClusterConfigurationBuilder<Z, D, B> metaDataCache(String id)
 	{
@@ -317,7 +311,7 @@ public class DatabaseClusterConfigurationBuilder<Z, D extends Database<Z>, B ext
 		return this;
 	}
 	
-	public DatabaseClusterConfigurationBuilder<Z, D, B> transactionMode(TransactionModeEnum transactionMode)
+	public DatabaseClusterConfigurationBuilder<Z, D, B> transactionMode(TransactionMode transactionMode)
 	{
 		this.transactionMode = transactionMode;
 		return this;
@@ -402,7 +396,7 @@ public class DatabaseClusterConfigurationBuilder<Z, D extends Database<Z>, B ext
 		final CronExpression failureDetectSchedule = this.failureDetectScheduleBuilder.build();
 		
 		final String defaultSynchronizationStrategy = this.defaultSynchronizationStrategy;
-		final TransactionModeEnum transactionMode = this.transactionMode;
+		final TransactionMode transactionMode = this.transactionMode;
 		final boolean evalCurrentDate = this.evalCurrentDate;
 		final boolean evalCurrentTime = this.evalCurrentTime;
 		final boolean evalCurrentTimestamp = this.evalCurrentTimestamp;

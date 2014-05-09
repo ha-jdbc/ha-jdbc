@@ -67,9 +67,7 @@ id
 location
 :	In general, this describes the location of the database.
 	For Driver-based clusters, this specifies the JDBC url of the database.
-	For DataSource-based cluster, this specifies either:
-	*	The class name of the DataSource implementation (from which a new instance will be created).
-	*	The JNDI name of the pre-bound DataSource.
+	For DataSource-based cluster, this specifies the class name of the DataSource implementation (from which a new instance will be created).
 
 weight
 :	Defines the relative weight of this database node.
@@ -86,21 +84,14 @@ password
 property
 :	Defines a set of properties, the semantics of which depend on the cluster access pattern.
 	For Driver-based clusters, these properties are passed to the corresponding call to `Driver.connect(String, Properties)` method.
-	For DataSource-based clusters, if the database name specified a:
-	*	class name, then these properties are interpreted as JavaBean properties used to initialize the DataSource instance.
-		e.g.
-		
-			<database id="db1" location="org.postgresql.ds.PGSimpleDataSource">
-				<property name="serverName">server1</property>
-				<property name="portNumber">5432</property>
-				<property name="databaseName">database</property>
-			</database>
-	*	JNDI name, then these properties are used as JNDI environment properties when constructing the initial context.
-		e.g.
-		
-			<database id="db1" location="java:comp/env/jdbc/db1">
-				<property name="java.naming.provider.url">...</property>
-			</database>
+	For DataSource-based clusters, these properties are interpreted as JavaBean properties used to initialize the DataSource instance.
+	e.g.
+	
+		<database id="db1" location="org.postgresql.ds.PGSimpleDataSource">
+			<property name="serverName">server1</property>
+			<property name="portNumber">5432</property>
+			<property name="databaseName">database</property>
+		</database>
 
 ###	<a name="dialect"/>Dialect
 

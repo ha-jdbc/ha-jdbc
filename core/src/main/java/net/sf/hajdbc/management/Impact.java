@@ -43,7 +43,7 @@ public enum Impact
 			if (impact.code == code) return impact;
 		}
 		
-		throw new IllegalArgumentException(code + " is not a valid mbean operation impact code");
+		throw new IllegalArgumentException(String.valueOf(code));
 	}
 	
 	public int getCode()

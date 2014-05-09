@@ -54,7 +54,7 @@ public class MultiplexingDecoderFactory implements DecoderFactory, Serializable 
 			int index = value.indexOf(DELIMITER);
 			String id = (index >= 0) ? value.substring(0, index) : null;
 			String source = (index >= 0) ? value.substring(index + 1) : value;
-			CodecFactory factory = ServiceLoaders.findRequiredService(new IdentifiableMatcher<CodecFactory>(id), CodecFactory.class);
+			CodecFactory factory = ServiceLoaders.findRequiredService(CodecFactory.class, new IdentifiableMatcher<CodecFactory>(id));
 			return factory.createCodec(this.clusterId).decode(source);
 		}
 	}
