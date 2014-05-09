@@ -25,6 +25,8 @@ import java.util.Map;
 
 import net.sf.hajdbc.durability.Durability;
 import net.sf.hajdbc.durability.Durability.Phase;
+import net.sf.hajdbc.messages.Messages;
+import net.sf.hajdbc.messages.MessagesFactory;
 import net.sf.hajdbc.util.SimpleStaticRegistry;
 import net.sf.hajdbc.util.SimpleStaticRegistry.ExceptionMessageFactory;
 import net.sf.hajdbc.util.StaticRegistry;
@@ -34,6 +36,8 @@ import net.sf.hajdbc.util.StaticRegistry;
  */
 public class DurabilityPhaseRegistry implements StaticRegistry<Method, Durability.Phase>, ExceptionMessageFactory<Method>
 {
+	private static final Messages messages = MessagesFactory.getMessages();
+
 	private final StaticRegistry<Method, Durability.Phase> registry;
 	
 	public DurabilityPhaseRegistry(List<Method> commitMethods, List<Method> rollbackMethods)
@@ -80,6 +84,6 @@ public class DurabilityPhaseRegistry implements StaticRegistry<Method, Durabilit
 	@Override
 	public String createMessage(Method method)
 	{
-		return String.format("%s.%s(...) has no associated durability phase.", method.getClass().getName(), method.getName());
+		return messages.noDurabilityPhase(method);
 	}
 }

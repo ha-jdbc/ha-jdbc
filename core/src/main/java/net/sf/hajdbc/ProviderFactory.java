@@ -15,11 +15,35 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sf.hajdbc.messages;
+package net.sf.hajdbc;
 
-import net.sf.hajdbc.Provider;
+import java.util.ServiceLoader;
 
-public interface MessagesProvider extends Provider
+import net.sf.hajdbc.messages.simple.SimpleMessages;
+
+public class ProviderFactory<P extends Provider>
 {
-	Messages getMessages();
+	private final P provider;
+
+	protected ProviderFactory(Class<P> providerClass)
+	{
+		this.provider = findProvider(providerClass);
+	}
+
+	private static <P extends Provider> P findProvider(Class<P> providerClass)
+	{
+		for (P provider: ServiceLoader.load(providerClass, providerClass.getClassLoader()))
+		{
+			if (provider.isEnabled())
+			{
+				return provider;
+			}
+		}
+		throw new IllegalStateException(new SimpleMessages().serviceNotFound(providerClass));
+	}
+
+	protected P getProvider()
+	{
+		return this.provider;
+	}
 }

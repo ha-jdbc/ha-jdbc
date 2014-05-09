@@ -10,9 +10,12 @@ import java.util.Map;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
+import net.sf.hajdbc.messages.Messages;
+import net.sf.hajdbc.messages.MessagesFactory;
 
 public class Processes
 {
+	private static final Messages messages = MessagesFactory.getMessages();
 	private static final Logger logger = LoggerFactory.getLogger(Processes.class);
 
 	public static Map<String, String> environment(final ProcessBuilder builder)
@@ -59,7 +62,7 @@ public class Processes
 			
 			if (status != 0)
 			{
-				throw new Exception(String.format("%s returned %d", processBuilder.command().get(0), status));
+				throw new Exception(messages.status(processBuilder, status));
 			}
 		}
 		catch (InterruptedException e)

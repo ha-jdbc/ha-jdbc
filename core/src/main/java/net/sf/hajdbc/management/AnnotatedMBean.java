@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.management.Attribute;
 import javax.management.AttributeList;
 import javax.management.AttributeNotFoundException;
@@ -38,11 +39,16 @@ import javax.management.MBeanInfo;
 import javax.management.MBeanOperationInfo;
 import javax.management.ReflectionException;
 
+import net.sf.hajdbc.messages.Messages;
+import net.sf.hajdbc.messages.MessagesFactory;
+
 /**
  * @author Paul Ferraro
  */
 public class AnnotatedMBean implements DynamicMBean
 {
+	private static final Messages messages = MessagesFactory.getMessages();
+
 	private final MBeanInfo info;
 	private final Object bean;
 	private final Map<String, Method> accessorMap = new HashMap<>();
@@ -56,7 +62,7 @@ public class AnnotatedMBean implements DynamicMBean
 		
 		if (mbean == null)
 		{
-			throw new IllegalArgumentException(String.format("%s is not an @MBean", beanClass));
+			throw new IllegalArgumentException(messages.annotationMissing(beanClass, MBean.class));
 		}
 		
 		this.bean = bean;
@@ -174,7 +180,7 @@ public class AnnotatedMBean implements DynamicMBean
 		{
 			try
 			{
-				list.add(new Attribute(name, this.getAttribute(name)));				
+				list.add(new Attribute(name, this.getAttribute(name)));
 			}
 			catch (Exception e)
 			{

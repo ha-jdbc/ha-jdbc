@@ -26,9 +26,12 @@ import java.util.ServiceLoader;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
+import net.sf.hajdbc.messages.Messages;
+import net.sf.hajdbc.messages.MessagesFactory;
 
 public class ServiceLoaders
 {
+	private static final Messages messages = MessagesFactory.getMessages();
 	private static final Logger logger = LoggerFactory.getLogger(ServiceLoaders.class);
 	
 	public static <T> T findService(Class<T> serviceClass)
@@ -54,12 +57,12 @@ public class ServiceLoaders
 		T service = findService(serviceClass);
 		if (service == null)
 		{
-			throw new IllegalStateException(String.format("No %s found", serviceClass.getName()));
+			throw new IllegalStateException(messages.serviceNotFound(serviceClass));
 		}
 		return service;
 	}
 
-	public static <T> T findService(Matcher<T> matcher, Class<T> serviceClass)
+	public static <T> T findService(Class<T> serviceClass, Matcher<T> matcher)
 	{
 		List<T> matches = new LinkedList<>();
 		Iterator<T> services = ServiceLoader.load(serviceClass, serviceClass.getClassLoader()).iterator();
@@ -82,18 +85,18 @@ public class ServiceLoaders
 		
 		if (matches.size() > 1)
 		{
-			logger.log(Level.WARN, "Multiple {0} found matching {1}: {2}", serviceClass.getName(), matcher, matches);
+			logger.log(Level.WARN, messages.multipleServicesFound(serviceClass, matcher, matches));
 		}
 		
 		return !matches.isEmpty() ? matches.get(0) : null;
 	}
 
-	public static <T> T findRequiredService(Matcher<T> matcher, Class<T> serviceClass)
+	public static <T> T findRequiredService(Class<T> serviceClass, Matcher<T> matcher)
 	{
-		T service = findService(matcher, serviceClass);
+		T service = findService(serviceClass, matcher);
 		if (service == null)
 		{
-			throw new IllegalArgumentException(String.format("No %s found matching %s", serviceClass.getName(), matcher));
+			throw new IllegalArgumentException(messages.serviceNotFound(serviceClass, matcher));
 		}
 		return service;
 	}

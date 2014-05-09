@@ -15,11 +15,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sf.hajdbc.messages;
+package net.sf.hajdbc;
 
-import net.sf.hajdbc.Provider;
-
-public interface MessagesProvider extends Provider
+/**
+ * Common interface for providers.
+ * @author Paul Ferraro
+ */
+public interface Provider
 {
-	Messages getMessages();
+	String getName();
+
+	boolean isEnabled();
 }

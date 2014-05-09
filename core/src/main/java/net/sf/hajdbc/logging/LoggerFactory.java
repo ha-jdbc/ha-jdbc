@@ -17,37 +17,25 @@
  */
 package net.sf.hajdbc.logging;
 
-import java.util.ServiceLoader;
+import net.sf.hajdbc.ProviderFactory;
+import net.sf.hajdbc.messages.MessagesFactory;
 
 /**
  * Factory for creating {@link Logger} implementation from various logging service provider implementations.
  * @author Paul Ferraro
  */
-public final class LoggerFactory
+public final class LoggerFactory extends ProviderFactory<LoggingProvider>
 {
-	private static final LoggingProvider provider = getProvider();
-
-	private static LoggingProvider getProvider()
-	{
-		for (LoggingProvider provider: ServiceLoader.load(LoggingProvider.class, LoggingProvider.class.getClassLoader()))
-		{
-			if (provider.isEnabled())
-			{
-				provider.getLogger(LoggerFactory.class).log(Level.DEBUG, "Using {0} logging", provider.getName());
-				
-				return provider;
-			}
-		}
-		throw new IllegalStateException(String.format("No %s found", LoggingProvider.class.getName()));
-	}
+	private static final LoggerFactory factory = new LoggerFactory();
 	
 	public static Logger getLogger(Class<?> targetClass)
 	{
-		return provider.getLogger(targetClass);
+		return factory.getProvider().getLogger(targetClass);
 	}
 	
 	private LoggerFactory()
 	{
-		// Hide
+		super(LoggingProvider.class);
+		this.getProvider().getLogger(LoggerFactory.class).log(Level.DEBUG, MessagesFactory.getMessages().logging(this.getProvider()));
 	}
 }
