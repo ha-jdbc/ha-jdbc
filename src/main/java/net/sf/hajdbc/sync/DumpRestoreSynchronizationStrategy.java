@@ -39,10 +39,22 @@ public class DumpRestoreSynchronizationStrategy implements SynchronizationStrate
 	private static final long serialVersionUID = 5743532034969216540L;
 	private static final String DUMP_FILE_SUFFIX = ".dump";
 
+	private boolean dataOnly = false;
+
 	@Override
 	public String getId()
 	{
 		return "dump-restore";
+	}
+
+	public boolean isDataOnly()
+	{
+		return this.dataOnly;
+	}
+
+	public void setDataOnly(boolean dataOnly)
+	{
+		this.dataOnly = dataOnly;
 	}
 
 	/**
@@ -85,8 +97,8 @@ public class DumpRestoreSynchronizationStrategy implements SynchronizationStrate
 			
 			try
 			{
-				support.dump(context.getSourceDatabase(), decoder, file);
-				support.restore(context.getTargetDatabase(), decoder, file);
+				support.dump(context.getSourceDatabase(), decoder, file, this.dataOnly);
+				support.restore(context.getTargetDatabase(), decoder, file, this.dataOnly);
 			}
 			finally
 			{

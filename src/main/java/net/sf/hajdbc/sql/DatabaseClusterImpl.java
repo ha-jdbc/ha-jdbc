@@ -783,7 +783,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	public synchronized void stop()
 	{
 		this.active = false;
-		
+/*		Don't do this until we can distinguish between embedded databases, and local databases in a separate processes
 		if (this.balancer != null)
 		{
 			// Proactively deactivate any local databases
@@ -795,7 +795,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 				}
 			}
 		}
-		
+*/
 		MBeanRegistrar<Z, D> registrar = this.configuration.getMBeanRegistrar();
 
 		if (registrar != null)
