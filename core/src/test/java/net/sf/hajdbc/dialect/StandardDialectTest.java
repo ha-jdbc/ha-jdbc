@@ -547,5 +547,15 @@ public class StandardDialectTest
 		assertEquals(databaseName, properties.getDatabase());
 		assertSame(user, properties.getUser());
 		assertSame(password, properties.getPassword());
+
+		when(metaData.getURL()).thenReturn(String.format("jdbc:%s:%s?loginTimeout=0&socketTimeout=0&prepareThreshold=5&unknownLength=2147483647&tcpKeepAlive=false&binaryTransfer=true", this.factory.getId(), databaseName));
+		
+		properties = this.dialect.getConnectionProperties(database, decoder);
+		
+		assertNull(properties.getHost());
+		assertNull(properties.getPort());
+		assertEquals(databaseName, properties.getDatabase());
+		assertSame(user, properties.getUser());
+		assertSame(password, properties.getPassword());
 	}
 }

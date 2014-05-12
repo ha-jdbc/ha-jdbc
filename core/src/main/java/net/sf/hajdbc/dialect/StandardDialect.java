@@ -116,7 +116,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 
 	protected String locatorPattern()
 	{
-		return "//([^\\:/]+)(?:\\:(\\d+))?/([^\\?]+)";
+		return "(?://(?<host>[^\\:/]+)(?:\\:(?<port>\\d+))?/)?(?<database>[^\\?]+)";
 	}
 	
 	private static Pattern compile(String pattern)
@@ -965,14 +965,14 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 				
 			Matcher matcher = this.urlPattern.matcher(url);
 			
-			if (!matcher.find() || (matcher.groupCount() != 3))
+			if (!matcher.find())
 			{
 				throw new UnsupportedOperationException(url);
 			}
 			
-			final String host = matcher.group(1);
-			final String port = matcher.group(2);
-			final String databaseName = matcher.group(3);
+			final String host = matcher.group("host");
+			final String port = matcher.group("port");
+			final String databaseName = matcher.group("database");
 			final String user = metaData.getUserName();
 			
 			return new ConnectionProperties()
