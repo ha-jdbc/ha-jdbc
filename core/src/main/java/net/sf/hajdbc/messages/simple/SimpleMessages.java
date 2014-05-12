@@ -162,6 +162,18 @@ public class SimpleMessages implements Messages
 	}
 
 	@Override
+	public <Z, D extends Database<Z>> String start(DatabaseCluster<Z, D> cluster)
+	{
+		return this.tr("Starting database cluster {0}", cluster);
+	}
+
+	@Override
+	public <Z, D extends Database<Z>> String stop(DatabaseCluster<Z, D> cluster)
+	{
+		return this.tr("Stopping database cluster {0}", cluster);
+	}
+
+	@Override
 	public <Z, D extends Database<Z>> String notActive(DatabaseCluster<Z, D> cluster)
 	{
 		return this.tr("Database cluster {0} is not active", cluster);

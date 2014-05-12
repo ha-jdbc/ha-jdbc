@@ -773,6 +773,8 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		}
 		
 		this.active = true;
+		
+		logger.log(Level.INFO, messages.start(this));
 	}
 
 	private static int requiredThreads(CronExpression expression)
@@ -787,6 +789,8 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	@Override
 	public synchronized void stop()
 	{
+		logger.log(Level.INFO, messages.stop(this));
+		
 		this.active = false;
 		
 		if (this.balancer != null)

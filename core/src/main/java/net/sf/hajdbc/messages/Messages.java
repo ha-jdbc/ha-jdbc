@@ -81,6 +81,8 @@ public interface Messages
 
 	String noDurabilityPhase(Method method);
 
+	<Z, D extends Database<Z>> String start(DatabaseCluster<Z, D> cluster);
+	<Z, D extends Database<Z>> String stop(DatabaseCluster<Z, D> cluster);
 	<Z, D extends Database<Z>> String invalidDatabase(DatabaseCluster<Z, D> cluster, String id);
 	<Z, D extends Database<Z>> String notActive(DatabaseCluster<Z, D> cluster);
 	<Z, D extends Database<Z>> String noActiveDatabases(DatabaseCluster<Z, D> cluster);
