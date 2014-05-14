@@ -748,7 +748,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 			{
 				this.cronExecutor.schedule(new FailureDetectionTask(), failureDetectionExpression);
 			}
-						
+			
 			if (autoActivationExpression != null)
 			{
 				this.cronExecutor.schedule(new AutoActivationTask(), autoActivationExpression);

@@ -24,13 +24,13 @@ import java.util.concurrent.locks.Lock;
  * Acquire lock command for execution on group coordinator.
  * @author Paul Ferraro
  */
-public class CoordinatorAcquireCommand extends CoordinatorLockCommand<Boolean>
+public class CoordinatorAcquireLockCommand extends CoordinatorLockCommand<Boolean>
 {
 	private static final long serialVersionUID = 1725113200306907771L;
 	
 	private final long timeout;
 	
-	public CoordinatorAcquireCommand(RemoteLockDescriptor descriptor, long timeout)
+	public CoordinatorAcquireLockCommand(RemoteLockDescriptor descriptor, long timeout)
 	{
 		super(descriptor);
 
