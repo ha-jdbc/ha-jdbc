@@ -53,19 +53,26 @@ public class ConnectionProxyFactory<Z, D extends Database<Z>, P> extends Abstrac
 	@Override
 	public void close(D database, Connection connection)
 	{
-		// Ensure that we rollback any current transaction to release any locks before closing
-		// This is necessary if the connection is pooled
 		try
 		{
-			if (!connection.getAutoCommit())
+			if (!connection.isClosed())
 			{
-				connection.rollback();
+				// Ensure that we rollback any current transaction to release any locks before closing
+				// This is necessary if the connection is pooled
+				if (!connection.getAutoCommit())
+				{
+					if (!connection.isReadOnly() || connection.getTransactionIsolation() >= Connection.TRANSACTION_REPEATABLE_READ)
+					{
+						connection.rollback();
+					}
+				}
 			}
 		}
 		catch (SQLException e)
 		{
 			this.logger.log(Level.WARN, e);
 		}
+
 		Resources.close(connection);
 	}
 }
