@@ -60,13 +60,17 @@ public class ConnectionProxyFactory<Z, D extends Database<Z>, P> extends Abstrac
 			{
 				if (!connection.getAutoCommit())
 				{
-					connection.rollback();
+					if (!connection.isReadOnly() || connection.getTransactionIsolation() >= Connection.TRANSACTION_REPEATABLE_READ)
+					{
+						connection.rollback();
+					}
 				}
 			}
 			catch (SQLException e)
 			{
 				this.logger.log(Level.WARN, e);
 			}
+			
 			connection.close();
 		}
 	}
