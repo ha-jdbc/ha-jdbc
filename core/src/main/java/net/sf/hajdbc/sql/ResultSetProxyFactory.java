@@ -73,7 +73,10 @@ public class ResultSetProxyFactory<Z, D extends Database<Z>, S extends Statement
 	@Override
 	public void close(D database, ResultSet results) throws SQLException
 	{
-		results.close();
+		if (!results.isClosed())
+		{
+			results.close();
+		}
 	}
 
 	@Override
