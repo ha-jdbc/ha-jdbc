@@ -417,7 +417,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 		
 		private boolean lockCoordinator(Member coordinator, long timeout)
 		{
-			Boolean result = this.dispatcher.execute(new CoordinatorAcquireCommand(this.descriptor, timeout), coordinator);
+			Boolean result = this.dispatcher.execute(new CoordinatorAcquireLockCommand(this.descriptor, timeout), coordinator);
 			return (result != null) ? result.booleanValue() : false;
 		}
 		
@@ -445,7 +445,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 		
 		private void unlockCoordinator(Member coordinator)
 		{
-			this.dispatcher.execute(new CoordinatorReleaseCommand(this.descriptor), coordinator);
+			this.dispatcher.execute(new CoordinatorReleaseLockCommand(this.descriptor), coordinator);
 		}
 
 		@Override
@@ -460,7 +460,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 		private static final long serialVersionUID = 1950781245453120790L;
 		
 		private final String id;
-		private transient LockType type;		
+		private transient LockType type;
 		private final Member member;
 		
 		RemoteLockDescriptorImpl(String id, LockType type, Member member)

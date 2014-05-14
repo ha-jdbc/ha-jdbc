@@ -23,6 +23,7 @@ import java.util.Map;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.invocation.Invoker;
+import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.util.Resources;
 import net.sf.hajdbc.util.reflect.Proxies;
 
@@ -52,6 +53,19 @@ public class ConnectionProxyFactory<Z, D extends Database<Z>, P> extends Abstrac
 	@Override
 	public void close(D database, Connection connection)
 	{
+		// Ensure that we rollback any current transaction to release any locks before closing
+		// This is necessary if the connection is pooled
+		try
+		{
+			if (!connection.getAutoCommit())
+			{
+				connection.rollback();
+			}
+		}
+		catch (SQLException e)
+		{
+			this.logger.log(Level.WARN, e);
+		}
 		Resources.close(connection);
 	}
 }
