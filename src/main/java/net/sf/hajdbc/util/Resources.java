@@ -74,7 +74,10 @@ public class Resources
 	{
 		try
 		{
-			connection.close();
+			if (!connection.isClosed())
+			{
+				connection.close();
+			}
 		}
 		catch (SQLException e)
 		{
@@ -86,7 +89,10 @@ public class Resources
 	{
 		try
 		{
-			statement.close();
+			if (!statement.isClosed())
+			{
+				statement.close();
+			}
 		}
 		catch (SQLException e)
 		{
@@ -98,7 +104,10 @@ public class Resources
 	{
 		try
 		{
-			resultSet.close();
+			if (!resultSet.isClosed())
+			{
+				resultSet.close();
+			}
 		}
 		catch (SQLException e)
 		{
