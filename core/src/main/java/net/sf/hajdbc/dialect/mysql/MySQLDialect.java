@@ -212,8 +212,14 @@ public class MySQLDialect extends StandardDialect implements DumpRestoreSupport
 		ConnectionProperties properties = this.getConnectionProperties(database, decoder);
 		ProcessBuilder builder = new ProcessBuilder("mysqldump");
 		List<String> args = builder.command();
-		args.add("--host=" + properties.getHost());
-		args.add("--port=" + properties.getPort());
+		if (properties.getHost() != null)
+		{
+			args.add("--host=" + properties.getHost());
+		}
+		if (properties.getPort() != null)
+		{
+			args.add("--port=" + properties.getPort());
+		}
 		args.add("--user=" + properties.getUser());
 		args.add("--result-file=" + file.getPath());
 		args.add("--compress");
@@ -232,8 +238,14 @@ public class MySQLDialect extends StandardDialect implements DumpRestoreSupport
 		ConnectionProperties properties = this.getConnectionProperties(database, decoder);
 		ProcessBuilder builder = new ProcessBuilder("mysql").redirectInput(file);
 		List<String> args = builder.command();
-		args.add("--host=" + properties.getHost());
-		args.add("--port=" + properties.getPort());
+		if (properties.getHost() != null)
+		{
+			args.add("--host=" + properties.getHost());
+		}
+		if (properties.getPort() != null)
+		{
+			args.add("--port=" + properties.getPort());
+		}
 		args.add("--user=" + properties.getUser());
 		args.add(properties.getDatabase());
 		Processes.run(setPassword(builder, properties));

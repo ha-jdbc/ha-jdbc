@@ -33,7 +33,6 @@ import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.DatabaseClusterFactory;
 import net.sf.hajdbc.ExceptionType;
-import net.sf.hajdbc.SimpleDatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.invocation.InvocationStrategies;
 import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.logging.Level;
@@ -50,13 +49,13 @@ import net.sf.hajdbc.xml.XMLDatabaseClusterConfigurationFactory;
 /**
  * @author  Paul Ferraro
  */
-public final class Driver extends AbstractDriver
+public class Driver extends AbstractDriver
 {
 	private static final Pattern URL_PATTERN = Pattern.compile("jdbc:ha-jdbc:(?://)?([^/]+)(?:/.+)?");
 	private static final String CONFIG = "config";
 
 	private static final Messages messages = MessagesFactory.getMessages();
-	private static final Logger logger = LoggerFactory.getLogger(Driver.class);
+	static final Logger logger = LoggerFactory.getLogger(Driver.class);
 
 	static volatile TimePeriod timeout = new TimePeriod(10, TimeUnit.SECONDS);
 	static volatile DatabaseClusterFactory<java.sql.Driver, DriverDatabase> factory = new DatabaseClusterFactoryImpl<>();
@@ -91,7 +90,26 @@ public final class Driver extends AbstractDriver
 	{
 		try
 		{
-			DriverManager.registerDriver(new Driver());
+			Driver driver = new Driver()
+			{
+				@Override
+				protected void finalize()
+				{
+					// When the driver instance that was registered with the DriverManager is finalized, close any clusters
+					for (String id: builders.keySet())
+					{
+						try
+						{
+							close(id);
+						}
+						catch (Throwable e)
+						{
+							e.printStackTrace(DriverManager.getLogWriter());
+						}
+					}
+				}
+			};
+			DriverManager.registerDriver(driver);
 		}
 		catch (SQLException e)
 		{
@@ -114,7 +132,6 @@ public final class Driver extends AbstractDriver
 	{
 		DriverDatabaseClusterConfigurationBuilder builder = new DriverDatabaseClusterConfigurationBuilder();
 		DriverDatabaseClusterConfigurationBuilder existing = builders.putIfAbsent(id, builder);
-		configurationFactories.put(id, new SimpleDatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>());
 		return (existing != null) ? existing : builder;
 	}
 
@@ -132,7 +149,7 @@ public final class Driver extends AbstractDriver
 	{
 		timeout = new TimePeriod(value, unit);
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.sql.AbstractDriver#getUrlPattern()

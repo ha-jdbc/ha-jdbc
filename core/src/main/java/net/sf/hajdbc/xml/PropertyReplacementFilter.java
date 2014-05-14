@@ -83,6 +83,8 @@ public class PropertyReplacementFilter extends StreamReaderDelegate
 
 	private String replace(String input)
 	{
+		if (input == null) return null;
+
 		Matcher matcher = PATTERN.matcher(input);
 
 		if (!matcher.find()) return input;

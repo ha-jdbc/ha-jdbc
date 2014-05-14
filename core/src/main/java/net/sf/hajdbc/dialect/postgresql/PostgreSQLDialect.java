@@ -242,8 +242,14 @@ public class PostgreSQLDialect extends StandardDialect implements DumpRestoreSup
 		ConnectionProperties properties = this.getConnectionProperties(database, decoder);
 		ProcessBuilder builder = new ProcessBuilder("pg_dump");
 		List<String> args = builder.command();
-		args.add("--host=" + properties.getHost());
-		args.add("--port=" + properties.getPort());
+		if (properties.getHost() != null)
+		{
+			args.add("--host=" + properties.getHost());
+		}
+		if (properties.getPort() != null)
+		{
+			args.add("--port=" + properties.getPort());
+		}
 		args.add("--username=" + properties.getUser());
 		args.add("--no-password");
 		args.add("--file=" + file.getPath());
@@ -258,8 +264,14 @@ public class PostgreSQLDialect extends StandardDialect implements DumpRestoreSup
 		ConnectionProperties properties = this.getConnectionProperties(database, decoder);
 		ProcessBuilder builder = new ProcessBuilder("pg_restore");
 		List<String> args = builder.command();
-		args.add("--host=" + properties.getHost());
-		args.add("--port=" + properties.getPort());
+		if (properties.getHost() != null)
+		{
+			args.add("--host=" + properties.getHost());
+		}
+		if (properties.getPort() != null)
+		{
+			args.add("--port=" + properties.getPort());
+		}
 		args.add("--username=" + properties.getUser());
 		args.add("--no-password");
 		args.add("--dbname=" + properties.getDatabase());

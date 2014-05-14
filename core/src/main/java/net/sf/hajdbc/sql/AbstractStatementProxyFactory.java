@@ -104,6 +104,9 @@ public abstract class AbstractStatementProxyFactory<Z, D extends Database<Z>, S 
 	@Override
 	public void close(D database, S statement) throws SQLException
 	{
-		statement.close();
+		if (!statement.isClosed())
+		{
+			statement.close();
+		}
 	}
 }
