@@ -39,7 +39,7 @@
 				Fix MySQL restore process - replace file pipe with writing file directly to the process output.
 			</action>
 			<action type="fix" dev="pferraro">
-				Ensure ProcessBuilder.environment() uses prileged action.
+				Ensure ProcessBuilder.environment() uses privileged action.
 			</action>
 			<action type="fix" dev="pferraro">
 				Use INVOKE_ON_ANY strategy for Connection.getTransactionIsolation() - most drivers don't require a round trip to the database for this.
@@ -194,7 +194,7 @@
 				Add debug logging if Connection.isValid(...) throws an exception.
 				Otherwise, it is difficult to debug connectivity issues when connection pooling is used.
 			</action>
-			<action type="add" dev="pferraro"" issue="2">
+			<action type="add" dev="pferraro" issue="2">
 				Complete BerkeleyDB state manager implementation.
 			</action>
 			<action due-to="eskorzeny" type="fix">
@@ -223,7 +223,7 @@
 			</action>
 		</release>
 		<release version="2.1.0-beta-2" date="2012-10-27">
-			<action type="add" dev="pferraro"" issue="3">
+			<action type="add" dev="pferraro" issue="3">
 				Complete SQLite state manager implementation.
 			</action>
 			<action type="update" dev="pferraro">
@@ -294,10 +294,10 @@
 				Replace java.util.prefs-based state manager with a jdbc-based or in-memory implementation.
 				Add alternative implementations for sqlite (via sqljet) and berkeleydb.
 			</action>
-			<action type="add" dev="pferraro"">
+			<action type="add" dev="pferraro">
 				Add generic pooling mechanism for use by state managers.
 			</action>
-			<action type="add" dev="pferraro"">
+			<action type="add" dev="pferraro">
 				Add ability to obfuscate passwords stored in HA-JDBC configuration file.
 				Supported mechanisms: plain text, hex encoding, base-64 encoding, symmetric encryption.
 			</action>
@@ -318,11 +318,11 @@
 			<action type="update" dev="pferraro">
 				Use exception introspection to determine whether a not a given failure is catastrophic, replacing separate simple query.
 			</action>
-			<action type="add" dev="pferraro"">
+			<action type="add" dev="pferraro">
 				Add per-database eager and lazy meta data cache implementations - useful for schemas with auto-generated constraint names.
 				Options for meta-data-cache="eager|shared-eager|lazy|shared-lazy|none".
 			</action>
-			<action type="add" dev="pferraro"">
+			<action type="add" dev="pferraro">
 				Create logging facade to support parameterized log messages to avoid string evaluation if message won't be logged.
 				Prefer jboss-logging provider, fall back to slf4j, commons-logging, then to jdk logging.
 				This removes any explicit runtime dependency on a particular logging framework.
@@ -344,7 +344,7 @@
 			<action type="update" dev="pferraro">
 				Copy CronExpression from Quartz code base instead of pulling in entire artifact.  HA-JDBC no longer has any required dependencies.
 			</action>
-			<action type="add" dev="pferraro"">
+			<action type="add" dev="pferraro">
 				Support system property expansion in configuration file, via ${property} notation.
 			</action>
 		</release>
@@ -476,13 +476,13 @@
 			<action type="fix" dev="pferraro">
 				Remote locks in DistributableLockManager now respect lock fairness.
 			</action>
-			<action type="add" dev="pferraro"">
+			<action type="add" dev="pferraro">
 				Startup will now also consult ha-jdbc.{0}.configuration system property when searching for configuration file.
 			</action>
-			<action type="add" dev="pferraro"">
+			<action type="add" dev="pferraro">
 				Add HA proxying of DatabaseMetaData interface.
 			</action>
-			<action type="add" dev="pferraro"" issue="2103533">
+			<action type="add" dev="pferraro" issue="2103533">
 				Added net.sf.hajdbc.util.servlet.DatabaseClusterShutdownContextListener to automatically shutdown a list of database clusters scoped to a servlet context.
 				The clusters to shutdown are defined in a comma delimited init parameter: ha-jdbc.clusters
 			</action>
@@ -491,7 +491,7 @@
 			<action type="fix" dev="pferraro" due-to="Jason Rosenberg">
 				Fixed SybaseDialect.getSimpleSQL() to query for GETDATE().
 			</action>
-			<action type="add" dev="pferraro"">
+			<action type="add" dev="pferraro">
 				Added event handler support for activation, deactivation, and synchronization events.
 				Clients can opt to be notified of such events by registering themselves as handlers using the appropriate methods on the database cluster mbean.
 			</action>
@@ -511,7 +511,7 @@
 			<action type="fix" dev="pferraro">
 				Fixed bug where statements created from read-only connections were not getting properly load balanced.
 			</action>
-			<action type="add" dev="pferraro"">
+			<action type="add" dev="pferraro">
 				Added explicit, Referenceable DataSource, ConnectionPoolDataSource, and XADataSource proxy implementations.
 				The <![CDATA[<name>]]> element of a <![CDATA[<datasource>, <pool-datasource>, or <xa-datasource>]]> configuration can define a data source implementation class name.
 				If the <![CDATA[<name>]]> element is a class name, then the subsequent <![CDATA[<property name="...">]]> elements will be interpreted as property values of the data source (e.g. serverName, portNumber, databaseName).
@@ -547,7 +547,7 @@
 				Refactored statement read locking to lock and unlock at transaction boundaries.
 				Removed obsoleted table locking in synchronization strategies.
 			</action>
-			<action type="add" dev="pferraro"">
+			<action type="add" dev="pferraro">
 				Added ConnectionPoolDataSource and XADataSource proxies, the latter required to detect distributed transaction boundaries.
 				Added necessary <![CDATA[<xa-datasource>]]> and <![CDATA[<pool-datasource>]]> configuration file elements.
 			</action>
@@ -701,16 +701,16 @@
 			<action type="fix" dev="pferraro">
 				Fixed currentTimestampFunction() method of MaxDBDialect.
 			</action>
-			<action type="add" dev="pferraro"">
+			<action type="add" dev="pferraro">
 				Created separate OracleDialect, formerly an alias of MaxDBDialect.
 			</action>
-			<action type="add" dev="pferraro"">
+			<action type="add" dev="pferraro">
 				Created separate H2Dialect, formerly an alias of HSQLDBDialect.
 			</action>
-			<action type="add" dev="pferraro"">
+			<action type="add" dev="pferraro">
 				Added new dialect for Sybase.
 			</action>
-			<action type="add" dev="pferraro"">
+			<action type="add" dev="pferraro">
 				Added evaluateCurrentDate(String, java.sql.Date), evaluateCurrentTime(String, java.sql.Time), evaluateCurrentTimestamp(String, java.sql.Timestamp), and evaluateRandom(String) to Dialect interface to replace non-deterministic SQL functions (e.g. CURRENT_TIMESTAMP, RAND()) with deterministic static values.
 				Added optional eval-current-date, eval-current-time, eval-current-timestamp, and eval-rand cluster attribute to enable these behaviors.
 			</action>
@@ -727,11 +727,11 @@
 			<action type="update" dev="pferraro">
 				Upgraded SLF4J to 1.4.3.
 			</action>
-			<action type="add" dev="pferraro"">
+			<action type="add" dev="pferraro">
 				Added SynchronizationSupport.synchronizeIdentityColumns(...).
 				Consequently, MySQL AUTO_INCREMENT columns are now fully supported.
 			</action>
-			<action type="add" dev="pferraro"">
+			<action type="add" dev="pferraro">
 				Added DatabaseProperties.getSequences() and TableProperties.getIdentityColumns() to meta data cache facility.
 			</action>
 		</release>
