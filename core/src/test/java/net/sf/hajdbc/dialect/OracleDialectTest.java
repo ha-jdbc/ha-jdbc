@@ -79,7 +79,7 @@ public class OracleDialectTest extends StandardDialectTest
 		
 		String result = this.dialect.getSequenceSupport().getAlterSequenceSQL(sequence, 1000L);
 		
-		assertEquals("ALTER SEQUENCE sequence INCREMENT BY (1000 - (SELECT sequence.NEXTVAL FROM DUAL)); SELECT sequence.NEXTVAL FROM DUAL; ALTER SEQUENCE sequence INCREMENT BY 1", result);
+		assertEquals("DROP SEQUENCE sequence; CREATE SEQUENCE sequence START WITH 1000 INCREMENT BY 1", result);
 	}
 
 	/**
