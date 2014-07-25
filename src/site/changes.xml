@@ -21,12 +21,44 @@
 		<title>HA-JDBC Changes</title>
 	</properties>
 	<body>
-		<release version="3.0.3">
+		<release version="3.0.3" date="2014-07-25">
 			<action type="fix" due-to="Justin Cranford">
 				Avoid use of PreparedStatement.addBatch(String) in SQLStateManager since not all dialects support it.
 			</action>
 			<action type="add" dev="pferraro">
 				Add ability to override the default logical address of the JGroups channel.
+			</action>
+			<action type="fix" dev="pferraro">
+				Fix alter sequence SQL for Oracle dialect.
+			</action>
+			<action type="fix" dev="pferraro">
+				Fix NPE when previous coordinator is restarted.
+				Refactor command dispatcher logic using channel that does not discard its own messages.
+			</action>
+			<action type="fix" dev="pferraro">
+				Fix MySQL restore process - replace file pipe with writing file directly to the process output.
+			</action>
+			<action type="fix" dev="pferraro">
+				Ensure ProcessBuilder.environment() uses prileged action.
+			</action>
+			<action type="fix" dev="pferraro">
+				Use INVOKE_ON_ANY strategy for Connection.getTransactionIsolation() - most drivers don't require a round trip to the database for this.
+			</action>
+			<action type="fix" dev="pferraro">
+				Fix bug in DistributedStateManager where our local state is never persisted during activation/deactivation.
+			</action>
+			<action type="add" dev="pferraro">
+				Add support for data-only dump-restore.
+			</action>
+			<action type="fix" dev="pferraro">
+				Don't deactivate local databases on stop until we can distinguish between embedded databases and local databases using separate processes.
+			</action>
+			<action type="fix" dev="pferraro">
+				Ensure that we rollback any current transactions to release any locks before closing the connections to an inactive database.
+				This is necessary if the connection is pooled.
+			</action>
+			<action type="fix" dev="pferraro">
+				Fix alter sequence SQL for Oracle dialect.
 			</action>
 		</release>
 		<release version="3.0.2" date="2014-04-07">
@@ -125,7 +157,7 @@
 			<action type="fix" dev="pferraro">
 				Add support for Blob.setBinaryStream(long), Clob.setAsciiStream(long) and Clob.setCharacterStream(long) via OutputStream and Writer, respectively.
 			</action>
-			<action type="add" dev="pferraro"">
+			<action type="add" dev="pferraro">
 				Add "input-sink" configuration property to control whether InputStream and Reader-based update methods will use a file or in-memory sink.
 			</action>
 			<action type="fix" dev="pferraro">
