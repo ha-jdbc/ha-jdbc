@@ -241,7 +241,6 @@ public class H2DialectTest extends StandardDialectTest
 		assertTrue(this.dialect.indicatesFailure(new SQLException("", "", ErrorCode.FILE_CORRUPTED_1)));
 		assertTrue(this.dialect.indicatesFailure(new SQLException("", "", ErrorCode.CONNECTION_BROKEN_1)));
 		assertTrue(this.dialect.indicatesFailure(new SQLException("", "", ErrorCode.DATABASE_NOT_FOUND_1)));
-		assertTrue(this.dialect.indicatesFailure(new SQLException("", "", ErrorCode.NO_DISK_SPACE_AVAILABLE)));
 		assertTrue(this.dialect.indicatesFailure(new SQLException("", "", ErrorCode.OUT_OF_MEMORY)));
 		assertTrue(this.dialect.indicatesFailure(new SQLException("", "", ErrorCode.REMOTE_CONNECTION_NOT_ALLOWED)));
 		assertTrue(this.dialect.indicatesFailure(new SQLException("", "", ErrorCode.DATABASE_CALLED_AT_SHUTDOWN)));

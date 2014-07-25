@@ -135,7 +135,7 @@ public class OracleDialect extends StandardDialect
 	@Override
 	protected String alterSequenceFormat()
 	{
-		return "ALTER SEQUENCE {0} INCREMENT BY ({1} - (SELECT {0}.NEXTVAL FROM DUAL)); SELECT {0}.NEXTVAL FROM DUAL; ALTER SEQUENCE {0} INCREMENT BY {2}";
+		return "DROP SEQUENCE {0}; CREATE SEQUENCE {0} START WITH {1} INCREMENT BY {2}";
 	}
 
 	@Override
