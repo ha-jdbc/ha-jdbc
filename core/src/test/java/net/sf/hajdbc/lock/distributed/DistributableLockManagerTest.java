@@ -66,7 +66,7 @@ public class DistributableLockManagerTest
 	{
 		JGroupsCommandDispatcherFactory factory = new JGroupsCommandDispatcherFactory();
 		factory.setName(name);
-		factory.setStack("fast-local.xml");
+		factory.setStack("fast.xml");
 		return factory;
 	}
 

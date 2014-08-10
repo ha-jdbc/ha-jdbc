@@ -419,7 +419,8 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 			
 			for (Map.Entry<Member, Boolean> entry: results.entrySet())
 			{
-				locked &= entry.getValue();
+				Boolean value = entry.getValue();
+				locked &= (value != null) ? entry.getValue().booleanValue() : false;
 			}
 			
 			if (!locked)
@@ -428,7 +429,8 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 				excludedMembers.add(coordinator);
 				for (Map.Entry<Member, Boolean> entry: results.entrySet())
 				{
-					if (!entry.getValue().booleanValue())
+					Boolean value = entry.getValue();
+					if ((value == null) || !value.booleanValue())
 					{
 						excludedMembers.add(entry.getKey());
 					}
