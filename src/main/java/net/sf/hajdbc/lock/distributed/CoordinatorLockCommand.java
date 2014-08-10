@@ -43,7 +43,7 @@ public abstract class CoordinatorLockCommand<R> implements Command<R, LockComman
 	@Override
 	public R execute(LockCommandContext context)
 	{
-		return this.execute(context.getDistibutedLock(this.descriptor));
+		return this.execute(context.getLock(this.descriptor));
 	}
 	
 	protected abstract R execute(Lock lock);
