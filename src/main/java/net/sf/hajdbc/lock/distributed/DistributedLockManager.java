@@ -22,7 +22,9 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -76,7 +78,8 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 	@Override
 	public Lock writeLock(String id)
 	{
-		return this.getDistibutedLock(new RemoteLockDescriptorImpl(id, LockType.WRITE, this.dispatcher.getLocal()));
+		RemoteLockDescriptor descriptor = new RemoteLockDescriptorImpl(id, LockType.WRITE, this.dispatcher.getLocal());
+		return new DistributedLock(descriptor, this.getLock(descriptor), this.dispatcher);
 	}
 
 	/**
@@ -103,16 +106,6 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 				throw new IllegalStateException();
 			}
 		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.lock.distributed.LockCommandContext#getDistibutedLock(net.sf.hajdbc.lock.distributed.RemoteLockDescriptor)
-	 */
-	@Override
-	public Lock getDistibutedLock(RemoteLockDescriptor descriptor)
-	{
-		return new DistributedLock(descriptor, this.getLock(descriptor), this.dispatcher);
 	}
 
 	/**
@@ -252,7 +245,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 			this.lock = lock;
 			this.dispatcher = dispatcher;
 		}
-		
+
 		@Override
 		public void lock()
 		{
@@ -280,7 +273,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 				}
 				else
 				{
-					locked = this.lockCoordinator(coordinator, Long.MAX_VALUE);
+					locked = this.lockFromNonCoordinator(coordinator, Long.MAX_VALUE);
 				}
 				
 				if (!locked)
@@ -317,7 +310,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 				}
 				else
 				{
-					locked = this.lockCoordinator(coordinator, Long.MAX_VALUE);
+					this.lockFromNonCoordinator(coordinator, Long.MAX_VALUE);
 				}
 				
 				if (Thread.currentThread().isInterrupted())
@@ -358,7 +351,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 			}
 			else
 			{
-				locked = this.lockCoordinator(coordinator, 0);
+				locked = this.lockFromNonCoordinator(coordinator, 0);
 			}
 			
 			return locked;
@@ -390,12 +383,32 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 			}
 			else
 			{
-				locked = this.lockCoordinator(coordinator, unit.toMillis(time));
+				locked = this.lockFromNonCoordinator(coordinator, unit.toMillis(time));
 			}
 			
 			return locked;
 		}
-
+		
+		private boolean lockFromNonCoordinator(Member coordinator, long timeout)
+		{
+			boolean locked = false;
+			if (this.lockCoordinator(coordinator, timeout))
+			{
+				try
+				{
+					locked = this.lockMembers(coordinator);
+				}
+				finally
+				{
+					if (!locked)
+					{
+						this.unlockCoordinator(coordinator);
+					}
+				}
+			}
+			return locked;
+		}
+		
 		private boolean lockMembers(Member coordinator)
 		{
 			boolean locked = true;
@@ -409,7 +422,16 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 			
 			if (!locked)
 			{
-				this.unlockMembers(coordinator);
+				List<Member> excludedMembers = new ArrayList<Member>(results.size());
+				excludedMembers.add(coordinator);
+				for (Map.Entry<Member, Boolean> entry: results.entrySet())
+				{
+					if (!entry.getValue().booleanValue())
+					{
+						excludedMembers.add(entry.getKey());
+					}
+				}
+				this.dispatcher.executeAll(new MemberReleaseLockCommand(this.descriptor), excludedMembers.toArray(new Member[excludedMembers.size()]));
 			}
 			
 			return locked;
@@ -426,10 +448,10 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 		{
 			Member coordinator = this.dispatcher.getCoordinator();
 			
+			this.unlockMembers(coordinator);
+			
 			if (this.dispatcher.getLocal().equals(coordinator))
 			{
-				this.unlockMembers(coordinator);
-				
 				this.lock.unlock();
 			}
 			else
@@ -438,9 +460,9 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 			}
 		}
 		
-		private void unlockMembers(Member coordinator)
+		private void unlockMembers(Member... excluded)
 		{
-			this.dispatcher.executeAll(new MemberReleaseLockCommand(this.descriptor), coordinator);
+			this.dispatcher.executeAll(new MemberReleaseLockCommand(this.descriptor), excluded);
 		}
 		
 		private void unlockCoordinator(Member coordinator)
