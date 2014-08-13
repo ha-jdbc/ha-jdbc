@@ -17,36 +17,52 @@
  */
 package net.sf.hajdbc.lock.distributed;
 
+import java.util.Map;
 import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.distributed.Command;
 
 /**
- * A lock command to be executed on the group coordinator.
+ * Release lock command for execution on group member.
  * @author Paul Ferraro
  */
-public abstract class CoordinatorLockCommand<R> implements Command<R, LockCommandContext>
+public class ReleaseLockCommand implements Command<Void, LockCommandContext>
 {
-	private static final long serialVersionUID = 5921849426289256348L;
-	
-	private final RemoteLockDescriptor descriptor;
+	private static final long serialVersionUID = -4088487420468046409L;
 
-	protected CoordinatorLockCommand(RemoteLockDescriptor descriptor)
+	private final RemoteLockDescriptor descriptor;
+	
+	public ReleaseLockCommand(RemoteLockDescriptor descriptor)
 	{
 		this.descriptor = descriptor;
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.distributed.Command#execute(java.lang.Object)
 	 */
 	@Override
-	public R execute(LockCommandContext context)
+	public Void execute(LockCommandContext context)
 	{
-		return this.execute(context.getLock(this.descriptor));
+		Map<LockDescriptor, Lock> locks = context.getRemoteLocks(this.descriptor);
+		
+		if (locks != null)
+		{
+			Lock lock = null;
+			
+			synchronized (locks)
+			{
+				lock = locks.remove(this.descriptor);
+			}
+			
+			if (lock != null)
+			{
+				lock.unlock();
+			}
+		}
+
+		return null;
 	}
-	
-	protected abstract R execute(Lock lock);
 
 	/**
 	 * {@inheritDoc}

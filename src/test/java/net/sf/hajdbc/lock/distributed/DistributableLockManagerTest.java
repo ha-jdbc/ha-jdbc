@@ -20,6 +20,11 @@ package net.sf.hajdbc.lock.distributed;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 
 import org.junit.After;
@@ -37,8 +42,8 @@ import net.sf.hajdbc.lock.semaphore.SemaphoreLockManager;
  */
 public class DistributableLockManagerTest
 {
-	private LockManager manager1;
-	private LockManager manager2;
+	LockManager manager1;
+	LockManager manager2;
 
 	@Before
 	public void init() throws Exception
@@ -74,7 +79,9 @@ public class DistributableLockManagerTest
 	public void destroy()
 	{
 		this.manager1.stop();
+		this.manager1 = null;
 		this.manager2.stop();
+		this.manager2 = null;
 	}
 
 	@Test
@@ -101,11 +108,11 @@ public class DistributableLockManagerTest
 	@Test
 	public void blocking()
 	{
-		this.blocking(this.manager1, this.manager2);
-		this.blocking(this.manager2, this.manager1);
+		blocking(this.manager1, this.manager2);
+		blocking(this.manager2, this.manager1);
 	}
 
-	public void blocking(LockManager manager1, LockManager manager2)
+	private static void blocking(LockManager manager1, LockManager manager2)
 	{
 		Lock readLock = manager1.readLock(null);
 		Lock readLock2 = manager2.readLock(null);
@@ -159,6 +166,54 @@ public class DistributableLockManagerTest
 		finally
 		{
 			writeLock.unlock();
+		}
+	}
+	
+	@Test
+	public void failover() throws Exception
+	{
+		Lock lock1 = this.manager1.writeLock(null);
+		Lock lock2 = this.manager2.writeLock(null);
+
+		assertTrue(lock1.tryLock());
+		boolean locked = lock2.tryLock();
+		try
+		{
+			assertFalse(locked);
+		}
+		finally
+		{
+			if (locked)
+			{
+				lock2.unlock();
+			}
+		}
+		
+		ExecutorService executor = Executors.newSingleThreadExecutor();
+		try
+		{
+			Callable<Void> task = new Callable<Void>()
+			{
+				@Override
+				public Void call() throws Exception
+				{
+					DistributableLockManagerTest.this.manager1.stop();
+					DistributableLockManagerTest.this.manager1.start();
+					return null;
+				}
+			};
+			Future<?> future = executor.submit(task);
+			
+			locked = lock2.tryLock(10, TimeUnit.SECONDS);
+			
+			assertTrue(locked);
+			lock2.unlock();
+			
+			future.get();
+		}
+		finally
+		{
+			executor.shutdownNow();
 		}
 	}
 }
