@@ -118,9 +118,14 @@ public class JGroupsCommandDispatcher<C> implements RequestHandler, CommandDispa
 			{
 				channel.disconnect();
 			}
-			
-			channel.close();
 		}
+	}
+
+	
+	@Override
+	protected void finalize()
+	{
+		this.dispatcher.getChannel().close();
 	}
 
 	@Override
@@ -150,8 +155,10 @@ public class JGroupsCommandDispatcher<C> implements RequestHandler, CommandDispa
 			for (Map.Entry<Address, Rsp<R>> entry: responses.entrySet())
 			{
 				Rsp<R> response = entry.getValue();
-	
-				results.put(new AddressMember(entry.getKey()), response.wasReceived() ? response.getValue() : null);
+				
+				if (!response.wasSuspected()) {
+					results.put(new AddressMember(entry.getKey()), response.wasReceived() ? response.getValue() : null);
+				}
 			}
 			
 			return results;
