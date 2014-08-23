@@ -42,7 +42,7 @@ public class DurabilityEventImpl extends Event<Object> implements DurabilityEven
 	@Override
 	public Object getTransactionId()
 	{
-		return this.getSource();
+		return this.source;
 	}
 	
 	/**
@@ -53,6 +53,12 @@ public class DurabilityEventImpl extends Event<Object> implements DurabilityEven
 	public Durability.Phase getPhase()
 	{
 		return this.phase;
+	}
+
+	@Override
+	public String toString()
+	{
+		return String.format("%s(%s)", this.getPhase(), this.source);
 	}
 
 	/**

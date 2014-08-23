@@ -22,14 +22,16 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.distributed.Command;
 import net.sf.hajdbc.distributed.CommandDispatcher;
+import net.sf.hajdbc.distributed.CommandResponse;
 import net.sf.hajdbc.distributed.Member;
 import net.sf.hajdbc.distributed.MembershipListener;
 import net.sf.hajdbc.distributed.Stateful;
@@ -119,17 +121,21 @@ public class JGroupsCommandDispatcher<C> implements RequestHandler, CommandDispa
 			{
 				channel.disconnect();
 			}
-			
-			channel.close();
 		}
 	}
 
 	@Override
-	public <R> Map<Member, R> executeAll(Command<R, C> command, Member... excludedMembers)
+	protected void finalize()
 	{
-		Message message = new Message(null, this.getLocalAddress(), Objects.serialize(command));
-		RequestOptions options = new RequestOptions(ResponseMode.GET_ALL, this.timeout);
+		this.dispatcher.getChannel().close();
+	}
 
+	@Override
+	public <R> Map<Member, CommandResponse<R>> executeAll(Command<R, C> command, Member... excludedMembers) throws Exception
+	{
+		Message message = this.createMessage(null, command);
+		RequestOptions options = this.createRequestOptions();
+		
 		if ((excludedMembers != null) && (excludedMembers.length > 0))
 		{
 			Address[] exclusions = new Address[excludedMembers.length];
@@ -140,47 +146,50 @@ public class JGroupsCommandDispatcher<C> implements RequestHandler, CommandDispa
 			options.setExclusionList(exclusions);
 		}
 
+		Map<Address, Rsp<R>> responses = this.dispatcher.castMessage(null, message, options);
+		
+		Map<Member, CommandResponse<R>> results = new TreeMap<Member, CommandResponse<R>>();
+		
+		for (Map.Entry<Address, Rsp<R>> entry: responses.entrySet())
+		{
+			Rsp<R> response = entry.getValue();
+			
+			if (response.wasReceived() && !response.wasSuspected()) {
+				results.put(new AddressMember(entry.getKey()), new RspCommandResponse<R>(response));
+			}
+		}
+		
+		return results;
+	}
+	
+	@Override
+	public <R> CommandResponse<R> execute(Command<R, C> command, Member member) throws Exception
+	{
+		Message message = this.createMessage(((AddressMember) member).getAddress(), command);
+		// Use sendMessageWithFuture(...) instead of sendMessage(...) since we want to differentiate between sender exceptions and receiver exceptions
+		Future<R> future = this.dispatcher.sendMessageWithFuture(message, this.createRequestOptions());
 		try
 		{
-			Map<Address, Rsp<R>> responses = this.dispatcher.castMessage(null, message, options);
-			
-			if (responses == null) return Collections.emptyMap();
-			
-			Map<Member, R> results = new TreeMap<Member, R>();
-			
-			for (Map.Entry<Address, Rsp<R>> entry: responses.entrySet())
-			{
-				Rsp<R> response = entry.getValue();
-	
-				results.put(new AddressMember(entry.getKey()), response.wasReceived() ? response.getValue() : null);
-			}
-			
-			return results;
+			return new SimpleCommandResponse<R>(future.get());
 		}
-		catch (Exception e)
+		catch (InterruptedException e)
 		{
-			return null;
+			return new ExceptionCommandResponse<R>(new ExecutionException(e));
+		}
+		catch (ExecutionException e)
+		{
+			return new ExceptionCommandResponse<R>(e);
 		}
 	}
 	
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.distributed.CommandDispatcher#executeCoordinator(net.sf.hajdbc.distributed.Command)
-	 */
-	@Override
-	public <R> R execute(Command<R, C> command, Member member)
+	private <R> Message createMessage(Address destination, Command<R, C> command)
 	{
-		Message message = new Message(((AddressMember) member).getAddress(), this.getLocalAddress(), Objects.serialize(command));
-		
-		try
-		{
-			return this.dispatcher.sendMessage(message, new RequestOptions(ResponseMode.GET_ALL, this.timeout));
-		}
-		catch (Exception e)
-		{
-			this.logger.log(Level.WARN, e);
-			return null;
-		}
+		return new Message(destination, this.getLocalAddress(), Objects.serialize(command));
+	}
+	
+	private RequestOptions createRequestOptions()
+	{
+		return new RequestOptions(ResponseMode.GET_ALL, this.timeout, false, null, Message.Flag.DONT_BUNDLE, Message.Flag.OOB);
 	}
 	
 	/**
@@ -315,5 +324,58 @@ public class JGroupsCommandDispatcher<C> implements RequestHandler, CommandDispa
 	@Override
 	public void receive(Message message)
 	{
+	}
+
+	private class RspCommandResponse<R> implements CommandResponse<R>
+	{
+		private final Rsp<R> response;
+		
+		public RspCommandResponse(Rsp<R> response)
+		{
+			this.response = response;
+		}
+		
+		@Override
+		public R get() throws ExecutionException
+		{
+			Throwable exception = this.response.getException();
+			if (exception != null)
+			{
+				throw new ExecutionException(exception);
+			}
+			return this.response.getValue();
+		}
+	}
+
+	private static class SimpleCommandResponse<R> implements CommandResponse<R>
+	{
+		private final R result;
+		
+		SimpleCommandResponse(R result)
+		{
+			this.result = result;
+		}
+		
+		@Override
+		public R get()
+		{
+			return this.result;
+		}
+	}
+
+	private static class ExceptionCommandResponse<R> implements CommandResponse<R>
+	{
+		private final ExecutionException exception;
+		
+		ExceptionCommandResponse(ExecutionException exception)
+		{
+			this.exception = exception;
+		}
+		
+		@Override
+		public R get() throws ExecutionException
+		{
+			throw this.exception;
+		}
 	}
 }

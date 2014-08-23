@@ -67,7 +67,7 @@
 		<dependency>
 			<groupId>org.jgroups</groupId>
 			<artifactId>jgroups</artifactId>
-			<version>3.4.3.Final</version>
+			<version>3.4.5.Final</version>
 			<optional>true</optional>
 		</dependency>
 		<!-- Optional logging dependencies -->
@@ -99,7 +99,7 @@
 		<dependency>
 			<groupId>com.sleepycat</groupId>
 			<artifactId>je</artifactId>
-			<version>5.0.103</version>
+			<version>6.0.11</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
@@ -137,7 +137,7 @@
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<version>1.4.180</version>
+			<version>1.4.181</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
