@@ -461,7 +461,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 				{
 					if (!locked)
 					{
-						this.unlockCoordinator(coordinator);
+						this.unlock(coordinator);
 					}
 				}
 			}
@@ -478,16 +478,9 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 				for (Map.Entry<Member, CommandResponse<Boolean>> entry: results.entrySet())
 				{
 					Member member = entry.getKey();
-					try
+					if (this.readAcquireResponse(member, entry.getValue()))
 					{
-						if (entry.getValue().get().booleanValue())
-						{
-							lockedMembers.add(member);
-						}
-					}
-					catch (Exception e)
-					{
-						logger.log(Level.WARN, e, "Failed to acquire {0} on {1}", this.descriptor, member);
+						lockedMembers.add(member);
 					}
 				}
 				
@@ -497,22 +490,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 				{
 					for (Member member: lockedMembers)
 					{
-						try
-						{
-							CommandResponse<Void> response = this.dispatcher.execute(new ReleaseLockCommand(this.descriptor), member);
-							try
-							{
-								response.get();
-							}
-							catch (Exception e)
-							{
-								logger.log(Level.WARN, e, "Failed to release {0} on {1}", this.descriptor, member);
-							}
-						}
-						catch (Exception e)
-						{
-							logger.log(Level.WARN, e, "Failed to send release {0} to {1}", this.descriptor, member);
-						}
+						this.unlock(member);
 					}
 				}
 				
@@ -520,7 +498,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 			}
 			catch (Exception e)
 			{
-				logger.log(Level.WARN, e, "Failed to send {0} to {1}", this.descriptor, coordinator);
+				logger.log(Level.WARN, e, "Failed to send acquire {0} to cluster", this.descriptor);
 				return false;
 			}
 		}
@@ -530,19 +508,24 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 			try
 			{
 				CommandResponse<Boolean> response = this.dispatcher.execute(new AcquireLockCommand(this.descriptor, timeout), coordinator);
-				try
-				{
-					return response.get().booleanValue();
-				}
-				catch (Exception e)
-				{
-					logger.log(Level.WARN, e, "Failed to acquire {0} on {1}", this.descriptor, coordinator);
-					return false;
-				}
+				return this.readAcquireResponse(coordinator, response);
 			}
 			catch (Exception e)
 			{
 				logger.log(Level.WARN, e, "Failed to send acquire {0} to {1}", this.descriptor, coordinator);
+				return false;
+			}
+		}
+		
+		private boolean readAcquireResponse(Member member, CommandResponse<Boolean> response)
+		{
+			try
+			{
+				return response.get().booleanValue();
+			}
+			catch (Exception e)
+			{
+				logger.log(Level.WARN, e, "Failed to acquire {0} on {1}", this.descriptor, member);
 				return false;
 			}
 		}
@@ -560,7 +543,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 			}
 			else
 			{
-				this.unlockCoordinator(coordinator);
+				this.unlock(coordinator);
 			}
 		}
 		
@@ -569,17 +552,9 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 			try
 			{
 				Map<Member, CommandResponse<Void>> responses = this.dispatcher.executeAll(new ReleaseLockCommand(this.descriptor), excluded);
-				for (Map.Entry<Member, CommandResponse<Void>> response: responses.entrySet())
+				for (Map.Entry<Member, CommandResponse<Void>> entry: responses.entrySet())
 				{
-					Member member = response.getKey();
-					try
-					{
-						response.getValue().get();
-					}
-					catch (Exception e)
-					{
-						logger.log(Level.WARN, e, "Failed to release {0} on {1}", this.descriptor, member);
-					}
+					this.readReleaseResponse(entry.getKey(), entry.getValue());
 				}
 			}
 			catch (Exception e)
@@ -587,27 +562,32 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 				logger.log(Level.WARN, e, "Failed to send release {0} to cluster", this.descriptor);
 			}
 		}
-		
-		private void unlockCoordinator(Member coordinator)
+
+		private void unlock(Member member)
 		{
 			try
 			{
-				CommandResponse<Void> response = this.dispatcher.execute(new ReleaseLockCommand(this.descriptor), coordinator);
-				try
-				{
-					response.get();
-				}
-				catch (Exception e)
-				{
-					logger.log(Level.WARN, e, "Failed to release {0} on {1}", this.descriptor, coordinator);
-				}
+				CommandResponse<Void> response = this.dispatcher.execute(new ReleaseLockCommand(this.descriptor), member);
+				this.readReleaseResponse(member, response);
 			}
 			catch (Exception e)
 			{
-				logger.log(Level.WARN, e, "Failed to send release {0} to {1}", this.descriptor, coordinator);
+				logger.log(Level.WARN, e, "Failed to send release {0} to {1}", this.descriptor, member);
 			}
 		}
-
+		
+		private void readReleaseResponse(Member member, CommandResponse<Void> response)
+		{
+			try
+			{
+				response.get();
+			}
+			catch (Exception e)
+			{
+				logger.log(Level.WARN, e, "Failed to release {0} on {1}", this.descriptor, member);
+			}
+		}
+		
 		@Override
 		public Condition newCondition()
 		{
