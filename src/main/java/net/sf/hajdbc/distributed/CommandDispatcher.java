@@ -36,7 +36,7 @@ public interface CommandDispatcher<C> extends Lifecycle
 	 * @param excludedMembers list of members to optionally exclude
 	 * @return a map of command execution results per member.
 	 */
-	<R> Map<Member, R> executeAll(Command<R, C> command, Member... excludedMembers);
+	<R> Map<Member, CommandResponse<R>> executeAll(Command<R, C> command, Member... excludedMembers) throws Exception;
 
 	/**
 	 * Execute the specified command on the specified member.
@@ -45,7 +45,7 @@ public interface CommandDispatcher<C> extends Lifecycle
 	 * @param member the member on which to execute the command
 	 * @return the result of the command execution
 	 */
-	<R> R execute(Command<R, C> command, Member member);
+	<R> CommandResponse<R> execute(Command<R, C> command, Member member) throws Exception;
 
 	/**
 	 * Returns the local member.
