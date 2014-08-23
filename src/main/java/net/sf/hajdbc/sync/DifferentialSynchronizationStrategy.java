@@ -345,8 +345,10 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 											}
 											
 											ResultSet selectAllResultSet = selectAllStatement.executeQuery();
-											selectAllResultSet.next();
-											
+											if (!selectAllResultSet.next())
+											{
+												throw new IllegalStateException();
+											}
 											for (int i = primaryKeyColumns.size() + 1; i <= allColumns.size(); ++i)
 											{
 												int type = context.getDialect().getColumnType(table.getColumnProperties(allColumns.get(i - 1)));
@@ -418,8 +420,10 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 												}
 												
 												ResultSet selectAllResultSet = selectAllStatement.executeQuery();
-												selectAllResultSet.next();
-												
+												if (!selectAllResultSet.next())
+												{
+													throw new IllegalStateException();
+												}
 												for (int i = primaryKeyColumns.size() + 1; i <= allColumns.size(); ++i)
 												{
 													int type = context.getDialect().getColumnType(table.getColumnProperties(allColumns.get(i - 1)));
