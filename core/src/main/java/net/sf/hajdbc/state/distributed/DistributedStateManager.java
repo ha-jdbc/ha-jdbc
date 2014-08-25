@@ -51,7 +51,7 @@ import net.sf.hajdbc.state.StateManager;
 /**
  * @author Paul Ferraro
  */
-public class DistributedStateManager<Z, D extends Database<Z>> implements StateManager, StateCommandContext<Z, D>, MembershipListener, Stateful
+public class DistributedStateManager<Z, D extends Database<Z>> implements StateManager, StateCommandContext<Z, D>, MembershipListener, Stateful, Remote
 {
 	private final Messages messages = MessagesFactory.getMessages();
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -67,6 +67,12 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 		this.stateManager = cluster.getStateManager();
 		StateCommandContext<Z, D> context = this;
 		this.dispatcher = dispatcherFactory.createCommandDispatcher(cluster.getId() + ".state", context, this, this);
+	}
+
+	@Override
+	public Member getMember()
+	{
+		return this.dispatcher.getLocal();
 	}
 
 	/**
@@ -118,6 +124,7 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 	@Override
 	public void afterInvocation(InvocationEvent event)
 	{
+		this.stateManager.afterInvocation(event);
 		this.execute(new PostInvocationCommand<Z, D>(this.getRemoteDescriptor(event)));
 	}
 
@@ -128,6 +135,7 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 	@Override
 	public void afterInvoker(InvokerEvent event)
 	{
+		this.stateManager.afterInvoker(event);
 		this.execute(new InvokerCommand<Z, D>(this.getRemoteDescriptor(event)));
 	}
 
@@ -138,6 +146,7 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 	@Override
 	public void beforeInvocation(InvocationEvent event)
 	{
+		this.stateManager.beforeInvocation(event);
 		this.execute(new PreInvocationCommand<Z, D>(this.getRemoteDescriptor(event)));
 	}
 
@@ -148,6 +157,7 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 	@Override
 	public void beforeInvoker(InvokerEvent event)
 	{
+		this.stateManager.beforeInvoker(event);
 		this.execute(new InvokerCommand<Z, D>(this.getRemoteDescriptor(event)));
 	}
 

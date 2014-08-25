@@ -25,8 +25,7 @@ import net.sf.hajdbc.durability.InvocationEvent;
 import net.sf.hajdbc.durability.InvokerEvent;
 
 /**
- * @author paul
- *
+ * @author Paul Ferraro
  */
 public abstract class InvocationCommand<Z, D extends Database<Z>> implements Command<Void, StateCommandContext<Z, D>>
 {

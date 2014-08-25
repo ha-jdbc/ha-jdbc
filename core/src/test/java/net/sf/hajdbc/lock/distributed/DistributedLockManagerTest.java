@@ -40,7 +40,7 @@ import net.sf.hajdbc.lock.semaphore.SemaphoreLockManager;
 /**
  * @author Paul Ferraro
  */
-public class DistributableLockManagerTest
+public class DistributedLockManagerTest
 {
 	LockManager manager1;
 	LockManager manager2;
@@ -197,8 +197,8 @@ public class DistributableLockManagerTest
 				@Override
 				public Void call() throws Exception
 				{
-					DistributableLockManagerTest.this.manager1.stop();
-					DistributableLockManagerTest.this.manager1.start();
+					DistributedLockManagerTest.this.manager1.stop();
+					DistributedLockManagerTest.this.manager1.start();
 					return null;
 				}
 			};

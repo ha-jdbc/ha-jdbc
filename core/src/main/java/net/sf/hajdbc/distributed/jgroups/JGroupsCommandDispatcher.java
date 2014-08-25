@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutionException;
@@ -213,12 +214,14 @@ public class JGroupsCommandDispatcher<C> implements RequestHandler, CommandDispa
 	@Override
 	public AddressMember getCoordinator()
 	{
-		return new AddressMember(this.getCoordinatorAddress());
+		Address address = this.getCoordinatorAddress();
+		return (address != null) ? new AddressMember(address) : null;
 	}
 
 	private Address getCoordinatorAddress()
 	{
-		return this.dispatcher.getChannel().getView().getMembers().get(0);
+		List<Address> members = this.dispatcher.getChannel().getView().getMembers();
+		return members.isEmpty() ? null : members.get(0);
 	}
 
 	/**
