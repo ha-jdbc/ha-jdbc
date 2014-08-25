@@ -34,6 +34,7 @@ import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.Version;
 import net.sf.hajdbc.dialect.Dialect;
+import net.sf.hajdbc.distributed.Command;
 import net.sf.hajdbc.distributed.Member;
 import net.sf.hajdbc.logging.LoggingProvider;
 import net.sf.hajdbc.messages.Messages;
@@ -327,6 +328,24 @@ public class SimpleMessages implements Messages
 	public <Z, D extends Database<Z>> String clusterStatePersistence(DatabaseCluster<Z, D> cluster, String url)
 	{
 		return this.tr("State for database cluster {0} will be persisted to {1}", cluster, url);
+	}
+
+	@Override
+	public String sendCommandToClusterFailed(Command<?, ?> command)
+	{
+		return this.tr("Failed to send {0} to cluster", command);
+	}
+
+	@Override
+	public String sendCommandToMemberFailed(Command<?, ?> command, Member member)
+	{
+		return this.tr("Failed to send {0} to {1}", command, member);
+	}
+
+	@Override
+	public String executeCommandFailed(Command<?, ?> command, Member member)
+	{
+		return this.tr("Failed to execute {0} on {1}", command, member);
 	}
 
 	// The awkward method name is intentional so that the strings in this class will be parsed by the gettext-maven-plugin

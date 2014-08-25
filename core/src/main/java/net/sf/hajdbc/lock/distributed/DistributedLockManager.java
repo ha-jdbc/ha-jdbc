@@ -35,6 +35,7 @@ import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.distributed.Command;
 import net.sf.hajdbc.distributed.CommandDispatcher;
 import net.sf.hajdbc.distributed.CommandDispatcherFactory;
 import net.sf.hajdbc.distributed.CommandResponse;
@@ -46,6 +47,8 @@ import net.sf.hajdbc.lock.LockManager;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
+import net.sf.hajdbc.messages.Messages;
+import net.sf.hajdbc.messages.MessagesFactory;
 import net.sf.hajdbc.util.Objects;
 
 /**
@@ -54,6 +57,7 @@ import net.sf.hajdbc.util.Objects;
 public class DistributedLockManager implements LockManager, LockCommandContext, Stateful, MembershipListener
 {
 	static final Logger logger = LoggerFactory.getLogger(DistributedLockManager.class);
+	static final Messages messages = MessagesFactory.getMessages();
 
 	final CommandDispatcher<LockCommandContext> dispatcher;
 	
@@ -470,15 +474,16 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 		
 		private boolean lockMembers(Member coordinator)
 		{
+			Command<Boolean, LockCommandContext> command = new AcquireLockCommand(this.descriptor, 0);
 			try
 			{
-				Map<Member, CommandResponse<Boolean>> results = this.dispatcher.executeAll(new AcquireLockCommand(this.descriptor, 0), coordinator);
+				Map<Member, CommandResponse<Boolean>> results = this.dispatcher.executeAll(command, coordinator);
 				List<Member> lockedMembers = new ArrayList<>(results.size());
 				
 				for (Map.Entry<Member, CommandResponse<Boolean>> entry: results.entrySet())
 				{
 					Member member = entry.getKey();
-					if (this.readAcquireResponse(member, entry.getValue()))
+					if (readAcquireResponse(command, member, entry.getValue()))
 					{
 						lockedMembers.add(member);
 					}
@@ -498,36 +503,29 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 			}
 			catch (Exception e)
 			{
-				logger.log(Level.WARN, e, "Failed to send acquire {0} to cluster", this.descriptor);
+				logger.log(Level.WARN, e, messages.sendCommandToClusterFailed(command));
 				return false;
 			}
 		}
 		
 		private boolean lockCoordinator(Member coordinator, long timeout)
 		{
+			Command<Boolean, LockCommandContext> command = new AcquireLockCommand(this.descriptor, timeout);
 			try
 			{
 				CommandResponse<Boolean> response = this.dispatcher.execute(new AcquireLockCommand(this.descriptor, timeout), coordinator);
-				return this.readAcquireResponse(coordinator, response);
+				return readAcquireResponse(command, coordinator, response);
 			}
 			catch (Exception e)
 			{
-				logger.log(Level.WARN, e, "Failed to send acquire {0} to {1}", this.descriptor, coordinator);
+				logger.log(Level.WARN, e, messages.sendCommandToMemberFailed(command, coordinator));
 				return false;
 			}
 		}
 		
-		private boolean readAcquireResponse(Member member, CommandResponse<Boolean> response)
+		private static boolean readAcquireResponse(Command<Boolean, LockCommandContext> command, Member member, CommandResponse<Boolean> response)
 		{
-			try
-			{
-				return response.get().booleanValue();
-			}
-			catch (Exception e)
-			{
-				logger.log(Level.WARN, e, "Failed to acquire {0} on {1}", this.descriptor, member);
-				return false;
-			}
+			return readResponse(command, member, response, Boolean.FALSE).booleanValue();
 		}
 		
 		@Override
@@ -549,42 +547,50 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 		
 		private void unlockMembers(Member... excluded)
 		{
+			Command<Void, LockCommandContext> command = new ReleaseLockCommand(this.descriptor);
 			try
 			{
-				Map<Member, CommandResponse<Void>> responses = this.dispatcher.executeAll(new ReleaseLockCommand(this.descriptor), excluded);
+				Map<Member, CommandResponse<Void>> responses = this.dispatcher.executeAll(command, excluded);
 				for (Map.Entry<Member, CommandResponse<Void>> entry: responses.entrySet())
 				{
-					this.readReleaseResponse(entry.getKey(), entry.getValue());
+					readReleaseResponse(command, entry.getKey(), entry.getValue());
 				}
 			}
 			catch (Exception e)
 			{
-				logger.log(Level.WARN, e, "Failed to send release {0} to cluster", this.descriptor);
+				logger.log(Level.WARN, e, messages.sendCommandToClusterFailed(command));
 			}
 		}
 
 		private void unlock(Member member)
 		{
+			Command<Void, LockCommandContext> command = new ReleaseLockCommand(this.descriptor);
 			try
 			{
-				CommandResponse<Void> response = this.dispatcher.execute(new ReleaseLockCommand(this.descriptor), member);
-				this.readReleaseResponse(member, response);
+				CommandResponse<Void> response = this.dispatcher.execute(command, member);
+				readReleaseResponse(command, member, response);
 			}
 			catch (Exception e)
 			{
-				logger.log(Level.WARN, e, "Failed to send release {0} to {1}", this.descriptor, member);
+				logger.log(Level.WARN, e, messages.sendCommandToMemberFailed(command, member));
 			}
 		}
 		
-		private void readReleaseResponse(Member member, CommandResponse<Void> response)
+		private static void readReleaseResponse(Command<Void, LockCommandContext> command, Member member, CommandResponse<Void> response)
+		{
+			readResponse(command, member, response, null);
+		}
+		
+		private static <R> R readResponse(Command<R, LockCommandContext> command, Member member, CommandResponse<R> response, R failureResult)
 		{
 			try
 			{
-				response.get();
+				return response.get();
 			}
 			catch (Exception e)
 			{
-				logger.log(Level.WARN, e, "Failed to release {0} on {1}", this.descriptor, member);
+				logger.log(Level.WARN, e, messages.executeCommandFailed(command, member));
+				return failureResult;
 			}
 		}
 		

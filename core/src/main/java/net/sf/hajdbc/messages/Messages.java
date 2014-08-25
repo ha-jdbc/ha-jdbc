@@ -32,6 +32,7 @@ import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.Version;
 import net.sf.hajdbc.dialect.Dialect;
+import net.sf.hajdbc.distributed.Command;
 import net.sf.hajdbc.distributed.Member;
 import net.sf.hajdbc.logging.LoggingProvider;
 import net.sf.hajdbc.util.Matcher;
@@ -107,4 +108,8 @@ public interface Messages
 	<Z, D extends Database<Z>> String clusterStatePersistence(DatabaseCluster<Z, D> cluster, String url);
 
 	<Z, D extends Database<Z>> String sequenceOutOfSync(SequenceProperties sequence, D activeDatabase, long activeValue, D database, long value);
+
+	String sendCommandToClusterFailed(Command<?, ?> command);
+	String sendCommandToMemberFailed(Command<?, ?> command, Member member);
+	String executeCommandFailed(Command<?, ?> command, Member member);
 }
