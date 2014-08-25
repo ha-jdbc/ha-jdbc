@@ -15,12 +15,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sf.hajdbc.state.simple;
+package net.sf.hajdbc.durability;
 
 import net.sf.hajdbc.ExceptionType;
-import net.sf.hajdbc.durability.DurabilityEvent;
-import net.sf.hajdbc.durability.DurabilityEventImpl;
-import net.sf.hajdbc.durability.InvocationEvent;
 
 /**
  * @author Paul Ferraro

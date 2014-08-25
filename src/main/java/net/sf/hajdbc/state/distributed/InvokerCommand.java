@@ -22,6 +22,7 @@ import java.util.Map;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.distributed.Command;
 import net.sf.hajdbc.durability.InvocationEvent;
+import net.sf.hajdbc.durability.InvocationEventAdapter;
 import net.sf.hajdbc.durability.InvokerEvent;
 
 public class InvokerCommand<Z, D extends Database<Z>> implements Command<Void, StateCommandContext<Z, D>>
@@ -49,7 +50,7 @@ public class InvokerCommand<Z, D extends Database<Z>> implements Command<Void, S
 		
 		synchronized (invokers)
 		{
-			Map<String, InvokerEvent> map = invokers.get(event);
+			Map<String, InvokerEvent> map = invokers.get(new InvocationEventAdapter(event));
 			
 			if (map != null)
 			{
