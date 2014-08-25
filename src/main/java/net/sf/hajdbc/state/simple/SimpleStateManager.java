@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import net.sf.hajdbc.durability.InvocationEvent;
+import net.sf.hajdbc.durability.InvocationEventAdapter;
 import net.sf.hajdbc.durability.InvokerEvent;
 import net.sf.hajdbc.state.DatabaseEvent;
 import net.sf.hajdbc.state.StateManager;

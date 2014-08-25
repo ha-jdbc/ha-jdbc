@@ -54,7 +54,7 @@ public class AddressMember implements Member
 	@Override
 	public boolean equals(Object object)
 	{
-		if ((object == null) || !(object instanceof AddressMember)) return false;
+		if (!(object instanceof AddressMember)) return false;
 
 		AddressMember member = (AddressMember) object;
 		
