@@ -28,8 +28,6 @@ import net.sf.hajdbc.distributed.Remote;
  */
 public interface LockCommandContext
 {
-	Lock getDistibutedLock(RemoteLockDescriptor descriptor);
-
 	Lock getLock(LockDescriptor descriptor);
 	
 	Map<LockDescriptor, Lock> getRemoteLocks(Remote remote);

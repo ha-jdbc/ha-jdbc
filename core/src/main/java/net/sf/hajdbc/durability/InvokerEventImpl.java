@@ -70,6 +70,12 @@ public class InvokerEventImpl extends DurabilityEventImpl implements InvokerEven
 		return this.result;
 	}
 
+	@Override
+	public String toString()
+	{
+		return String.format("%s(%s):%s", this.getPhase(), this.source, this.databaseId);
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.durability.DurabilityEventImpl#equals(java.lang.Object)

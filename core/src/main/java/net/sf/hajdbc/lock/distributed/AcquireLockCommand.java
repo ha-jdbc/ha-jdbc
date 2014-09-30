@@ -17,42 +17,68 @@
  */
 package net.sf.hajdbc.lock.distributed;
 
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 
-/**
- * Acquire lock command for execution on group coordinator.
- * @author Paul Ferraro
- */
-public class CoordinatorAcquireLockCommand extends CoordinatorLockCommand<Boolean>
-{
-	private static final long serialVersionUID = 1725113200306907771L;
-	
-	private final long timeout;
-	
-	public CoordinatorAcquireLockCommand(RemoteLockDescriptor descriptor, long timeout)
-	{
-		super(descriptor);
+import net.sf.hajdbc.distributed.Command;
 
+/**
+ * @author Paul Ferraro
+ *
+ */
+public class AcquireLockCommand implements Command<Boolean, LockCommandContext>
+{
+	private static final long serialVersionUID = 673191217118566395L;
+
+	private final RemoteLockDescriptor descriptor;
+	private final long timeout;
+
+	public AcquireLockCommand(RemoteLockDescriptor descriptor, long timeout)
+	{
+		this.descriptor = descriptor;
 		this.timeout = timeout;
 	}
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.lock.distributed.CoordinatorLockCommand#execute(java.util.concurrent.locks.Lock)
+	 * @see net.sf.hajdbc.distributed.Command#execute(java.lang.Object)
 	 */
 	@Override
-	protected Boolean execute(Lock lock)
+	public Boolean execute(LockCommandContext context)
 	{
+		Lock lock = context.getLock(this.descriptor);
+		
 		try
 		{
-			return lock.tryLock(this.timeout, TimeUnit.MILLISECONDS);
+			boolean locked = lock.tryLock(this.timeout, TimeUnit.MILLISECONDS);
+			
+			if (locked)
+			{
+				Map<LockDescriptor, Lock> lockMap = context.getRemoteLocks(this.descriptor);
+				
+				synchronized (lockMap)
+				{
+					lockMap.put(this.descriptor, lock);
+				}
+			}
+			
+			return locked;
 		}
 		catch (InterruptedException e)
 		{
 			Thread.currentThread().interrupt();
-			
 			return false;
 		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString()
+	{
+		return String.format("%s(%s)", this.getClass().getSimpleName(), this.descriptor);
 	}
 }

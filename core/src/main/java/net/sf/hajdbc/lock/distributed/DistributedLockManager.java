@@ -22,7 +22,9 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,13 +35,20 @@ import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.distributed.Command;
 import net.sf.hajdbc.distributed.CommandDispatcher;
 import net.sf.hajdbc.distributed.CommandDispatcherFactory;
+import net.sf.hajdbc.distributed.CommandResponse;
 import net.sf.hajdbc.distributed.Member;
 import net.sf.hajdbc.distributed.MembershipListener;
 import net.sf.hajdbc.distributed.Remote;
 import net.sf.hajdbc.distributed.Stateful;
 import net.sf.hajdbc.lock.LockManager;
+import net.sf.hajdbc.logging.Level;
+import net.sf.hajdbc.logging.Logger;
+import net.sf.hajdbc.logging.LoggerFactory;
+import net.sf.hajdbc.messages.Messages;
+import net.sf.hajdbc.messages.MessagesFactory;
 import net.sf.hajdbc.util.Objects;
 
 /**
@@ -47,6 +56,9 @@ import net.sf.hajdbc.util.Objects;
  */
 public class DistributedLockManager implements LockManager, LockCommandContext, Stateful, MembershipListener
 {
+	static final Logger logger = LoggerFactory.getLogger(DistributedLockManager.class);
+	static final Messages messages = MessagesFactory.getMessages();
+
 	final CommandDispatcher<LockCommandContext> dispatcher;
 	
 	private final LockManager lockManager;
@@ -76,7 +88,8 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 	@Override
 	public Lock writeLock(String id)
 	{
-		return this.getDistibutedLock(new RemoteLockDescriptorImpl(id, LockType.WRITE, this.dispatcher.getLocal()));
+		RemoteLockDescriptor descriptor = new RemoteLockDescriptorImpl(id, LockType.WRITE, this.dispatcher.getLocal());
+		return new DistributedLock(descriptor, this.getLock(descriptor), this.dispatcher);
 	}
 
 	/**
@@ -103,16 +116,6 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 				throw new IllegalStateException();
 			}
 		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.lock.distributed.LockCommandContext#getDistibutedLock(net.sf.hajdbc.lock.distributed.RemoteLockDescriptor)
-	 */
-	@Override
-	public Lock getDistibutedLock(RemoteLockDescriptor descriptor)
-	{
-		return new DistributedLock(descriptor, this.getLock(descriptor), this.dispatcher);
 	}
 
 	/**
@@ -160,14 +163,18 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 		{
 			output.writeObject(entry.getKey());
 			
-			Set<LockDescriptor> descriptors = entry.getValue().keySet();
-			
-			output.writeInt(descriptors.size());
-			
-			for (LockDescriptor descriptor: descriptors)
+			Map<LockDescriptor, Lock> locks = entry.getValue();
+			synchronized (locks)
 			{
-				output.writeUTF(descriptor.getId());
-				output.writeByte(descriptor.getType().ordinal());
+				Set<LockDescriptor> descriptors = locks.keySet();
+				
+				output.writeInt(descriptors.size());
+				
+				for (LockDescriptor descriptor: descriptors)
+				{
+					output.writeUTF(descriptor.getId());
+					output.writeByte(descriptor.getType().ordinal());
+				}
 			}
 		}
 	}
@@ -179,8 +186,8 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 	@Override
 	public void readState(ObjectInput input) throws IOException
 	{
-		// Is this valid?  or should we unlock/clear?
-		//assert this.remoteLockDescriptorMap.isEmpty();
+		// Discard any previous state
+		this.remoteLockDescriptorMap.clear();
 		
 		int size = input.readInt();
 		
@@ -242,6 +249,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 	
 	private static class DistributedLock implements Lock
 	{
+		private static final int[] BACKOFF_INTERVALS = new int[] { 1, 10, 100 };
 		private final RemoteLockDescriptor descriptor;
 		private final Lock lock;
 		private final CommandDispatcher<LockCommandContext> dispatcher;
@@ -253,13 +261,30 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 			this.dispatcher = dispatcher;
 		}
 		
+		private static void sleep(int retry) throws InterruptedException
+		{
+			if (retry > 0)
+			{
+				Thread.sleep(BACKOFF_INTERVALS[Math.min(retry, BACKOFF_INTERVALS.length) - 1]);
+			}
+		}
+		
 		@Override
 		public void lock()
 		{
 			boolean locked = false;
+			int retry = 0;
 			
 			while (!locked)
 			{
+				try
+				{
+					sleep(retry);
+				}
+				catch (InterruptedException e)
+				{
+					Thread.currentThread().interrupt();
+				}
 				
 				Member coordinator = this.dispatcher.getCoordinator();
 				
@@ -281,13 +306,10 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 				}
 				else
 				{
-					locked = this.lockCoordinator(coordinator, Long.MAX_VALUE);
+					locked = this.lockFromNonCoordinator(coordinator, Long.MAX_VALUE);
 				}
 				
-				if (!locked)
-				{
-					Thread.yield();
-				}
+				retry += 1;
 			}
 		}
 
@@ -295,9 +317,11 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 		public void lockInterruptibly() throws InterruptedException
 		{
 			boolean locked = false;
+			int retry = 0;
 			
 			while (!locked)
 			{
+				sleep(retry);
 				
 				Member coordinator = this.dispatcher.getCoordinator();
 				
@@ -319,7 +343,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 				}
 				else
 				{
-					locked = this.lockCoordinator(coordinator, Long.MAX_VALUE);
+					this.lockFromNonCoordinator(coordinator, Long.MAX_VALUE);
 				}
 				
 				if (Thread.currentThread().isInterrupted())
@@ -327,10 +351,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 					throw new InterruptedException();
 				}
 				
-				if (!locked)
-				{
-					Thread.yield();
-				}
+				retry += 1;
 			}
 		}
 
@@ -338,29 +359,44 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 		public boolean tryLock()
 		{
 			boolean locked = false;
+			int retry = 0;
 			
-			Member coordinator = this.dispatcher.getCoordinator();
-			
-			if (this.dispatcher.getLocal().equals(coordinator))
+			try
 			{
-				if (this.lock.tryLock())
+				while (!locked && (retry <= BACKOFF_INTERVALS.length))
 				{
-					try
+					sleep(retry);
+					
+					Member coordinator = this.dispatcher.getCoordinator();
+					
+					if (this.dispatcher.getLocal().equals(coordinator))
 					{
-						locked = this.lockMembers(coordinator);
-					}
-					finally
-					{
-						if (!locked)
+						if (this.lock.tryLock())
 						{
-							this.lock.unlock();
+							try
+							{
+								locked = this.lockMembers(coordinator);
+							}
+							finally
+							{
+								if (!locked)
+								{
+									this.lock.unlock();
+								}
+							}
 						}
 					}
+					else
+					{
+						locked = this.lockFromNonCoordinator(coordinator, 0);
+					}
+					
+					retry += 1;
 				}
 			}
-			else
+			catch (InterruptedException e)
 			{
-				locked = this.lockCoordinator(coordinator, 0);
+				Thread.currentThread().interrupt();
 			}
 			
 			return locked;
@@ -370,57 +406,126 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 		public boolean tryLock(long time, TimeUnit unit) throws InterruptedException
 		{
 			boolean locked = false;
+			long start = System.currentTimeMillis();
+			long stop = start + TimeUnit.MILLISECONDS.convert(time, unit);
+			long now = start;
+			int retry = 0;
 			
-			Member coordinator = this.dispatcher.getCoordinator();
-			
-			if (this.dispatcher.getLocal().equals(coordinator))
+			try
 			{
-				if (this.lock.tryLock(time, unit))
+				while (!locked && (now <= stop))
 				{
-					try
+					sleep(retry);
+					
+					Member coordinator = this.dispatcher.getCoordinator();
+					long timeout = stop - now;
+					if (this.dispatcher.getLocal().equals(coordinator))
 					{
-						locked = this.lockMembers(coordinator);
-					}
-					finally
-					{
-						if (!locked)
+						if (this.lock.tryLock(timeout, TimeUnit.MILLISECONDS))
 						{
-							this.lock.unlock();
+							try
+							{
+								locked = this.lockMembers(coordinator);
+							}
+							finally
+							{
+								if (!locked)
+								{
+									this.lock.unlock();
+								}
+							}
 						}
+					}
+					else
+					{
+						locked = this.lockFromNonCoordinator(coordinator, timeout);
+					}
+					
+					now = System.currentTimeMillis();
+					retry += 1;
+				}
+			}
+			catch (InterruptedException e)
+			{
+				Thread.currentThread().interrupt();
+			}
+			return locked;
+		}
+		
+		private boolean lockFromNonCoordinator(Member coordinator, long timeout)
+		{
+			boolean locked = false;
+			if (this.lockCoordinator(coordinator, timeout))
+			{
+				try
+				{
+					locked = this.lockMembers(coordinator);
+				}
+				finally
+				{
+					if (!locked)
+					{
+						this.unlock(coordinator);
 					}
 				}
 			}
-			else
-			{
-				locked = this.lockCoordinator(coordinator, unit.toMillis(time));
-			}
-			
 			return locked;
 		}
-
+		
 		private boolean lockMembers(Member coordinator)
 		{
-			boolean locked = true;
-			
-			Map<Member, Boolean> results = this.dispatcher.executeAll(new MemberAcquireLockCommand(this.descriptor), coordinator);
-			
-			for (Map.Entry<Member, Boolean> entry: results.entrySet())
+			Command<Boolean, LockCommandContext> command = new AcquireLockCommand(this.descriptor, 0);
+			try
 			{
-				locked &= entry.getValue();
+				Map<Member, CommandResponse<Boolean>> results = this.dispatcher.executeAll(command, coordinator);
+				List<Member> lockedMembers = new ArrayList<>(results.size());
+				
+				for (Map.Entry<Member, CommandResponse<Boolean>> entry: results.entrySet())
+				{
+					Member member = entry.getKey();
+					if (readAcquireResponse(command, member, entry.getValue()))
+					{
+						lockedMembers.add(member);
+					}
+				}
+				
+				boolean locked = lockedMembers.size() == results.size();
+				
+				if (!locked)
+				{
+					for (Member member: lockedMembers)
+					{
+						this.unlock(member);
+					}
+				}
+				
+				return locked;
 			}
-			
-			if (!locked)
+			catch (Exception e)
 			{
-				this.unlockMembers(coordinator);
+				logger.log(Level.WARN, e, messages.sendCommandToClusterFailed(command));
+				return false;
 			}
-			
-			return locked;
 		}
 		
 		private boolean lockCoordinator(Member coordinator, long timeout)
 		{
-			Boolean result = this.dispatcher.execute(new CoordinatorAcquireLockCommand(this.descriptor, timeout), coordinator);
-			return (result != null) ? result.booleanValue() : false;
+			Command<Boolean, LockCommandContext> command = new AcquireLockCommand(this.descriptor, timeout);
+			try
+			{
+				CommandResponse<Boolean> response = this.dispatcher.execute(new AcquireLockCommand(this.descriptor, timeout), coordinator);
+				return readAcquireResponse(command, coordinator, response);
+			}
+			catch (Exception e)
+			{
+				logger.log(Level.WARN, e, messages.sendCommandToMemberFailed(command, coordinator));
+				return false;
+			}
+		}
+		
+		private static boolean readAcquireResponse(Command<Boolean, LockCommandContext> command, Member member, CommandResponse<Boolean> response)
+		{
+			return readResponse(command, member, response, Boolean.FALSE).booleanValue();
 		}
 		
 		@Override
@@ -428,28 +533,67 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 		{
 			Member coordinator = this.dispatcher.getCoordinator();
 			
+			this.unlockMembers(coordinator);
+			
 			if (this.dispatcher.getLocal().equals(coordinator))
 			{
-				this.unlockMembers(coordinator);
-				
 				this.lock.unlock();
 			}
 			else
 			{
-				this.unlockCoordinator(coordinator);
+				this.unlock(coordinator);
 			}
 		}
 		
-		private void unlockMembers(Member coordinator)
+		private void unlockMembers(Member... excluded)
 		{
-			this.dispatcher.executeAll(new MemberReleaseLockCommand(this.descriptor), coordinator);
-		}
-		
-		private void unlockCoordinator(Member coordinator)
-		{
-			this.dispatcher.execute(new CoordinatorReleaseLockCommand(this.descriptor), coordinator);
+			Command<Void, LockCommandContext> command = new ReleaseLockCommand(this.descriptor);
+			try
+			{
+				Map<Member, CommandResponse<Void>> responses = this.dispatcher.executeAll(command, excluded);
+				for (Map.Entry<Member, CommandResponse<Void>> entry: responses.entrySet())
+				{
+					readReleaseResponse(command, entry.getKey(), entry.getValue());
+				}
+			}
+			catch (Exception e)
+			{
+				logger.log(Level.WARN, e, messages.sendCommandToClusterFailed(command));
+			}
 		}
 
+		private void unlock(Member member)
+		{
+			Command<Void, LockCommandContext> command = new ReleaseLockCommand(this.descriptor);
+			try
+			{
+				CommandResponse<Void> response = this.dispatcher.execute(command, member);
+				readReleaseResponse(command, member, response);
+			}
+			catch (Exception e)
+			{
+				logger.log(Level.WARN, e, messages.sendCommandToMemberFailed(command, member));
+			}
+		}
+		
+		private static void readReleaseResponse(Command<Void, LockCommandContext> command, Member member, CommandResponse<Void> response)
+		{
+			readResponse(command, member, response, null);
+		}
+		
+		private static <R> R readResponse(Command<R, LockCommandContext> command, Member member, CommandResponse<R> response, R failureResult)
+		{
+			try
+			{
+				return response.get();
+			}
+			catch (Exception e)
+			{
+				logger.log(Level.WARN, e, messages.executeCommandFailed(command, member));
+				return failureResult;
+			}
+		}
+		
 		@Override
 		public Condition newCondition()
 		{

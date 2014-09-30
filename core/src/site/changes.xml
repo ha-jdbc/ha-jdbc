@@ -38,7 +38,7 @@
 				Create static xsd with documentation.
 			</action>
 			<action type="update" dev="pferraro">
-				Use Gettext for i10n of log/exception messages.
+				Use GNU gettext for i10n of log/exception messages.
 			</action>
 		</release>
 		<release version="3.0.3" date="2014-07-25">
