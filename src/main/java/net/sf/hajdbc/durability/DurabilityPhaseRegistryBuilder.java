@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (C) 2012  Paul Ferraro
+ * Copyright (C) 2015  Paul Ferraro
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -15,46 +15,35 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sf.hajdbc.util;
+package net.sf.hajdbc.durability;
 
+import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
+
+import net.sf.hajdbc.util.Builder;
+import net.sf.hajdbc.util.SimpleStaticRegistry;
+import net.sf.hajdbc.util.StaticRegistry;
 
 /**
  * @author Paul Ferraro
  */
-public class SimpleStaticRegistry<K, V> implements StaticRegistry<K, V>
+public class DurabilityPhaseRegistryBuilder implements Builder<StaticRegistry<Method, Durability.Phase>>
 {
-	private final ExceptionMessageFactory<K> factory;
-	private final Map<K, V> map;
-	
-	public SimpleStaticRegistry(Map<K, V> map)
+	private final Map<Method, Durability.Phase> phases = new HashMap<Method, Durability.Phase>();
+
+	public DurabilityPhaseRegistryBuilder phase(Durability.Phase phase, Method... methods)
 	{
-		this(map, null);
-	}
-	
-	public SimpleStaticRegistry(Map<K, V> map, ExceptionMessageFactory<K> factory)
-	{
-		this.map = map;
-		this.factory = factory;
+		for (Method method : methods)
+		{
+			this.phases.put(method, phase);
+		}
+		return this;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.util.StaticRegistry#get(java.lang.Object)
-	 */
 	@Override
-	public V get(K key)
+	public StaticRegistry<Method, Durability.Phase> build()
 	{
-		V value = this.map.get(key);
-		if ((value == null) && (this.factory != null))
-		{
-			throw new IllegalArgumentException(this.factory.createMessage(key));
-		}
-		return value;
-	}
-	
-	public interface ExceptionMessageFactory<K>
-	{
-		String createMessage(K key);
+		return new SimpleStaticRegistry<Method, Durability.Phase>(this.phases);
 	}
 }
