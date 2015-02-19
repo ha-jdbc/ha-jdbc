@@ -36,11 +36,11 @@ import javax.transaction.xa.Xid;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.durability.Durability;
+import net.sf.hajdbc.durability.DurabilityPhaseRegistryBuilder;
 import net.sf.hajdbc.invocation.InvocationStrategies;
 import net.sf.hajdbc.invocation.InvocationStrategy;
 import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.sql.ChildInvocationHandler;
-import net.sf.hajdbc.sql.DurabilityPhaseRegistry;
 import net.sf.hajdbc.sql.ProxyFactory;
 import net.sf.hajdbc.util.StaticRegistry;
 import net.sf.hajdbc.util.reflect.Methods;
@@ -62,7 +62,7 @@ public class XAResourceInvocationHandler extends ChildInvocationHandler<XADataSo
 	private static final Method forgetMethod = Methods.getMethod(XAResource.class, "forget", Xid.class);
 	private static final Set<Method> endTransactionMethodSet = new HashSet<>(Arrays.asList(commitMethod, rollbackMethod, forgetMethod));
 	
-	private static final StaticRegistry<Method, Durability.Phase> phaseRegistry = new DurabilityPhaseRegistry(Arrays.asList(prepareMethod), Arrays.asList(commitMethod), Arrays.asList(rollbackMethod), Arrays.asList(forgetMethod));
+	private static final StaticRegistry<Method, Durability.Phase> phaseRegistry = new DurabilityPhaseRegistryBuilder().phase(Durability.Phase.PREPARE, prepareMethod).phase(Durability.Phase.COMMIT, commitMethod).phase(Durability.Phase.ROLLBACK, rollbackMethod).phase(Durability.Phase.FORGET, forgetMethod).build();
 	
 	// Xids are global - so store in static variable
 	private static final ConcurrentMap<Xid, Lock> lockMap = new ConcurrentHashMap<>();
@@ -91,7 +91,7 @@ public class XAResourceInvocationHandler extends ChildInvocationHandler<XADataSo
 		boolean start = method.equals(startMethod);
 		boolean end = endTransactionMethodSet.contains(method);
 		
-		if (start || end || method.equals(prepareMethod) || intraTransactionMethodSet.contains(method))
+		if (start || end || intraTransactionMethodSet.contains(method))
 		{
 			final InvocationStrategy strategy = end ? InvocationStrategies.END_TRANSACTION_INVOKE_ON_ALL : InvocationStrategies.TRANSACTION_INVOKE_ON_ALL;
 			
@@ -129,7 +129,6 @@ public class XAResourceInvocationHandler extends ChildInvocationHandler<XADataSo
 			}
 			
 			Durability.Phase phase = phaseRegistry.get(method);
-			
 			if (phase != null)
 			{
 				final InvocationStrategy durabilityStrategy = cluster.getDurability().getInvocationStrategy(strategy, phase, xid);
@@ -177,8 +176,7 @@ public class XAResourceInvocationHandler extends ChildInvocationHandler<XADataSo
 		Invoker<XADataSource, XADataSourceDatabase, XAResource, R, XAException> invoker = super.getInvoker(object, method, parameters);
 		
 		Durability.Phase phase = phaseRegistry.get(method);
-		
-		if (method.equals(prepareMethod) || endTransactionMethodSet.contains(method))
+		if (phase != null)
 		{
 			return this.getProxyFactory().getDatabaseCluster().getDurability().getInvoker(invoker, phase, parameters[0], this.getProxyFactory().getExceptionFactory());
 		}
