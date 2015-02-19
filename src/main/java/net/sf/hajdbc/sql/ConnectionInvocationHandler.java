@@ -30,6 +30,7 @@ import java.util.Set;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.durability.Durability;
+import net.sf.hajdbc.durability.DurabilityPhaseRegistryBuilder;
 import net.sf.hajdbc.invocation.InvocationStrategies;
 import net.sf.hajdbc.invocation.InvocationStrategy;
 import net.sf.hajdbc.invocation.Invoker;
@@ -64,10 +65,9 @@ public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends Ch
 	private static final Method createNClobMethod = Methods.getMethod(Connection.class, "createNClob");
 	private static final Method createSQLXMLMethod = Methods.getMethod(Connection.class, "createSQLXML");
 	
-	private static final Set<Method> endTransactionMethodSet = new HashSet<Method>(Arrays.asList(commitMethod, rollbackMethod, setAutoCommitMethod));
 	private static final Set<Method> createLocatorMethodSet = new HashSet<Method>(Arrays.asList(createBlobMethod, createClobMethod, createNClobMethod, createSQLXMLMethod));
 	
-	private static final StaticRegistry<Method, Durability.Phase> phaseRegistry = new DurabilityPhaseRegistry(Arrays.asList(commitMethod, setAutoCommitMethod), Arrays.asList(rollbackMethod));
+	private static final StaticRegistry<Method, Durability.Phase> phaseRegistry = new DurabilityPhaseRegistryBuilder().phase(Durability.Phase.COMMIT, commitMethod, setAutoCommitMethod).phase(Durability.Phase.ROLLBACK, rollbackMethod).build();
 	
 	/**
 	 * Constructs a new ConnectionInvocationHandler
@@ -156,9 +156,10 @@ public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends Ch
 			return InvocationStrategies.INVOKE_ON_ALL;
 		}
 		
-		if (endTransactionMethodSet.contains(method))
+		Durability.Phase phase = phaseRegistry.get(method);
+		if (phase != null)
 		{
-			return this.getProxyFactory().getTransactionContext().end(InvocationStrategies.END_TRANSACTION_INVOKE_ON_ALL, phaseRegistry.get(method));
+			return this.getProxyFactory().getTransactionContext().end(InvocationStrategies.END_TRANSACTION_INVOKE_ON_ALL, phase);
 		}
 		
 		if (method.equals(rollbackSavepointMethod) || method.equals(releaseSavepointMethod))
@@ -192,9 +193,10 @@ public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends Ch
 
 		Invoker<Z, D, Connection, R, SQLException> invoker = super.getInvoker(connection, method, parameters);
 		
-		if (endTransactionMethodSet.contains(method))
+		Durability.Phase phase = phaseRegistry.get(method);
+		if (phase != null)
 		{
-			return this.getProxyFactory().getTransactionContext().end(invoker, phaseRegistry.get(method));
+			return this.getProxyFactory().getTransactionContext().end(invoker, phase);
 		}
 		
 		return invoker;

@@ -67,7 +67,7 @@
 		<dependency>
 			<groupId>org.jgroups</groupId>
 			<artifactId>jgroups</artifactId>
-			<version>3.4.5.Final</version>
+			<version>3.4.6.Final</version>
 			<optional>true</optional>
 		</dependency>
 		<!-- Optional logging dependencies -->
@@ -125,7 +125,7 @@
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
-			<version>1.9.5</version>
+			<version>1.10.8</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -143,7 +143,7 @@
 		<dependency>
 			<groupId>org.apache.derby</groupId>
 			<artifactId>derby</artifactId>
-			<version>10.10.2.0</version>
+			<version>10.11.1.1</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
