@@ -275,8 +275,8 @@
 
 	<licenses>
 		<license>
-			<name>GNU LGPL</name>
-			<url>http://www.gnu.org/licenses/lgpl.html</url>
+			<name>GNU GPL</name>
+			<url>http://www.gnu.org/copyleft/gpl.html</url>
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
