@@ -4,4 +4,4 @@
 
 ## License
 
-[GNU General Public License](http://www.gnu.org/licenses/gpl.txt)
+[GNU Lesser General Public License](https://www.gnu.org/licenses/lgpl.html)
