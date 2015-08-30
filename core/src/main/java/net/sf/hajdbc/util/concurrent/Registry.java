@@ -17,7 +17,7 @@
  */
 package net.sf.hajdbc.util.concurrent;
 
-import net.sf.hajdbc.util.TimePeriod;
+import java.time.Duration;
 
 /**
  * @author Paul Ferraro
@@ -36,7 +36,7 @@ public interface Registry<K, V, C, E extends Exception>
 	{
 		V create(K key, C context) throws E;
 		
-		TimePeriod getTimeout();
+		Duration getTimeout();
 	}
 	
 	public interface Store<K, V>

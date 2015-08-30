@@ -21,6 +21,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.Map;
 import java.util.Properties;
 import java.util.SortedMap;
@@ -40,7 +41,6 @@ import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
 import net.sf.hajdbc.messages.Messages;
 import net.sf.hajdbc.messages.MessagesFactory;
-import net.sf.hajdbc.util.TimePeriod;
 import net.sf.hajdbc.util.concurrent.MapRegistryStoreFactory;
 import net.sf.hajdbc.util.concurrent.LifecycleRegistry;
 import net.sf.hajdbc.util.concurrent.Registry;
@@ -57,7 +57,7 @@ public class Driver extends AbstractDriver
 	private static final Messages messages = MessagesFactory.getMessages();
 	static final Logger logger = LoggerFactory.getLogger(Driver.class);
 
-	static volatile TimePeriod timeout = new TimePeriod(10, TimeUnit.SECONDS);
+	static volatile Duration timeout = Duration.ofSeconds(10);
 	static volatile DatabaseClusterFactory<java.sql.Driver, DriverDatabase> factory = new DatabaseClusterFactoryImpl<>();
 	
 	static final Map<String, DatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>> configurationFactories = new ConcurrentHashMap<>();
@@ -79,7 +79,7 @@ public class Driver extends AbstractDriver
 		}
 
 		@Override
-		public TimePeriod getTimeout()
+		public Duration getTimeout()
 		{
 			return timeout;
 		}
@@ -144,10 +144,19 @@ public class Driver extends AbstractDriver
 	{
 		configurationFactories.put(id,  configurationFactory);
 	}
-	
+
+	/**
+	 * @deprecated Use {@link #setTimeout(Duration)} instead.
+	 */
+	@Deprecated
 	public static void setTimeout(long value, TimeUnit unit)
 	{
-		timeout = new TimePeriod(value, unit);
+		setTimeout(Duration.ofMillis(unit.toMillis(value)));
+	}
+	
+	public static void setTimeout(Duration duration)
+	{
+		timeout = duration;
 	}
 
 	/**

@@ -17,6 +17,7 @@
  */
 package net.sf.hajdbc.util.concurrent;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -33,7 +34,6 @@ import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.Lifecycle;
 import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.durability.Durability.Phase;
-import net.sf.hajdbc.util.TimePeriod;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -241,12 +241,12 @@ public class RegistryTest
 	private class Factory implements LifecycleRegistry.Factory<Void, SimpleObject, Void, Exception>
 	{
 		private final SimpleObject object;
-		private final TimePeriod timeout;
+		private final Duration timeout;
 		
 		Factory(SimpleObject object, int seconds)
 		{
 			this.object = object;
-			this.timeout = new TimePeriod(seconds, TimeUnit.SECONDS);
+			this.timeout = Duration.ofSeconds(seconds);
 		}
 		
 		@Override
@@ -256,7 +256,7 @@ public class RegistryTest
 		}
 
 		@Override
-		public TimePeriod getTimeout()
+		public Duration getTimeout()
 		{
 			return this.timeout;
 		}

@@ -42,6 +42,7 @@ public final class Methods
 	 * @throws SQLException the target exception of the method invocation
 	 * @throws IllegalArgumentException if the the underlying method is inaccessible
 	 */
+	@SuppressWarnings("unchecked")
 	public static <R, E extends Exception> R invoke(Method method, ExceptionFactory<E> factory, Object object, Object... parameters) throws E
 	{
 		try

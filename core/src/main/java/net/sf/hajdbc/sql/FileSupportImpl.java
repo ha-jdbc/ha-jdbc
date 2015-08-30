@@ -138,6 +138,7 @@ public class FileSupportImpl<E extends Exception> implements FileSupport<E>
 	/**
 	 * @see net.sf.hajdbc.sql.FileSupport#getInputStream(java.io.File)
 	 */
+	@SuppressWarnings("resource")
 	@Override
 	public InputStream getInputStream(File file) throws E
 	{

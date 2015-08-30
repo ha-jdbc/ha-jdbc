@@ -20,6 +20,7 @@ package net.sf.hajdbc.sql;
 import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -30,7 +31,6 @@ import net.sf.hajdbc.DatabaseClusterConfigurationBuilderProvider;
 import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.DatabaseClusterFactory;
 import net.sf.hajdbc.ExceptionType;
-import net.sf.hajdbc.util.TimePeriod;
 import net.sf.hajdbc.util.concurrent.ReferenceRegistryStoreFactory;
 import net.sf.hajdbc.util.concurrent.LifecycleRegistry;
 import net.sf.hajdbc.util.concurrent.Registry;
@@ -44,7 +44,7 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 {
 	private final Registry<Void, DatabaseCluster<Z, D>, Void, SQLException> registry = new LifecycleRegistry<>(this, new ReferenceRegistryStoreFactory(), ExceptionType.SQL.<SQLException>getExceptionFactory());
 	
-	private volatile TimePeriod timeout = new TimePeriod(10, TimeUnit.SECONDS);
+	private volatile Duration timeout = Duration.ofSeconds(10);
 	private volatile String cluster;
 	private volatile String config;
 	private volatile String user;
@@ -76,7 +76,7 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 			throw new SQLException();
 		}
 		DatabaseClusterConfigurationFactory<Z, D> configurationFactory = this.configurationFactory;
-		DatabaseClusterConfigurationFactory<Z, D> factory = (configurationFactory == null) ? new XMLDatabaseClusterConfigurationFactory<Z, D>(cluster, this.config) : configurationFactory;
+		DatabaseClusterConfigurationFactory<Z, D> factory = (configurationFactory == null) ? new XMLDatabaseClusterConfigurationFactory<>(cluster, this.config) : configurationFactory;
 		return this.factory.createDatabaseCluster(cluster, factory, this.getConfigurationBuilder());
 	}
 
@@ -166,18 +166,25 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 	 * @return the timeout
 	 */
 	@Override
-	public TimePeriod getTimeout()
+	public Duration getTimeout()
 	{
 		return this.timeout;
 	}
 
 	/**
+	 * @deprecated Use {@link 
 	 * @param value the timeout to set, expressed in the specified units
 	 * @param unit the time unit with which to qualify the specified timeout value
 	 */
+	@Deprecated
 	public void setTimeout(long value, TimeUnit unit)
 	{
-		this.timeout = new TimePeriod(value, unit);
+		this.setTimeout(Duration.ofMillis(unit.toMillis(value)));
+	}
+
+	public void setTimeout(Duration timeout)
+	{
+		this.timeout = timeout;
 	}
 
 	/**

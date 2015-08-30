@@ -40,6 +40,7 @@ public abstract class AbstractStatementProxyFactory<Z, D extends Database<Z>, S 
 	private final List<Invoker<Z, D, S, ?, SQLException>> batchInvokers = new LinkedList<>();
 	private final List<String> batch = new LinkedList<>();
 	
+	@SuppressWarnings("unchecked")
 	protected AbstractStatementProxyFactory(Connection parent, ProxyFactory<Z, D, Connection, SQLException> parentFactory, Invoker<Z, D, Connection, S, SQLException> invoker, Map<D, S> map, TransactionContext<Z, D> context)
 	{
 		super(parent, parentFactory, invoker, map, context, new InputSinkRegistryImpl<>((InputSinkStrategy<Object>) parentFactory.getDatabaseCluster().getInputSinkStrategy()));
