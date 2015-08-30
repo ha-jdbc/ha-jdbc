@@ -19,13 +19,13 @@ package net.sf.hajdbc.codec.crypto;
 
 import java.security.Key;
 import java.sql.SQLException;
+import java.util.Base64;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESKeySpec;
 
 import net.sf.hajdbc.codec.Codec;
 
-import org.apache.commons.codec.binary.Base64;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,7 +46,7 @@ public class CipherCodecTest
 	public void before() throws Exception
 	{
 		SecretKeyFactory factory = SecretKeyFactory.getInstance(ALGORITHM);
-		Key key = factory.generateSecret(new DESKeySpec(Base64.decodeBase64(KEY.getBytes())));
+		Key key = factory.generateSecret(new DESKeySpec(Base64.getDecoder().decode(KEY)));
 		
 		this.codec = new CipherCodec(key);
 	}

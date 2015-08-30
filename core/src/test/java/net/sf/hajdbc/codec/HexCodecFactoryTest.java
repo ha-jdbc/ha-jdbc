@@ -36,7 +36,7 @@ public class HexCodecFactoryTest
 	{
 		Codec codec = this.factory.createCodec(null);
 		
-		Assert.assertEquals("70617373776f7264", codec.encode("password"));
+		Assert.assertEquals("70617373776F7264", codec.encode("password"));
 	}
 	
 	@Test
@@ -44,6 +44,6 @@ public class HexCodecFactoryTest
 	{
 		Codec codec = this.factory.createCodec(null);
 		
-		Assert.assertEquals("password", codec.decode("70617373776f7264"));
+		Assert.assertEquals("password", codec.decode("70617373776F7264"));
 	}
 }

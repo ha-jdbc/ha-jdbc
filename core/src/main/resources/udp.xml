@@ -4,25 +4,23 @@
   stack in stacks.xml, but doesn't use streaming state transfer and flushing
   author: Bela Ban
 -->
-<config xmlns="urn:org:jgroups" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:org:jgroups http://www.jgroups.org/schema/JGroups-3.4.xsd">
-	<UDP
-		mcast_port="${jgroups.udp.mcast_port:45588}"
+<config xmlns="urn:org:jgroups" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:org:jgroups http://www.jgroups.org/schema/jgroups.xsd">
+	<UDP mcast_port="${jgroups.udp.mcast_port:45588}"
+		ip_ttl="2"
 		tos="8"
 		ucast_recv_buf_size="5M"
-		ucast_send_buf_size="640K"
+		ucast_send_buf_size="5M"
 		mcast_recv_buf_size="5M"
-		mcast_send_buf_size="640K"
-		loopback="true"
+		mcast_send_buf_size="5M"
 		max_bundle_size="64K"
 		max_bundle_timeout="30"
-		ip_ttl="${jgroups.udp.ip_ttl:8}"
 		enable_diagnostics="true"
 		thread_naming_pattern="cl"
 		singleton_name="ha-jdbc"
 
 		timer_type="new3"
-		timer.min_threads="4"
-		timer.max_threads="10"
+		timer.min_threads="2"
+		timer.max_threads="4"
 		timer.keep_alive_time="3000"
 		timer.queue_max_size="500"
 
@@ -41,8 +39,8 @@
 		oob_thread_pool.queue_enabled="false"
 		oob_thread_pool.queue_max_size="100"
 		oob_thread_pool.rejection_policy="discard"/>
-	<PING timeout="2000" num_initial_members="20"/>
-	<MERGE2 max_interval="30000" min_interval="10000"/>
+	<PING/>
+	<MERGE3 max_interval="30000" min_interval="10000"/>
 	<FD_SOCK/>
 	<FD_ALL/>
 	<VERIFY_SUSPECT timeout="1500"/>
@@ -61,7 +59,7 @@
 		conn_expiry_timeout="0"
 		max_msg_batch_size="500"/>
 	<pbcast.STABLE stability_delay="1000" desired_avg_gossip="50000" max_bytes="4M"/>
-	<pbcast.GMS print_local_addr="false" join_timeout="3000" view_bundling="false"/>
+	<pbcast.GMS print_local_addr="false" join_timeout="2000" view_bundling="false"/>
 	<UFC max_credits="2M" min_threshold="0.4"/>
 	<MFC max_credits="2M" min_threshold="0.4"/>
 	<FRAG2 frag_size="60K"/>

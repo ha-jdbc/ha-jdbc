@@ -20,12 +20,11 @@ package net.sf.hajdbc.codec.crypto;
 import java.security.GeneralSecurityException;
 import java.security.Key;
 import java.sql.SQLException;
+import java.util.Base64;
 
 import javax.crypto.Cipher;
 
 import net.sf.hajdbc.codec.Codec;
-
-import org.apache.commons.codec.binary.Base64;
 
 /**
  * Generic cryptographic codec.
@@ -58,7 +57,7 @@ public class CipherCodec implements Codec
 
 			cipher.init(Cipher.DECRYPT_MODE, this.key);
 			
-			return new String(cipher.doFinal(Base64.decodeBase64(value.getBytes())));
+			return new String(cipher.doFinal(Base64.getDecoder().decode(value)));
 		}
 		catch (GeneralSecurityException e)
 		{
@@ -79,7 +78,7 @@ public class CipherCodec implements Codec
 
 			cipher.init(Cipher.ENCRYPT_MODE, this.key);
 			
-			return new String(Base64.encodeBase64(cipher.doFinal(value.getBytes())));
+			return Base64.getEncoder().encodeToString(cipher.doFinal(value.getBytes()));
 		}
 		catch (GeneralSecurityException e)
 		{

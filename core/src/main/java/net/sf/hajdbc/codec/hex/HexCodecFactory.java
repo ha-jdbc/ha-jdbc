@@ -19,12 +19,11 @@ package net.sf.hajdbc.codec.hex;
 
 import java.sql.SQLException;
 
+import javax.xml.bind.DatatypeConverter;
+
 import net.sf.hajdbc.codec.AbstractCodec;
 import net.sf.hajdbc.codec.Codec;
 import net.sf.hajdbc.util.Strings;
-
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
 
 /**
  * Codec that uses hex encoding/decoding.
@@ -45,16 +44,9 @@ public class HexCodecFactory extends AbstractCodec
 	 * @see net.sf.hajdbc.codec.Codec#decode(java.lang.String)
 	 */
 	@Override
-	public String decode(String value) throws SQLException
+	public String decode(String value)
 	{
-		try
-		{
-			return new String(Hex.decodeHex(value.toCharArray()));
-		}
-		catch (DecoderException e)
-		{
-			throw new SQLException(e);
-		}
+		return new String(DatatypeConverter.parseHexBinary(value));
 	}
 
 	/**
@@ -64,7 +56,7 @@ public class HexCodecFactory extends AbstractCodec
 	@Override
 	public String encode(String value)
 	{
-		return new String(Hex.encodeHex(value.getBytes()));
+		return DatatypeConverter.printHexBinary(value.getBytes());
 	}
 	
 	public static void main(String... args)
