@@ -87,7 +87,13 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 	
 	public Z getProxy() throws SQLException
 	{
-		return this.createProxyFactory(this.getDatabaseCluster()).createProxy();
+		CommonDataSourceProxyFactory<Z, D> f = this.createProxyFactory(this.getDatabaseCluster());
+		try {
+			Z proxy = f.createProxy();
+			return proxy;
+		} finally {
+			this.getDatabaseCluster().removeListener(f);
+		}
 	}
 	
 	/**
