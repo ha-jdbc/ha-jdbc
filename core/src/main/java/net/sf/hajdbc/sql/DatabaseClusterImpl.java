@@ -29,6 +29,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.locks.Lock;
 
+import javax.management.JMException;
+
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterConfiguration;
@@ -674,7 +676,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	 * @see net.sf.hajdbc.Lifecycle#start()
 	 */
 	@Override
-	public synchronized void start() throws Exception
+	public synchronized void start() throws SQLException
 	{
 		if (this.active) return;
 		
@@ -686,8 +688,15 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		
 		if (dispatcherFactory != null)
 		{
-			this.lockManager = new DistributedLockManager(this, dispatcherFactory);
-			this.stateManager = new DistributedStateManager<>(this, dispatcherFactory);
+			try
+			{
+				this.lockManager = new DistributedLockManager(this, dispatcherFactory);
+				this.stateManager = new DistributedStateManager<>(this, dispatcherFactory);
+			}
+			catch (Exception e)
+			{
+				throw new SQLException(e);
+			}
 		}
 		
 		this.balancer = this.configuration.getBalancerFactory().createBalancer(new TreeSet<D>());
@@ -765,13 +774,20 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		
 		this.registrar = this.configuration.getMBeanRegistrarFactory().createMBeanRegistrar();
 
-		this.registrar.register(this);
-		
-		for (D database: this.configuration.getDatabaseMap().values())
+		try
 		{
-			this.registrar.register(this, database);
+			this.registrar.register(this);
+			
+			for (D database: this.configuration.getDatabaseMap().values())
+			{
+				this.registrar.register(this, database);
+			}
 		}
-		
+		catch (JMException e)
+		{
+			throw new SQLException(e);
+		}
+
 		this.active = true;
 		
 		logger.log(Level.INFO, messages.start(this));

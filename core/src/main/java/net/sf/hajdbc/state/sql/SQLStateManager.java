@@ -519,7 +519,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	 * @see net.sf.hajdbc.Lifecycle#start()
 	 */
 	@Override
-	public void start() throws Exception
+	public void start() throws SQLException
 	{
 		this.pool = this.poolFactory.createPool(new ConnectionPoolProvider(this));
 		

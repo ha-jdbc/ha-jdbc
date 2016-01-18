@@ -17,12 +17,12 @@
 	along with this program.  If not, see <http://www.gnu.org/licenses />.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
 	<modelVersion>4.0.0</modelVersion>
+
 	<parent>
-		<groupId>net.sf.ha-jdbc</groupId>
+		<groupId>io.ha-jdbc</groupId>
 		<artifactId>ha-jdbc-parent</artifactId>
-		<version>3.1.0-alpha-1-SNAPSHOT</version>
+		<version>4.0.0-alpha-1-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>ha-jdbc-core</artifactId>
@@ -30,103 +30,37 @@
 	
 	<name>HA-JDBC Core</name>
 
-	<repositories>
-		<repository>
-			<!-- Provides berkeleydb-je -->
-			<id>download.oracle.com</id>
-			<name>Orace maven repository</name>
-			<url>http://download.oracle.com/maven</url>
-		</repository>
-	</repositories>
-
 	<dependencies>
-		<!-- Optional distributable provider dependencies -->
-		<dependency>
-			<groupId>org.jgroups</groupId>
-			<artifactId>jgroups</artifactId>
-			<version>3.6.4.Final</version>
-			<optional>true</optional>
-		</dependency>
-		<!-- Optional i18n dependency -->
-		<dependency>
-			<groupId>com.googlecode.gettext-commons</groupId>
-			<artifactId>gettext-commons</artifactId>
-			<version>0.9.8</version>
-			<optional>true</optional>
-		</dependency>
-		<!-- Optional logging dependencies -->
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>1.7.12</version>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>commons-logging</groupId>
-			<artifactId>commons-logging</artifactId>
-			<version>1.2</version>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.jboss.logging</groupId>
-			<artifactId>jboss-logging</artifactId>
-			<version>3.3.0.Final</version>
-			<optional>true</optional>
-		</dependency>
 		<!-- Optional state manager dependencies -->
 		<dependency>
 			<groupId>commons-pool</groupId>
 			<artifactId>commons-pool</artifactId>
-			<version>1.6</version>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>com.sleepycat</groupId>
-			<artifactId>je</artifactId>
-			<version>5.0.103</version>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.tmatesoft.sqljet</groupId>
-			<artifactId>sqljet</artifactId>
-			<version>1.1.10</version>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.iq80.leveldb</groupId>
-			<artifactId>leveldb-api</artifactId>
-			<version>0.7</version>
 			<optional>true</optional>
 		</dependency>
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.12</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
-			<version>2.0.31-beta</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.hsqldb</groupId>
 			<artifactId>hsqldb</artifactId>
-			<version>2.3.3</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<version>1.4.187</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.derby</groupId>
 			<artifactId>derby</artifactId>
-			<version>10.11.1.1</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -261,35 +195,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
-	<profiles>
-		<profile>
-			<!-- Profile that generates resource bundles for i18n -->
-			<id>i18n</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>com.googlecode.gettext-commons</groupId>
-						<artifactId>gettext-maven-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>gettext</id>
-								<phase>process-resources</phase>
-								<goals>
-									<goal>merge</goal>
-									<goal>dist</goal>
-								</goals>
-							</execution>
-						</executions>
-						<configuration>
-							<poDirectory>${project.basedir}/src/main/po</poDirectory>
-							<keysFile>ha-jdbc.pot</keysFile>
-							<targetBundle>net.sf.hajdbc.messages.i18n.I18nMessages</targetBundle>
-							<outputFormat>properties</outputFormat>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
 </project>

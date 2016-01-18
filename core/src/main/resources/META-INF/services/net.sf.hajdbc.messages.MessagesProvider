@@ -1,2 +1,1 @@
-net.sf.hajdbc.messages.i18n.I18nMessagesProvider
 net.sf.hajdbc.messages.simple.SimpleMessagesProvider

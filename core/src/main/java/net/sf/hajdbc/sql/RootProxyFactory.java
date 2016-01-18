@@ -25,6 +25,8 @@ import net.sf.hajdbc.Database;
  * 
  * @author Paul Ferraro
  */
-public interface RootProxyFactory<Z, D extends Database<Z>> extends ProxyFactory<Z, D, Z, SQLException>
+public interface RootProxyFactory<Z, D extends Database<Z>> extends ProxyFactory<Z, D, Z, SQLException>, AutoCloseable
 {
+	@Override
+	void close();
 }
