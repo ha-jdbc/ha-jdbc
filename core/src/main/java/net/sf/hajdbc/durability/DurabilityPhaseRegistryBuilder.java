@@ -30,7 +30,7 @@ import net.sf.hajdbc.util.StaticRegistry;
  */
 public class DurabilityPhaseRegistryBuilder implements Builder<StaticRegistry<Method, Durability.Phase>>
 {
-	private final Map<Method, Durability.Phase> phases = new HashMap<Method, Durability.Phase>();
+	private final Map<Method, Durability.Phase> phases = new HashMap<>();
 
 	public DurabilityPhaseRegistryBuilder phase(Durability.Phase phase, Method... methods)
 	{
@@ -44,6 +44,6 @@ public class DurabilityPhaseRegistryBuilder implements Builder<StaticRegistry<Me
 	@Override
 	public StaticRegistry<Method, Durability.Phase> build()
 	{
-		return new SimpleStaticRegistry<Method, Durability.Phase>(this.phases);
+		return new SimpleStaticRegistry<>(this.phases);
 	}
 }

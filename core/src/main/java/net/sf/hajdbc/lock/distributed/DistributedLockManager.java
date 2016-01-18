@@ -22,6 +22,7 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -123,7 +124,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 	 * @see net.sf.hajdbc.Lifecycle#start()
 	 */
 	@Override
-	public void start() throws Exception
+	public void start() throws SQLException
 	{
 		this.lockManager.start();
 		this.dispatcher.start();

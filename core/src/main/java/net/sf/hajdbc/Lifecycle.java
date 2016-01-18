@@ -17,17 +17,19 @@
  */
 package net.sf.hajdbc;
 
+import java.sql.SQLException;
+
 /**
  * Interface implemented by HA-JDBC services that participate in the lifecycle of a database cluster.
  * @author Paul Ferraro
  */
-public interface Lifecycle
+public interface Lifecycle 
 {
 	/**
 	 * Called upon database cluster start.
 	 * @throws Exception if this service fails to start.
 	 */
-	void start() throws Exception;
+	void start() throws SQLException;
 	
 	/**
 	 * Called when database cluster is stopped.

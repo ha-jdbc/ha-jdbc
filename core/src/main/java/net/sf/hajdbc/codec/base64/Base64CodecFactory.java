@@ -18,12 +18,11 @@
 package net.sf.hajdbc.codec.base64;
 
 import java.sql.SQLException;
+import java.util.Base64;
 
 import net.sf.hajdbc.codec.AbstractCodec;
 import net.sf.hajdbc.codec.Codec;
 import net.sf.hajdbc.util.Strings;
-
-import org.apache.commons.codec.binary.Base64;
 
 /**
  * Codec that uses base-64 encoding/decoding.
@@ -46,7 +45,7 @@ public class Base64CodecFactory extends AbstractCodec
 	@Override
 	public String decode(String value)
 	{
-		return new String(Base64.decodeBase64(value.getBytes()));
+		return new String(Base64.getDecoder().decode(value));
 	}
 
 	/**
@@ -56,7 +55,7 @@ public class Base64CodecFactory extends AbstractCodec
 	@Override
 	public String encode(String value)
 	{
-		return new String(Base64.encodeBase64(value.getBytes()));
+		return Base64.getEncoder().encodeToString(value.getBytes());
 	}
 	
 	public static void main(String... args)

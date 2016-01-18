@@ -22,13 +22,13 @@ import java.io.FileOutputStream;
 import java.security.Key;
 import java.security.KeyStore;
 import java.sql.SQLException;
+import java.util.Base64;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESKeySpec;
 
 import net.sf.hajdbc.codec.Codec;
 
-import org.apache.commons.codec.binary.Base64;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,7 +51,7 @@ public class CipherCodecFactoryTest
 		File file = File.createTempFile("ha-jdbc", "keystore");
 		
 		SecretKeyFactory factory = SecretKeyFactory.getInstance(ALGORITHM);
-		this.key = factory.generateSecret(new DESKeySpec(Base64.decodeBase64(KEY.getBytes())));
+		this.key = factory.generateSecret(new DESKeySpec(Base64.getDecoder().decode(KEY)));
 		KeyStore store = KeyStore.getInstance(CipherCodecFactory.Property.KEYSTORE_TYPE.defaultValue);
 		store.load(null, null);
 		store.setKeyEntry(CipherCodecFactory.Property.KEY_ALIAS.defaultValue, this.key, KEY_PASSWORD.toCharArray(), null);

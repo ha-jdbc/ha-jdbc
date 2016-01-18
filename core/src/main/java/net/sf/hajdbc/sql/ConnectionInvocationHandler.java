@@ -202,6 +202,7 @@ public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends Ch
 		return invoker;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	protected <R> void postInvoke(Invoker<Z, D, Connection, R, SQLException> invoker, Connection proxy, Method method, Object... parameters)
 	{

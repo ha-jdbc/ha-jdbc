@@ -67,18 +67,18 @@ public class DatabaseClusterConfigurationBuilder<Z, D extends Database<Z>, B ext
 	private final List<Builder<D>> databaseBuilders = new LinkedList<>();
 
 	private volatile Builder<CommandDispatcherFactory> commandDispatcherFactoryBuilder;
-	private volatile Builder<StateManagerFactory> stateManagerFactoryBuilder = new SimpleBuilder<StateManagerFactory>(new SQLStateManagerFactory());
-	private volatile Builder<LockManagerFactory> lockManagerFactoryBuilder = new SimpleBuilder<LockManagerFactory>(new SemaphoreLockManagerFactory());
-	private volatile Builder<BalancerFactory> balancerFactoryBuilder = new SimpleBuilder<BalancerFactory>(new LoadBalancerFactory());
-	private volatile Builder<DialectFactory> dialectFactoryBuilder = new SimpleBuilder<DialectFactory>(new StandardDialectFactory());
-	private volatile Builder<DurabilityFactory> durabilityFactoryBuilder = new SimpleBuilder<DurabilityFactory>(new CoarseDurabilityFactory());
-	private volatile Builder<InputSinkProvider> inputSinkProviderBuilder = new SimpleBuilder<InputSinkProvider>(new FileInputSinkProvider());
-	private volatile Builder<DatabaseMetaDataCacheFactory> metaDataCacheFactoryBuilder = new SimpleBuilder<DatabaseMetaDataCacheFactory>(new EagerDatabaseMetaDataCacheFactory());
+	private volatile Builder<StateManagerFactory> stateManagerFactoryBuilder = new SimpleBuilder<>(new SQLStateManagerFactory());
+	private volatile Builder<LockManagerFactory> lockManagerFactoryBuilder = new SimpleBuilder<>(new SemaphoreLockManagerFactory());
+	private volatile Builder<BalancerFactory> balancerFactoryBuilder = new SimpleBuilder<>(new LoadBalancerFactory());
+	private volatile Builder<DialectFactory> dialectFactoryBuilder = new SimpleBuilder<>(new StandardDialectFactory());
+	private volatile Builder<DurabilityFactory> durabilityFactoryBuilder = new SimpleBuilder<>(new CoarseDurabilityFactory());
+	private volatile Builder<InputSinkProvider> inputSinkProviderBuilder = new SimpleBuilder<>(new FileInputSinkProvider());
+	private volatile Builder<DatabaseMetaDataCacheFactory> metaDataCacheFactoryBuilder = new SimpleBuilder<>(new EagerDatabaseMetaDataCacheFactory());
 
-	private volatile Builder<DecoderFactory> decoderFactoryBuilder = new SimpleBuilder<DecoderFactory>(new MultiplexingDecoderFactory());
-	private volatile Builder<MBeanRegistrarFactory> mbeanRegistrarFactoryBuilder = new SimpleBuilder<MBeanRegistrarFactory>(new DefaultMBeanRegistrarFactory());
+	private volatile Builder<DecoderFactory> decoderFactoryBuilder = new SimpleBuilder<>(new MultiplexingDecoderFactory());
+	private volatile Builder<MBeanRegistrarFactory> mbeanRegistrarFactoryBuilder = new SimpleBuilder<>(new DefaultMBeanRegistrarFactory());
 	private volatile Builder<ThreadFactory> threadFactoryBuilder = new SimpleBuilder<>(Executors.defaultThreadFactory());
-	private volatile Builder<ExecutorServiceProvider> executorProviderBuilder = new SimpleBuilder<ExecutorServiceProvider>(new DefaultExecutorServiceProvider());
+	private volatile Builder<ExecutorServiceProvider> executorProviderBuilder = new SimpleBuilder<>(new DefaultExecutorServiceProvider());
 
 	private volatile CronExpressionBuilder autoActivateScheduleBuilder = new CronExpressionBuilder();
 	private volatile CronExpressionBuilder failureDetectScheduleBuilder = new CronExpressionBuilder();

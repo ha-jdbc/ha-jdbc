@@ -23,7 +23,7 @@ import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.util.reflect.Proxies;
 
 /**
- * 
+ * Factory for HA-JDBC {@link java.sql.Driver} proxies.
  * @author Paul Ferraro
  */
 public class DriverProxyFactory extends AbstractRootProxyFactory<Driver, DriverDatabase>

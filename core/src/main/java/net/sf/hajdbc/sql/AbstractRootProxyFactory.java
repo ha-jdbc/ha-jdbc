@@ -71,4 +71,10 @@ public abstract class AbstractRootProxyFactory<Z, D extends Database<Z>> extends
 			child.close(database);
 		}
 	}
+
+	@Override
+	public void close()
+	{
+		this.getDatabaseCluster().removeListener(this);
+	}
 }

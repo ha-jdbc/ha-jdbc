@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -201,7 +202,7 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 	 * @see net.sf.hajdbc.Lifecycle#start()
 	 */
 	@Override
-	public void start() throws Exception
+	public void start() throws SQLException
 	{
 		this.stateManager.start();
 		this.dispatcher.start();

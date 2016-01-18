@@ -54,6 +54,7 @@ public class InputSinkRegistryImpl<S> implements InputSinkRegistry<S>
 		return sink;
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public <I> InputSinkChannel<I, S> get(Class<I> inputClass)
 	{

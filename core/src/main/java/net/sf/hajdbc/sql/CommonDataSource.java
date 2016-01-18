@@ -20,7 +20,9 @@ package net.sf.hajdbc.sql;
 import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
-import java.util.concurrent.TimeUnit;
+import java.util.AbstractMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 
 import net.sf.hajdbc.Database;
@@ -29,22 +31,16 @@ import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterConfigurationBuilderProvider;
 import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.DatabaseClusterFactory;
-import net.sf.hajdbc.ExceptionType;
-import net.sf.hajdbc.util.TimePeriod;
-import net.sf.hajdbc.util.concurrent.ReferenceRegistryStoreFactory;
-import net.sf.hajdbc.util.concurrent.LifecycleRegistry;
-import net.sf.hajdbc.util.concurrent.Registry;
 import net.sf.hajdbc.xml.XMLDatabaseClusterConfigurationFactory;
 
 /**
  * @author Paul Ferraro
  * @param <Z> data source class
  */
-public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D extends Database<Z>, B extends DatabaseBuilder<Z, D>, F extends CommonDataSourceProxyFactory<Z, D>> implements javax.sql.CommonDataSource, CommonDataSourceProxyFactoryFactory<Z, D, F>, Registry.Factory<Void, DatabaseCluster<Z, D>, Void, SQLException>, DatabaseClusterConfigurationBuilderProvider<Z, D, B>, AutoCloseable
+public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D extends Database<Z>, B extends DatabaseBuilder<Z, D>, F extends CommonDataSourceProxyFactory<Z, D>> implements javax.sql.CommonDataSource, CommonDataSourceProxyFactoryFactory<Z, D, F>, DatabaseClusterConfigurationBuilderProvider<Z, D, B>, AutoCloseable
 {
-	private final Registry<Void, DatabaseCluster<Z, D>, Void, SQLException> registry = new LifecycleRegistry<>(this, new ReferenceRegistryStoreFactory(), ExceptionType.SQL.<SQLException>getExceptionFactory());
+	private final AtomicReference<Map.Entry<F, Z>> reference = new AtomicReference<>();
 	
-	private volatile TimePeriod timeout = new TimePeriod(10, TimeUnit.SECONDS);
 	private volatile String cluster;
 	private volatile String config;
 	private volatile String user;
@@ -61,33 +57,38 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 	@Override
 	public void close() throws SQLException
 	{
-		this.registry.remove(null);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public DatabaseCluster<Z, D> create(Void key, Void context) throws SQLException
-	{
-		String cluster = this.cluster;
-		if (cluster == null)
+		Map.Entry<F, Z> entry = this.reference.getAndSet(null);
+		if (entry != null)
 		{
-			throw new SQLException();
+			entry.getKey().close();
+			entry.getKey().getDatabaseCluster().stop();
 		}
-		DatabaseClusterConfigurationFactory<Z, D> configurationFactory = this.configurationFactory;
-		DatabaseClusterConfigurationFactory<Z, D> factory = (configurationFactory == null) ? new XMLDatabaseClusterConfigurationFactory<Z, D>(cluster, this.config) : configurationFactory;
-		return this.factory.createDatabaseCluster(cluster, factory, this.getConfigurationBuilder());
 	}
 
-	public DatabaseCluster<Z, D> getDatabaseCluster() throws SQLException
-	{
-		return this.registry.get(null, null);
-	}
-	
 	public Z getProxy() throws SQLException
 	{
-		return this.createProxyFactory(this.getDatabaseCluster()).createProxy();
+		Map.Entry<F, Z> entry = this.reference.get();
+		if (entry == null) {
+			String id = this.cluster;
+			if (id == null)
+			{
+				throw new SQLException();
+			}
+			DatabaseClusterConfigurationFactory<Z, D> configurationFactory = this.configurationFactory;
+			DatabaseClusterConfigurationFactory<Z, D> factory = (configurationFactory == null) ? new XMLDatabaseClusterConfigurationFactory<>(id, this.config) : configurationFactory;
+			DatabaseCluster<Z, D> cluster = this.factory.createDatabaseCluster(id, factory, this.getConfigurationBuilder());
+			cluster.start();
+			@SuppressWarnings("resource")
+			F proxyFactory = this.createProxyFactory(cluster);
+			entry = new AbstractMap.SimpleImmutableEntry<>(proxyFactory, proxyFactory.createProxy());
+			if (!this.reference.compareAndSet(null, entry))
+			{
+				proxyFactory.close();
+				cluster.stop();
+				return this.getProxy();
+			}
+		}
+		return entry.getValue();
 	}
 	
 	/**
@@ -160,24 +161,6 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 	public void setFactory(DatabaseClusterFactory<Z, D> clusterFactory)
 	{
 		this.factory = clusterFactory;
-	}
-	
-	/**
-	 * @return the timeout
-	 */
-	@Override
-	public TimePeriod getTimeout()
-	{
-		return this.timeout;
-	}
-
-	/**
-	 * @param value the timeout to set, expressed in the specified units
-	 * @param unit the time unit with which to qualify the specified timeout value
-	 */
-	public void setTimeout(long value, TimeUnit unit)
-	{
-		this.timeout = new TimePeriod(value, unit);
 	}
 
 	/**
