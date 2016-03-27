@@ -17,6 +17,9 @@
  */
 package net.sf.hajdbc.dialect.h2;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -29,17 +32,21 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DumpRestoreSupport;
 import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.SequencePropertiesFactory;
 import net.sf.hajdbc.SequenceSupport;
+import net.sf.hajdbc.codec.Decoder;
 import net.sf.hajdbc.dialect.StandardDialect;
 
 /**
  * Dialect for <a href="http://www.h2database.com">H2 Database Engine</a>.
  * @author Paul Ferraro
  */
-public class H2Dialect extends StandardDialect
+public class H2Dialect extends StandardDialect implements DumpRestoreSupport
 {
+
 	private static final Set<Integer> failureCodes = new HashSet<>(Arrays.asList(90013, 90030, 90046, 90067, 90108, 90117, 90121));
 	
 	/**
@@ -151,4 +158,54 @@ public class H2Dialect extends StandardDialect
 	{
 		return failureCodes.contains(code);
 	}
+	
+	@Override
+	public DumpRestoreSupport getDumpRestoreSupport() {
+		return this;
+	}
+    
+	@Override
+	public <Z, D extends Database<Z>> void dump(D database, Decoder decoder, File file, boolean dataOnly) throws Exception {
+		try (Connection c = database.connect(decoder)) {
+			try (Statement s = c.createStatement()) {
+		      if (!s.execute("set EXCLUSIVE 1;")) {
+		    	  try (ResultSet rs = s.executeQuery("SCRIPT;")) {
+		    		  try (FileWriter fw = new FileWriter(file)) {
+			    		  while (rs.next()) {
+			    			 fw.write(rs.getString(1) + "\n");  
+			    		  }
+		    		  }
+		    	  } finally {
+		    		 s.execute("set EXCLUSIVE 0;");
+		    	  }
+		      }
+			} catch (Exception e) {
+				System.err.println(e.getMessage());
+				e.printStackTrace();
+				throw e;
+			}
+		} 
+	}
+
+	@Override
+	public <Z, D extends Database<Z>> void restore(D database, Decoder decoder, File file, boolean dataOnly) throws Exception {
+		try (Connection c = database.connect(decoder)) {
+			try (Statement s = c.createStatement()) {
+		      if (!s.execute("set EXCLUSIVE 1;")) {
+		    	  try {
+			    	  s.execute("DROP ALL OBJECTS;");
+			    	  s.execute("RUNSCRIPT FROM '" + file.getAbsolutePath() + "';");
+		    	  } finally {
+		    		  s.execute("set EXCLUSIVE 0;");
+		    	  }
+		      }
+			} 
+		} catch (Exception e) {
+			System.err.println(e.getMessage());
+			e.printStackTrace();
+			throw e;
+		}
+	}
+
+	
 }
