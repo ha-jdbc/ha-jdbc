@@ -20,14 +20,7 @@ public class Processes
 
 	public static Map<String, String> environment(final ProcessBuilder builder)
 	{
-		PrivilegedAction<Map<String, String>> action = new PrivilegedAction<Map<String, String>>()
-		{
-			@Override
-			public Map<String, String> run()
-			{
-				return builder.environment();
-			}
-		};
+		PrivilegedAction<Map<String, String>> action = () -> builder.environment();
 		return AccessController.doPrivileged(action);
 	}
 	
@@ -37,14 +30,7 @@ public class Processes
 		
 		logger.log(Level.DEBUG, Strings.join(processBuilder.command(), " "));
 		
-		PrivilegedExceptionAction<Process> action = new PrivilegedExceptionAction<Process>()
-		{
-			@Override
-			public Process run() throws Exception
-			{
-				return processBuilder.start();
-			}
-		};
+		PrivilegedExceptionAction<Process> action = () -> processBuilder.start();
 		
 		Process process = AccessController.doPrivileged(action);
 		

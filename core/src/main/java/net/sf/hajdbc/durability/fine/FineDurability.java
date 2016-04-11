@@ -61,35 +61,30 @@ public class FineDurability<Z, D extends Database<Z>> extends CoarseDurability<Z
 	{
 		final DurabilityListener listener = this.cluster.getStateManager();
 		
-		return new Invoker<Z, D, T, R, E>()
-		{
-			@Override
-			public R invoke(D database, T object) throws E
-			{
-				InvokerEvent event = new InvokerEventImpl(transactionId, phase, database.getId());
-				
-				listener.beforeInvoker(event);
-				
-				try
-				{
-					R result = invoker.invoke(database, object);
-					
-					event.setResult(new InvokerResultImpl(result));
-					
-					return result;
-				}
-				catch (Exception e)
-				{
-					event.setResult(new InvokerResultImpl(e));
-					
-					throw exceptionFactory.createException(e);
-				}
-				finally
-				{
-					listener.afterInvoker(event);
-				}
-			}
-		};
+		return (database, object) -> {
+            InvokerEvent event = new InvokerEventImpl(transactionId, phase, database.getId());
+            
+            listener.beforeInvoker(event);
+            
+            try
+            {
+                R result = invoker.invoke(database, object);
+                
+                event.setResult(new InvokerResultImpl(result));
+                
+                return result;
+            }
+            catch (Exception e)
+            {
+                event.setResult(new InvokerResultImpl(e));
+                
+                throw exceptionFactory.createException(e);
+            }
+            finally
+            {
+                listener.afterInvoker(event);
+            }
+        };
 	}
 
 	/**

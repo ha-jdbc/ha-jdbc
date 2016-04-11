@@ -43,15 +43,10 @@ public class WriterProxy<Z, D extends Database<Z>, P> extends Writer
 	@Override
 	public void write(final int c) throws IOException
 	{
-		WriterInvoker<Z, D, Void> invoker = new WriterInvoker<Z, D, Void>()
-		{
-			@Override
-			public Void invoke(D database, Writer writer) throws IOException
-			{
-				writer.write(c);
-				return null;
-			}
-		};
+		WriterInvoker<Z, D, Void> invoker = (database, writer) -> {
+            writer.write(c);
+            return null;
+        };
 		
 		InvocationStrategies.INVOKE_ON_EXISTING.invoke(this.factory, invoker);
 		
@@ -61,15 +56,10 @@ public class WriterProxy<Z, D extends Database<Z>, P> extends Writer
 	@Override
 	public void write(final char[] cbuf) throws IOException
 	{
-		WriterInvoker<Z, D, Void> invoker = new WriterInvoker<Z, D, Void>()
-		{
-			@Override
-			public Void invoke(D database, Writer writer) throws IOException
-			{
-				writer.write(cbuf);
-				return null;
-			}
-		};
+		WriterInvoker<Z, D, Void> invoker = (database, writer) -> {
+            writer.write(cbuf);
+            return null;
+        };
 		
 		InvocationStrategies.INVOKE_ON_EXISTING.invoke(this.factory, invoker);
 		
@@ -79,15 +69,10 @@ public class WriterProxy<Z, D extends Database<Z>, P> extends Writer
 	@Override
 	public void write(final String str) throws IOException
 	{
-		WriterInvoker<Z, D, Void> invoker = new WriterInvoker<Z, D, Void>()
-		{
-			@Override
-			public Void invoke(D database, Writer writer) throws IOException
-			{
-				writer.write(str);
-				return null;
-			}
-		};
+		WriterInvoker<Z, D, Void> invoker = (database, writer) -> {
+            writer.write(str);
+            return null;
+        };
 		
 		InvocationStrategies.INVOKE_ON_EXISTING.invoke(this.factory, invoker);
 		
@@ -97,15 +82,10 @@ public class WriterProxy<Z, D extends Database<Z>, P> extends Writer
 	@Override
 	public void write(final String str, final int off, final int len) throws IOException
 	{
-		WriterInvoker<Z, D, Void> invoker = new WriterInvoker<Z, D, Void>()
-		{
-			@Override
-			public Void invoke(D database, Writer writer) throws IOException
-			{
-				writer.write(str, off, len);
-				return null;
-			}
-		};
+		WriterInvoker<Z, D, Void> invoker = (database, writer) -> {
+            writer.write(str, off, len);
+            return null;
+        };
 		
 		InvocationStrategies.INVOKE_ON_EXISTING.invoke(this.factory, invoker);
 		
@@ -115,14 +95,7 @@ public class WriterProxy<Z, D extends Database<Z>, P> extends Writer
 	@Override
 	public Writer append(final CharSequence csq) throws IOException
 	{
-		WriterInvoker<Z, D, Writer> invoker = new WriterInvoker<Z, D, Writer>()
-		{
-			@Override
-			public Writer invoke(D database, Writer writer) throws IOException
-			{
-				return writer.append(csq);
-			}
-		};
+		WriterInvoker<Z, D, Writer> invoker = (database, writer) -> writer.append(csq);
 		
 		InvocationStrategies.INVOKE_ON_EXISTING.invoke(this.factory, invoker);
 		
@@ -134,14 +107,7 @@ public class WriterProxy<Z, D extends Database<Z>, P> extends Writer
 	@Override
 	public Writer append(final CharSequence csq, final int start, final int end) throws IOException
 	{
-		WriterInvoker<Z, D, Writer> invoker = new WriterInvoker<Z, D, Writer>()
-		{
-			@Override
-			public Writer invoke(D database, Writer writer) throws IOException
-			{
-				return writer.append(csq, start, end);
-			}
-		};
+		WriterInvoker<Z, D, Writer> invoker = (database, writer) -> writer.append(csq, start, end);
 		
 		InvocationStrategies.INVOKE_ON_EXISTING.invoke(this.factory, invoker);
 		
@@ -153,14 +119,7 @@ public class WriterProxy<Z, D extends Database<Z>, P> extends Writer
 	@Override
 	public Writer append(final char c) throws IOException
 	{
-		WriterInvoker<Z, D, Writer> invoker = new WriterInvoker<Z, D, Writer>()
-		{
-			@Override
-			public Writer invoke(D database, Writer writer) throws IOException
-			{
-				return writer.append(c);
-			}
-		};
+		WriterInvoker<Z, D, Writer> invoker = (database, writer) -> writer.append(c);
 		
 		InvocationStrategies.INVOKE_ON_EXISTING.invoke(this.factory, invoker);
 		
@@ -172,15 +131,10 @@ public class WriterProxy<Z, D extends Database<Z>, P> extends Writer
 	@Override
 	public void write(final char[] cbuf, final int off, final int len) throws IOException
 	{
-		WriterInvoker<Z, D, Void> invoker = new WriterInvoker<Z, D, Void>()
-		{
-			@Override
-			public Void invoke(D database, Writer writer) throws IOException
-			{
-				writer.write(cbuf, off, len);
-				return null;
-			}
-		};
+		WriterInvoker<Z, D, Void> invoker = (database, writer) -> {
+            writer.write(cbuf, off, len);
+            return null;
+        };
 		
 		InvocationStrategies.INVOKE_ON_EXISTING.invoke(this.factory, invoker);
 		
@@ -190,15 +144,10 @@ public class WriterProxy<Z, D extends Database<Z>, P> extends Writer
 	@Override
 	public void flush() throws IOException
 	{
-		WriterInvoker<Z, D, Void> invoker = new WriterInvoker<Z, D, Void>()
-		{
-			@Override
-			public Void invoke(D database, Writer writer) throws IOException
-			{
-				writer.flush();
-				return null;
-			}
-		};
+		WriterInvoker<Z, D, Void> invoker = (database, writer) -> {
+            writer.flush();
+            return null;
+        };
 		
 		InvocationStrategies.INVOKE_ON_EXISTING.invoke(this.factory, invoker);
 		
@@ -208,15 +157,10 @@ public class WriterProxy<Z, D extends Database<Z>, P> extends Writer
 	@Override
 	public void close() throws IOException
 	{
-		WriterInvoker<Z, D, Void> invoker = new WriterInvoker<Z, D, Void>()
-		{
-			@Override
-			public Void invoke(D database, Writer writer) throws IOException
-			{
-				writer.close();
-				return null;
-			}
-		};
+		WriterInvoker<Z, D, Void> invoker = (database, writer) -> {
+            writer.close();
+            return null;
+        };
 		
 		InvocationStrategies.INVOKE_ON_EXISTING.invoke(this.factory, invoker);
 		

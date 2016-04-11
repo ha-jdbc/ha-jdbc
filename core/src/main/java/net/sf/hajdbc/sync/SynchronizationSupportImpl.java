@@ -173,22 +173,17 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 					{
 						final SynchronizationContext<Z, D> context = this.context;
 						
-						Callable<Long> task = new Callable<Long>()
-						{
-							@Override
-							public Long call() throws SQLException
-							{
-								try (Statement statement = context.getConnection(database).createStatement())
-								{
-									try (ResultSet resultSet = statement.executeQuery(sql))
-									{
-										resultSet.next();
-										
-										return resultSet.getLong(1);
-									}
-								}
-							}
-						};
+						Callable<Long> task = () -> {
+                            try (Statement statement = context.getConnection(database).createStatement())
+                            {
+                                try (ResultSet resultSet = statement.executeQuery(sql))
+                                {
+                                    resultSet.next();
+                                    
+                                    return resultSet.getLong(1);
+                                }
+                            }
+                        };
 						
 						futureMap.put(database, executor.submit(task));
 					}

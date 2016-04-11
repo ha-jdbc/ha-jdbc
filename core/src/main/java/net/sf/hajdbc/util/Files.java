@@ -28,32 +28,20 @@ public class Files
 	
 	public static File createTempFile(final String suffix) throws IOException
 	{
-		PrivilegedExceptionAction<File> action = new PrivilegedExceptionAction<File>()
-		{
-			@Override
-			public File run() throws IOException
-			{
-				return File.createTempFile(TEMP_FILE_PREFIX, suffix);
-			}
-		};
+		PrivilegedExceptionAction<File> action = () -> File.createTempFile(TEMP_FILE_PREFIX, suffix);
 		
 		return Security.run(action, IOException.class);
 	}
 	
 	public static void delete(final File file)
 	{
-		PrivilegedAction<Void> action = new PrivilegedAction<Void>()
-		{
-			@Override
-			public Void run()
-			{
-				if (!file.delete())
-				{
-					file.deleteOnExit();
-				}
-				return null;
-			}
-		};
+		PrivilegedAction<Void> action = () -> {
+            if (!file.delete())
+            {
+                file.deleteOnExit();
+            }
+            return null;
+        };
 
 		Security.run(action);
 	}

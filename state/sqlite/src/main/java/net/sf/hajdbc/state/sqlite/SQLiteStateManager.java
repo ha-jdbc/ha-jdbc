@@ -111,14 +111,7 @@ public class SQLiteStateManager<Z, D extends Database<Z>> implements StateManage
 	@Override
 	public void activated(final DatabaseEvent event)
 	{
-		Transaction transaction = new Transaction()
-		{
-			@Override
-			public void execute(SqlJetDb db) throws SqlJetException
-			{
-				db.getTable(STATE_TABLE).insert(event.getSource());
-			}
-		};
+		Transaction transaction = db -> db.getTable(STATE_TABLE).insert(event.getSource());
 		try
 		{
 			this.execute(transaction, DB.STATE);
@@ -136,26 +129,21 @@ public class SQLiteStateManager<Z, D extends Database<Z>> implements StateManage
 	@Override
 	public void deactivated(final DatabaseEvent event)
 	{
-		Transaction transaction = new Transaction()
-		{
-			@Override
-			public void execute(SqlJetDb db) throws SqlJetException
-			{
-				ISqlJetTable table = db.getTable(STATE_TABLE);
-				ISqlJetCursor cursor = table.lookup(table.getPrimaryKeyIndexName(), event.getSource());
-				try
-				{
-					if (!cursor.eof())
-					{
-						cursor.delete();
-					}
-				}
-				finally
-				{
-					close(cursor);
-				}
-			}
-		};
+		Transaction transaction = db -> {
+            ISqlJetTable table = db.getTable(STATE_TABLE);
+            ISqlJetCursor cursor = table.lookup(table.getPrimaryKeyIndexName(), event.getSource());
+            try
+            {
+                if (!cursor.eof())
+                {
+                    cursor.delete();
+                }
+            }
+            finally
+            {
+                close(cursor);
+            }
+        };
 		try
 		{
 			this.execute(transaction, DB.STATE);
@@ -219,39 +207,29 @@ public class SQLiteStateManager<Z, D extends Database<Z>> implements StateManage
 			this.pools.put(db, this.poolFactory.createPool(new SQLiteDbPoolProvider(new File(this.file.toURI().resolve(db.name().toLowerCase())))));
 		}
 		
-		Transaction stateTransaction = new Transaction()
-		{
-			@Override
-			public void execute(SqlJetDb database) throws SqlJetException
-			{
-				ISqlJetSchema schema = database.getSchema();
-				if (schema.getTable(STATE_TABLE) == null)
-				{
-					database.createTable(CREATE_STATE_SQL);
-				}
-				else if (Boolean.getBoolean(StateManager.CLEAR_LOCAL_STATE))
-				{
-					database.getTable(STATE_TABLE).clear();
-				}
-			}
-		};
-		Transaction invocationTransaction = new Transaction()
-		{
-			@Override
-			public void execute(SqlJetDb database) throws SqlJetException
-			{
-				ISqlJetSchema schema = database.getSchema();
-				if (schema.getTable(INVOCATION_TABLE) == null)
-				{
-					database.createTable(CREATE_INVOCATION_SQL);
-				}
-				if (schema.getTable(INVOKER_TABLE) == null)
-				{
-					database.createTable(CREATE_INVOKER_SQL);
-					database.createIndex(CREATE_INVOKER_INDEX);
-				}
-			}
-		};
+		Transaction stateTransaction = database -> {
+            ISqlJetSchema schema = database.getSchema();
+            if (schema.getTable(STATE_TABLE) == null)
+            {
+                database.createTable(CREATE_STATE_SQL);
+            }
+            else if (Boolean.getBoolean(StateManager.CLEAR_LOCAL_STATE))
+            {
+                database.getTable(STATE_TABLE).clear();
+            }
+        };
+		Transaction invocationTransaction = database -> {
+            ISqlJetSchema schema = database.getSchema();
+            if (schema.getTable(INVOCATION_TABLE) == null)
+            {
+                database.createTable(CREATE_INVOCATION_SQL);
+            }
+            if (schema.getTable(INVOKER_TABLE) == null)
+            {
+                database.createTable(CREATE_INVOKER_SQL);
+                database.createIndex(CREATE_INVOKER_INDEX);
+            }
+        };
 		
 		try
 		{
@@ -285,32 +263,27 @@ public class SQLiteStateManager<Z, D extends Database<Z>> implements StateManage
 	@Override
 	public Set<String> getActiveDatabases()
 	{
-		Query<Set<String>> query = new Query<Set<String>>()
-		{
-			@Override
-			public Set<String> execute(SqlJetDb database) throws SqlJetException
-			{
-				Set<String> set = new TreeSet<>();
-				ISqlJetTable table = database.getTable(STATE_TABLE);
-				ISqlJetCursor cursor = table.lookup(table.getPrimaryKeyIndexName());
-				try
-				{
-					if (!cursor.eof())
-					{
-						do
-						{
-							set.add(cursor.getString(DATABASE_COLUMN));
-						}
-						while (cursor.next());
-					}
-					return set;
-				}
-				finally
-				{
-					close(cursor);
-				}
-			}
-		};
+		Query<Set<String>> query = database -> {
+            Set<String> set = new TreeSet<>();
+            ISqlJetTable table = database.getTable(STATE_TABLE);
+            ISqlJetCursor cursor = table.lookup(table.getPrimaryKeyIndexName());
+            try
+            {
+                if (!cursor.eof())
+                {
+                    do
+                    {
+                        set.add(cursor.getString(DATABASE_COLUMN));
+                    }
+                    while (cursor.next());
+                }
+                return set;
+            }
+            finally
+            {
+                close(cursor);
+            }
+        };
 		
 		try
 		{
@@ -330,19 +303,14 @@ public class SQLiteStateManager<Z, D extends Database<Z>> implements StateManage
 	@Override
 	public void setActiveDatabases(final Set<String> databases)
 	{
-		Transaction transaction = new Transaction()
-		{
-			@Override
-			public void execute(SqlJetDb db) throws SqlJetException
-			{
-				ISqlJetTable table = db.getTable(STATE_TABLE);
-				table.clear();
-				for (String database: databases)
-				{
-					table.insert(database);
-				}
-			}
-		};
+		Transaction transaction = db -> {
+            ISqlJetTable table = db.getTable(STATE_TABLE);
+            table.clear();
+            for (String database: databases)
+            {
+                table.insert(database);
+            }
+        };
 		try
 		{
 			this.execute(transaction, DB.STATE);
@@ -360,66 +328,61 @@ public class SQLiteStateManager<Z, D extends Database<Z>> implements StateManage
 	@Override
 	public Map<InvocationEvent, Map<String, InvokerEvent>> recover()
 	{
-		Query<Map<InvocationEvent, Map<String, InvokerEvent>>> invocationQuery = new Query<Map<InvocationEvent, Map<String, InvokerEvent>>>()
-		{
-			@Override
-			public Map<InvocationEvent, Map<String, InvokerEvent>> execute(SqlJetDb database) throws SqlJetException
-			{
-				Map<InvocationEvent, Map<String, InvokerEvent>> map = new HashMap<>();
-				ISqlJetCursor cursor = database.getTable(INVOCATION_TABLE).open();
-				try
-				{
-					if (!cursor.eof())
-					{
-						do
-						{
-							byte[] transactionId = cursor.getBlobAsArray(TRANSACTION_COLUMN);
-							byte phase = (byte) cursor.getInteger(PHASE_COLUMN);
-							byte exceptionType = (byte) cursor.getInteger(EXCEPTION_COLUMN);
-							map.put(SQLiteStateManager.this.listener.createInvocationEvent(transactionId, phase, exceptionType), new HashMap<String, InvokerEvent>());
-						}
-						while (cursor.next());
-					}
-				}
-				finally
-				{
-					cursor.close();
-				}
-				cursor = database.getTable(INVOKER_TABLE).open();
-				try
-				{
-					if (!cursor.eof())
-					{
-						do
-						{
-							byte[] transactionId = cursor.getBlobAsArray(TRANSACTION_COLUMN);
-							byte phase = (byte) cursor.getInteger(PHASE_COLUMN);
-							DurabilityEvent event = SQLiteStateManager.this.listener.createEvent(transactionId, phase);
-							Map<String, InvokerEvent> invokers = map.get(event);
-							if (invokers != null)
-							{
-								String databaseId = cursor.getString(DATABASE_COLUMN);
-								InvokerEvent invokerEvent = SQLiteStateManager.this.eventFactory.createInvokerEvent(event.getTransactionId(), event.getPhase(), databaseId);
-								
-								if (!cursor.isNull(RESULT_COLUMN))
-								{
-									byte[] result = cursor.getBlobAsArray(RESULT_COLUMN);
-									invokerEvent.setResult(Objects.deserialize(result, InvokerResult.class));
-								}
-								
-								invokers.put(databaseId, invokerEvent);
-							}
-						}
-						while (cursor.next());
-					}
-				}
-				finally
-				{
-					cursor.close();
-				}
-				return map;
-			}
-		};
+		Query<Map<InvocationEvent, Map<String, InvokerEvent>>> invocationQuery = database -> {
+            Map<InvocationEvent, Map<String, InvokerEvent>> map = new HashMap<>();
+            ISqlJetCursor cursor = database.getTable(INVOCATION_TABLE).open();
+            try
+            {
+                if (!cursor.eof())
+                {
+                    do
+                    {
+                        byte[] transactionId = cursor.getBlobAsArray(TRANSACTION_COLUMN);
+                        byte phase = (byte) cursor.getInteger(PHASE_COLUMN);
+                        byte exceptionType = (byte) cursor.getInteger(EXCEPTION_COLUMN);
+                        map.put(SQLiteStateManager.this.listener.createInvocationEvent(transactionId, phase, exceptionType), new HashMap<String, InvokerEvent>());
+                    }
+                    while (cursor.next());
+                }
+            }
+            finally
+            {
+                cursor.close();
+            }
+            cursor = database.getTable(INVOKER_TABLE).open();
+            try
+            {
+                if (!cursor.eof())
+                {
+                    do
+                    {
+                        byte[] transactionId = cursor.getBlobAsArray(TRANSACTION_COLUMN);
+                        byte phase = (byte) cursor.getInteger(PHASE_COLUMN);
+                        DurabilityEvent event = SQLiteStateManager.this.listener.createEvent(transactionId, phase);
+                        Map<String, InvokerEvent> invokers = map.get(event);
+                        if (invokers != null)
+                        {
+                            String databaseId = cursor.getString(DATABASE_COLUMN);
+                            InvokerEvent invokerEvent = SQLiteStateManager.this.eventFactory.createInvokerEvent(event.getTransactionId(), event.getPhase(), databaseId);
+                            
+                            if (!cursor.isNull(RESULT_COLUMN))
+                            {
+                                byte[] result = cursor.getBlobAsArray(RESULT_COLUMN);
+                                invokerEvent.setResult(Objects.deserialize(result, InvokerResult.class));
+                            }
+                            
+                            invokers.put(databaseId, invokerEvent);
+                        }
+                    }
+                    while (cursor.next());
+                }
+            }
+            finally
+            {
+                cursor.close();
+            }
+            return map;
+        };
 		try
 		{
 			return this.execute(invocationQuery, DB.INVOCATION);
@@ -437,14 +400,7 @@ public class SQLiteStateManager<Z, D extends Database<Z>> implements StateManage
 	@Override
 	public void beforeInvocation(final byte[] transactionId, final byte phase, final byte exceptionType)
 	{
-		Transaction transaction = new Transaction()
-		{
-			@Override
-			public void execute(SqlJetDb db) throws SqlJetException
-			{
-				db.getTable(INVOCATION_TABLE).insert(transactionId, phase, exceptionType);
-			}
-		};
+		Transaction transaction = db -> db.getTable(INVOCATION_TABLE).insert(transactionId, phase, exceptionType);
 		try
 		{
 			this.execute(transaction, DB.INVOCATION);
@@ -462,43 +418,38 @@ public class SQLiteStateManager<Z, D extends Database<Z>> implements StateManage
 	@Override
 	public void afterInvocation(final byte[] transactionId, final byte phase)
 	{
-		Transaction transaction = new Transaction()
-		{
-			@Override
-			public void execute(SqlJetDb db) throws SqlJetException
-			{
-				ISqlJetTable table = db.getTable(INVOCATION_TABLE);
-				ISqlJetCursor cursor = table.lookup(table.getPrimaryKeyIndexName(), transactionId, phase);
-				try
-				{
-					if (!cursor.eof())
-					{
-						cursor.delete();
-					}
-				}
-				finally
-				{
-					close(cursor);
-				}
-				table = db.getTable(INVOKER_TABLE);
-				cursor = table.lookup(INVOKER_TABLE_INDEX, transactionId, phase);
-				try
-				{
-					if (!cursor.eof())
-					{
-						do
-						{
-							cursor.delete();
-						}
-						while (cursor.next());
-					}
-				}
-				finally
-				{
-					close(cursor);
-				}
-			}
-		};
+		Transaction transaction = db -> {
+            ISqlJetTable table = db.getTable(INVOCATION_TABLE);
+            ISqlJetCursor cursor = table.lookup(table.getPrimaryKeyIndexName(), transactionId, phase);
+            try
+            {
+                if (!cursor.eof())
+                {
+                    cursor.delete();
+                }
+            }
+            finally
+            {
+                close(cursor);
+            }
+            table = db.getTable(INVOKER_TABLE);
+            cursor = table.lookup(INVOKER_TABLE_INDEX, transactionId, phase);
+            try
+            {
+                if (!cursor.eof())
+                {
+                    do
+                    {
+                        cursor.delete();
+                    }
+                    while (cursor.next());
+                }
+            }
+            finally
+            {
+                close(cursor);
+            }
+        };
 		try
 		{
 			this.execute(transaction, DB.INVOCATION);
@@ -516,14 +467,7 @@ public class SQLiteStateManager<Z, D extends Database<Z>> implements StateManage
 	@Override
 	public void beforeInvoker(final byte[] transactionId, final byte phase, final String databaseId)
 	{
-		Transaction transaction = new Transaction()
-		{
-			@Override
-			public void execute(SqlJetDb db) throws SqlJetException
-			{
-				db.getTable(INVOKER_TABLE).insert(transactionId, phase, databaseId);
-			}
-		};
+		Transaction transaction = db -> db.getTable(INVOKER_TABLE).insert(transactionId, phase, databaseId);
 		try
 		{
 			this.execute(transaction, DB.INVOCATION);
@@ -541,26 +485,21 @@ public class SQLiteStateManager<Z, D extends Database<Z>> implements StateManage
 	@Override
 	public void afterInvoker(final byte[] transactionId, final byte phase, final String databaseId, final byte[] result)
 	{
-		Transaction transaction = new Transaction()
-		{
-			@Override
-			public void execute(SqlJetDb db) throws SqlJetException
-			{
-				ISqlJetTable table = db.getTable(INVOKER_TABLE);
-				ISqlJetCursor cursor = table.lookup(table.getPrimaryKeyIndexName(), transactionId, phase, databaseId);
-				try
-				{
-					if (!cursor.eof())
-					{
-						cursor.updateByFieldNames(Collections.<String, Object>singletonMap(RESULT_COLUMN, result));
-					}
-				}
-				finally
-				{
-					close(cursor);
-				}
-			}
-		};
+		Transaction transaction = db -> {
+            ISqlJetTable table = db.getTable(INVOKER_TABLE);
+            ISqlJetCursor cursor = table.lookup(table.getPrimaryKeyIndexName(), transactionId, phase, databaseId);
+            try
+            {
+                if (!cursor.eof())
+                {
+                    cursor.updateByFieldNames(Collections.<String, Object>singletonMap(RESULT_COLUMN, result));
+                }
+            }
+            finally
+            {
+                close(cursor);
+            }
+        };
 		try
 		{
 			this.execute(transaction, DB.INVOCATION);

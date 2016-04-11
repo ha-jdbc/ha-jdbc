@@ -26,13 +26,6 @@ public class XADataSourceDatabaseClusterConfigurationBuilder extends DatabaseClu
 {
 	public XADataSourceDatabaseClusterConfigurationBuilder()
 	{
-		super(new DatabaseBuilderFactory<XADataSource, XADataSourceDatabase, XADataSourceDatabaseBuilder>()
-		{
-			@Override
-			public XADataSourceDatabaseBuilder createBuilder(String id)
-			{
-				return new XADataSourceDatabaseBuilder(id);
-			}
-		});
+		super(id -> new XADataSourceDatabaseBuilder(id));
 	}
 }

@@ -26,13 +26,6 @@ public class ConnectionPoolDataSourceDatabaseClusterConfigurationBuilder extends
 {
 	public ConnectionPoolDataSourceDatabaseClusterConfigurationBuilder()
 	{
-		super(new DatabaseBuilderFactory<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase, ConnectionPoolDataSourceDatabaseBuilder>()
-		{
-			@Override
-			public ConnectionPoolDataSourceDatabaseBuilder createBuilder(String id)
-			{
-				return new ConnectionPoolDataSourceDatabaseBuilder(id);
-			}
-		});
+		super(id -> new ConnectionPoolDataSourceDatabaseBuilder(id));
 	}
 }

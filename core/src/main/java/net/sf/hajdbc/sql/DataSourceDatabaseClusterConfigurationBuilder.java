@@ -26,13 +26,6 @@ public class DataSourceDatabaseClusterConfigurationBuilder extends DatabaseClust
 {
 	public DataSourceDatabaseClusterConfigurationBuilder()
 	{
-		super(new DatabaseBuilderFactory<DataSource, DataSourceDatabase, DataSourceDatabaseBuilder>()
-		{
-			@Override
-			public DataSourceDatabaseBuilder createBuilder(String id)
-			{
-				return new DataSourceDatabaseBuilder(id);
-			}
-		});
+		super(id -> new DataSourceDatabaseBuilder(id));
 	}
 }

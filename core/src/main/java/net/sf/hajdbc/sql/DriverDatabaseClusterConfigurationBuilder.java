@@ -26,13 +26,6 @@ public class DriverDatabaseClusterConfigurationBuilder extends DatabaseClusterCo
 {
 	public DriverDatabaseClusterConfigurationBuilder()
 	{
-		super(new DatabaseBuilderFactory<Driver, DriverDatabase, DriverDatabaseBuilder>()
-		{
-			@Override
-			public DriverDatabaseBuilder createBuilder(String id)
-			{
-				return new DriverDatabaseBuilder(id);
-			}
-		});
+		super(id -> new DriverDatabaseBuilder(id));
 	}
 }

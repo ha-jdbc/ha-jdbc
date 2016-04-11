@@ -116,15 +116,10 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy, Tab
 		{
 			selectStatement.setFetchSize(this.fetchSize);
 			
-			Callable<ResultSet> callable = new Callable<ResultSet>()
-			{
-				@Override
-				public ResultSet call() throws SQLException
-				{
-					logger.log(Level.DEBUG, selectSQL);
-					return selectStatement.executeQuery(selectSQL);
-				}
-			};
+			Callable<ResultSet> callable = () -> {
+                logger.log(Level.DEBUG, selectSQL);
+                return selectStatement.executeQuery(selectSQL);
+            };
 			
 			Future<ResultSet> future = context.getExecutor().submit(callable);
 			

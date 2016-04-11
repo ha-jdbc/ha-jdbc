@@ -196,15 +196,10 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		{
 			targetStatement.setFetchSize(this.fetchSize);
 			
-			Callable<ResultSet> callable = new Callable<ResultSet>()
-			{
-				@Override
-				public ResultSet call() throws SQLException
-				{
-					logger.log(Level.DEBUG, selectSQL);
-					return targetStatement.executeQuery(selectSQL);
-				}
-			};
+			Callable<ResultSet> callable = () -> {
+                logger.log(Level.DEBUG, selectSQL);
+                return targetStatement.executeQuery(selectSQL);
+            };
 			
 			Future<ResultSet> future = context.getExecutor().submit(callable);
 			

@@ -171,18 +171,13 @@ public class AbstractInvocationHandler<Z, D extends Database<Z>, T, E extends Ex
 				{
 					final InvocationHandler<Z, D, X, E, ProxyFactory<Z, D, X, E>> handler = (InvocationHandler<Z, D, X, E, ProxyFactory<Z, D, X, E>>) Proxy.getInvocationHandler(parameter);
 					
-					return new Invoker<Z, D, T, R, E>()
-					{
-						@Override
-						public R invoke(D database, T object) throws E
-						{
-							List<Object> parameterList = new ArrayList<>(Arrays.asList(parameters));
-							
-							parameterList.set(parameterIndex, handler.getProxyFactory().get(database));
-							
-							return Methods.<R, E>invoke(method, exceptionFactory, object, parameterList.toArray());
-						}
-					};
+					return (database, object) -> {
+                        List<Object> parameterList = new ArrayList<>(Arrays.asList(parameters));
+                        
+                        parameterList.set(parameterIndex, handler.getProxyFactory().get(database));
+                        
+                        return Methods.<R, E>invoke(method, exceptionFactory, object, parameterList.toArray());
+                    };
 				}
 				
 				SerialLocatorFactory<X> factory = SerialLocatorFactories.find(parameterClass);
