@@ -89,4 +89,12 @@ public class InvokerEventImpl extends DurabilityEventImpl implements InvokerEven
 		
 		return super.equals(object) && this.databaseId.equals(event.getDatabaseId());
 	}
+
+	@Override
+	public int hashCode() {
+		int result1 = super.hashCode();
+		result1 = 31 * result1 + (this.databaseId != null ? this.databaseId.hashCode() : 0);
+		result1 = 31 * result1 + (this.result != null ? this.result.hashCode() : 0);
+		return result1;
+	}
 }

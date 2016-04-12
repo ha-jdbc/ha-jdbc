@@ -74,4 +74,11 @@ public class DurabilityEventImpl extends Event<Object> implements DurabilityEven
 		
 		return (this.phase == event.getPhase()) && this.getTransactionId().equals(event.getTransactionId());
 	}
+
+	@Override
+	public int hashCode() {
+		int result = super.hashCode();
+		result = 31 * result + (this.phase != null ? this.phase.hashCode() : 0);
+		return result;
+	}
 }
