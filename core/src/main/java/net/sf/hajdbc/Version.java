@@ -29,14 +29,14 @@ public class Version
 {
 	public static final Version CURRENT = new Version(ResourceBundle.getBundle(Version.class.getName()).getString("version"));
 	
-	private final String version;
+	private final String versionField;
 	private final int major;
 	private final int minor;
 	private final int revision;
 	
 	Version(String version)
 	{
-		this.version = version;
+		this.versionField = version;
 		this.major = parse(0);
 		this.minor = parse(1);
 		this.revision = parse(2);
@@ -44,7 +44,7 @@ public class Version
 	
 	private int parse(int index)
 	{
-		return Integer.parseInt(this.version.split(Pattern.quote(Strings.DASH))[0].split(Pattern.quote(Strings.DOT))[index]);
+		return Integer.parseInt(this.versionField.split(Pattern.quote(Strings.DASH))[0].split(Pattern.quote(Strings.DOT))[index]);
 	}
 	
 	public int getMajor()
@@ -65,6 +65,6 @@ public class Version
 	@Override
 	public String toString()
 	{
-		return this.version;
+		return this.versionField;
 	}
 }

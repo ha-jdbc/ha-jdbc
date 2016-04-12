@@ -87,26 +87,26 @@ public class SemaphoreLockManager implements LockManager
 	
 	private static class GlobalLock implements Lock
 	{
-		private Lock globalLock;
+		private Lock globalLockField;
 		private Lock lock;
 		
 		GlobalLock(Lock globalLock, Lock lock)
 		{
-			this.globalLock = globalLock;
+			this.globalLockField = globalLock;
 			this.lock = lock;
 		}
 		
 		@Override
 		public void lock()
 		{
-			this.globalLock.lock();
+			this.globalLockField.lock();
 			this.lock.lock();
 		}
 
 		@Override
 		public void lockInterruptibly() throws InterruptedException
 		{
-			this.globalLock.lockInterruptibly();
+			this.globalLockField.lockInterruptibly();
 			
 			try
 			{
@@ -114,7 +114,7 @@ public class SemaphoreLockManager implements LockManager
 			}
 			catch (InterruptedException e)
 			{
-				this.globalLock.unlock();
+				this.globalLockField.unlock();
 				throw e;
 			}
 		}
@@ -122,14 +122,14 @@ public class SemaphoreLockManager implements LockManager
 		@Override
 		public boolean tryLock()
 		{
-			if (this.globalLock.tryLock())
+			if (this.globalLockField.tryLock())
 			{
 				if (this.lock.tryLock())
 				{
 					return true;
 				}
 
-				this.globalLock.unlock();
+				this.globalLockField.unlock();
 			}
 
 			return false;
@@ -138,14 +138,14 @@ public class SemaphoreLockManager implements LockManager
 		@Override
 		public boolean tryLock(long time, TimeUnit unit) throws InterruptedException
 		{
-			if (this.globalLock.tryLock(time, unit))
+			if (this.globalLockField.tryLock(time, unit))
 			{
 				if (this.lock.tryLock(time, unit))
 				{
 					return true;
 				}
 
-				this.globalLock.unlock();
+				this.globalLockField.unlock();
 			}
 
 			return false;
@@ -155,7 +155,7 @@ public class SemaphoreLockManager implements LockManager
 		public void unlock()
 		{
 			this.lock.unlock();
-			this.globalLock.unlock();
+			this.globalLockField.unlock();
 		}
 
 		@Override

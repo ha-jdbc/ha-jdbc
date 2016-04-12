@@ -237,7 +237,7 @@ public final class CronExpression implements Serializable, Cloneable {
         dayMap.put("SAT", 7);
     }
 
-    private final String cronExpression;
+    private final String cronExpressionField;
     private TimeZone timeZone = null;
     protected transient TreeSet<Integer> seconds;
     protected transient TreeSet<Integer> minutes;
@@ -271,9 +271,9 @@ public final class CronExpression implements Serializable, Cloneable {
             throw new IllegalArgumentException("cronExpression cannot be null");
         }
         
-        this.cronExpression = cronExpression.toUpperCase(Locale.US);
+        this.cronExpressionField = cronExpression.toUpperCase(Locale.US);
         
-        buildExpression(this.cronExpression);
+        buildExpression(this.cronExpressionField);
     }
     
     /**
@@ -289,9 +289,9 @@ public final class CronExpression implements Serializable, Cloneable {
          * ParseException. We also elide some of the sanity checking as it is
          * not logically trippable.
          */
-        this.cronExpression = expression.getCronExpression();
+        this.cronExpressionField = expression.getCronExpression();
         try {
-            buildExpression(cronExpression);
+            buildExpression(cronExpressionField);
         } catch (ParseException ex) {
             throw new AssertionError();
         }
@@ -400,7 +400,7 @@ public final class CronExpression implements Serializable, Cloneable {
      */
     @Override
     public String toString() {
-        return cronExpression;
+        return cronExpressionField;
     }
 
     /**
@@ -842,7 +842,7 @@ public final class CronExpression implements Serializable, Cloneable {
     }
 
     public String getCronExpression() {
-        return cronExpression;
+        return cronExpressionField;
     }
     
     public String getExpressionSummary() {
@@ -1636,7 +1636,7 @@ public final class CronExpression implements Serializable, Cloneable {
         
         stream.defaultReadObject();
         try {
-            buildExpression(cronExpression);
+            buildExpression(cronExpressionField);
         } catch (Exception ignore) {
         } // never happens
     }    
