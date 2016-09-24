@@ -36,6 +36,8 @@ public class DriverProxyFactory extends AbstractRootProxyFactory<Driver, DriverD
 	@Override
 	public Driver createProxy()
 	{
-		return Proxies.createProxy(Driver.class, new DriverInvocationHandler(this));
+		Driver driver = Proxies.createProxy(Driver.class, new DriverInvocationHandler(this));
+		getDatabaseCluster().addListener(driver, this);
+		return driver;
 	}
 }

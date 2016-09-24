@@ -143,7 +143,7 @@ public interface DatabaseCluster<Z, D extends Database<Z>> extends Lifecycle
 	 */
 	boolean isActive();
 
-	void addListener(DatabaseClusterListener listener);
+	void addListener(Object proxy, DatabaseClusterListener listener);
 	
 	void removeListener(DatabaseClusterListener listener);
 	

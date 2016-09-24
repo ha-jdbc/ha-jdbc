@@ -37,6 +37,8 @@ public class ConnectionPoolDataSourceProxyFactory extends CommonDataSourceProxyF
 	@Override
 	public ConnectionPoolDataSource createProxy()
 	{
-		return Proxies.createProxy(ConnectionPoolDataSource.class, new ConnectionPoolDataSourceInvocationHandler(this));
+		ConnectionPoolDataSource ds = Proxies.createProxy(ConnectionPoolDataSource.class, new ConnectionPoolDataSourceInvocationHandler(this));
+		getDatabaseCluster().addListener(ds, this);
+		return ds;
 	}
 }

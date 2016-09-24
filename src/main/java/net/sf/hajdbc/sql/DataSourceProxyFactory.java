@@ -36,6 +36,8 @@ public class DataSourceProxyFactory extends CommonDataSourceProxyFactory<javax.s
 	@Override
 	public DataSource createProxy()
 	{
-		return Proxies.createProxy(javax.sql.DataSource.class, new DataSourceInvocationHandler(this));
+		DataSource ds = Proxies.createProxy(DataSource.class, new DataSourceInvocationHandler(this));
+		getDatabaseCluster().addListener(ds, this);
+		return ds;
 	}
 }
