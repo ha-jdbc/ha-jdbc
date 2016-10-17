@@ -18,7 +18,6 @@
 package net.sf.hajdbc.sql;
 
 import java.lang.reflect.Method;
-import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.SQLException;
 import java.util.Set;
@@ -34,8 +33,8 @@ import net.sf.hajdbc.util.reflect.Methods;
  */
 public class ClobInvocationHandler<Z, D extends Database<Z>, P, C extends Clob> extends LocatorInvocationHandler<Z, D, P, C, ClobProxyFactory<Z, D, P, C>>
 {
-	private static final Method SET_ASCII_STREAM_METHOD = Methods.getMethod(Blob.class, "setAsciiStream", Long.TYPE);
-	private static final Method SET_CHARACTER_STREAM_METHOD = Methods.getMethod(Blob.class, "setCharacterStream", Long.TYPE);
+	private static final Method SET_ASCII_STREAM_METHOD = Methods.getMethod(Clob.class, "setAsciiStream", Long.TYPE);
+	private static final Method SET_CHARACTER_STREAM_METHOD = Methods.getMethod(Clob.class, "setCharacterStream", Long.TYPE);
 	private static final Set<Method> READ_METHODS = Methods.findMethods(Clob.class, "getAsciiStream", "getCharacterStream", "getSubString", "length", "position");
 	private static final Set<Method> WRITE_METHODS = Methods.findMethods(Clob.class, "setAsciiStream", "setCharacterStream", "setString", "truncate");
 	
