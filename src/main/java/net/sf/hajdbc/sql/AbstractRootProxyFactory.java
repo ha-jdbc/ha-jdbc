@@ -40,7 +40,6 @@ public abstract class AbstractRootProxyFactory<Z, D extends Database<Z>> extends
 			this.get(database);
 		}
 		
-		cluster.addListener(this);
 	}
 
 	@Override

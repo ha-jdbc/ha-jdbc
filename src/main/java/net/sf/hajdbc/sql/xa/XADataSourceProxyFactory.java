@@ -37,6 +37,8 @@ public class XADataSourceProxyFactory extends CommonDataSourceProxyFactory<XADat
 	@Override
 	public XADataSource createProxy()
 	{
-		return Proxies.createProxy(XADataSource.class, new XADataSourceInvocationHandler(this));
+		XADataSource ds = Proxies.createProxy(XADataSource.class, new XADataSourceInvocationHandler(this));
+		getDatabaseCluster().addListener(ds, this);
+		return ds;
 	}
 }
