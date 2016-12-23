@@ -48,7 +48,7 @@ public class ReleaseLockCommand implements Command<Void, LockCommandContext>
 		
 		if (locks != null)
 		{
-			Lock lock = null;
+			Lock lock;
 			
 			synchronized (locks)
 			{
