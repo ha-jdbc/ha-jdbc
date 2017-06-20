@@ -223,12 +223,12 @@ public class AbstractInvocationHandler<Z, D extends Database<Z>, T, E extends Ex
 			
 			if (factory.differs(primaryResult, result))
 			{
-				results.remove();
 				D database = entry.getKey();
+				results.remove();
 				
 				if (cluster.deactivate(database, cluster.getStateManager()))
 				{
-					this.logger.log(Level.ERROR, this.messages.inconsistent(cluster, database, primaryResult, result));
+					this.logger.log(Level.ERROR, this.messages.inconsistent(cluster, database, result, primaryResult));
 				}
 			}
 		}
