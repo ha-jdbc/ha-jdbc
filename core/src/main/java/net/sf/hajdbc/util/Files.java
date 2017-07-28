@@ -25,7 +25,10 @@ import java.security.PrivilegedExceptionAction;
 public class Files
 {
 	public static String TEMP_FILE_PREFIX = "ha-jdbc_";
-	
+
+	private Files() {
+	}
+
 	public static File createTempFile(final String suffix) throws IOException
 	{
 		PrivilegedExceptionAction<File> action = new PrivilegedExceptionAction<File>()
