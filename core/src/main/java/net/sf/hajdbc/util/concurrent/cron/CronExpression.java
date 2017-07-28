@@ -506,11 +506,9 @@ public final class CronExpression implements Serializable, Cloneable {
             boolean dayOfMSpec = !dom.contains(NO_SPEC);
             boolean dayOfWSpec = !dow.contains(NO_SPEC);
 
-            if (!dayOfMSpec || dayOfWSpec) {
-                if (!dayOfWSpec || dayOfMSpec) {
-                    throw new ParseException(
-                            "Support for specifying both a day-of-week AND a day-of-month parameter is not implemented.", 0);
-                }
+            if ((!dayOfMSpec || dayOfWSpec) && (!dayOfWSpec || dayOfMSpec)) {
+                throw new ParseException(
+                        "Support for specifying both a day-of-week AND a day-of-month parameter is not implemented.", 0);
             }
         } catch (ParseException pe) {
             throw pe;

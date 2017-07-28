@@ -121,12 +121,9 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 			return this.getProxyFactory().getTransactionContext().start(new LockingInvocationStrategy(InvocationStrategies.TRANSACTION_INVOKE_ON_ALL, this.getProxyFactory().getBatchLocks()), this.getProxyFactory().getParentProxy());
 		}
 		
-		if (method.equals(getMoreResultsMethod))
+		if (method.equals(getMoreResultsMethod) && parameters[0].equals(Statement.KEEP_CURRENT_RESULT))
 		{
-			if (parameters[0].equals(Statement.KEEP_CURRENT_RESULT))
-			{
-				return InvocationStrategies.INVOKE_ON_EXISTING;
-			}
+			return InvocationStrategies.INVOKE_ON_EXISTING;
 		}
 		
 		if (method.equals(getResultSetMethod))

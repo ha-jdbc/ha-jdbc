@@ -477,12 +477,9 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 											insertStatement.executeBatch();
 										}
 										
-										if (updateStatement != null)
+										if (updateStatement != null && (updateCount % this.maxBatchSize) > 0)
 										{
-											if ((updateCount % this.maxBatchSize) > 0)
-											{
-												updateStatement.executeBatch();
-											}
+											updateStatement.executeBatch();
 										}
 										
 										logger.log(Level.INFO, messages.insertCount(table, insertCount));

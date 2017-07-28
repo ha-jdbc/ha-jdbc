@@ -123,12 +123,9 @@ public class JGroupsCommandDispatcher<C> implements RequestHandler, CommandDispa
 	{
 		Channel channel = this.dispatcher.getChannel();
 		
-		if (channel.isOpen())
+		if (channel.isOpen() && channel.isConnected())
 		{
-			if (channel.isConnected())
-			{
-				channel.disconnect();
-			}
+			channel.disconnect();
 		}
 	}
 
