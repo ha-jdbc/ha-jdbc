@@ -59,25 +59,20 @@ public class InputSinkRegistryInvocationHandler<Z, D extends Database<Z>, P, T, 
 					{
 						final Object sink = channel.write(parameter);
 						
-						return new Invoker<Z, D, T, R, SQLException>()
-						{
-							@Override
-							public R invoke(D database, T object) throws SQLException
-							{
-								List<Object> parameterList = new ArrayList<>(Arrays.asList(parameters));
-								
-								try
-								{
-									parameterList.set(parameterIndex, channel.read(sink));
-									
-									return Methods.<R, SQLException>invoke(method, exceptionFactory, object, parameterList.toArray());
-								}
-								catch (IOException e)
-								{
-									throw exceptionFactory.createException(e);
-								}
-							}
-						};
+						return (database, object) -> {
+                            List<Object> parameterList = new ArrayList<>(Arrays.asList(parameters));
+                            
+                            try
+                            {
+                                parameterList.set(parameterIndex, channel.read(sink));
+                                
+                                return Methods.<R, SQLException>invoke(method, exceptionFactory, object, parameterList.toArray());
+                            }
+                            catch (IOException e)
+                            {
+                                throw exceptionFactory.createException(e);
+                            }
+                        };
 					}
 					catch (IOException e)
 					{

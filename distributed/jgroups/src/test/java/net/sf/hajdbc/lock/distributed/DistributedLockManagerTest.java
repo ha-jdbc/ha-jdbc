@@ -192,16 +192,11 @@ public class DistributedLockManagerTest
 		ExecutorService executor = Executors.newSingleThreadExecutor();
 		try
 		{
-			Callable<Void> task = new Callable<Void>()
-			{
-				@Override
-				public Void call() throws Exception
-				{
-					DistributedLockManagerTest.this.manager1.stop();
-					DistributedLockManagerTest.this.manager1.start();
-					return null;
-				}
-			};
+			Callable<Void> task = () -> {
+                DistributedLockManagerTest.this.manager1.stop();
+                DistributedLockManagerTest.this.manager1.start();
+                return null;
+            };
 			Future<?> future = executor.submit(task);
 			
 			locked = lock2.tryLock(10, TimeUnit.SECONDS);

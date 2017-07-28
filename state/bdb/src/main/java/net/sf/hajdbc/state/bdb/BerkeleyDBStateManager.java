@@ -428,17 +428,12 @@ public class BerkeleyDBStateManager extends CloseablePoolProvider<Environment, D
 		for (int i = 0; i < dbOperations.length; ++i)
 		{
 			final DatabaseOperation operation = dbOperations[i];
-			operations[i] = new Operation()
-			{
-				@Override
-				public void execute(Environment env, Transaction transaction)
-				{
-					try (Database database = env.openDatabase(transaction, operation.getDatabaseName(), new DatabaseConfig().setTransactional(true)))
-					{
-						operation.execute(database);
-					}
-				}
-			};
+			operations[i] = (env, transaction) -> {
+                try (Database database = env.openDatabase(transaction, operation.getDatabaseName(), new DatabaseConfig().setTransactional(true)))
+                {
+                    operation.execute(database);
+                }
+            };
 		}
 		this.execute(operations);
 	}
@@ -462,17 +457,12 @@ public class BerkeleyDBStateManager extends CloseablePoolProvider<Environment, D
 	
 	private <T> T execute(final DatabaseQuery<T> dbQuery)
 	{
-		Query<T> query = new Query<T>()
-		{
-			@Override
-			public T execute(Environment env)
-			{
-				try (Database database = env.openDatabase(null, dbQuery.getDatabaseName(), new DatabaseConfig().setReadOnly(true)))
-				{
-					return dbQuery.execute(database);
-				}
-			}
-		};
+		Query<T> query = env -> {
+            try (Database database = env.openDatabase(null, dbQuery.getDatabaseName(), new DatabaseConfig().setReadOnly(true)))
+            {
+                return dbQuery.execute(database);
+            }
+        };
 		return this.execute(query);
 	}
 	

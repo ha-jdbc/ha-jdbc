@@ -43,15 +43,10 @@ public class OutputStreamProxy<Z, D extends Database<Z>, P> extends OutputStream
 	@Override
 	public void write(final byte[] b, final int off, final int len) throws IOException
 	{
-		OutputStreamInvoker<Z, D> invoker = new OutputStreamInvoker<Z, D>()
-		{
-			@Override
-			public Void invoke(D database, OutputStream output) throws IOException
-			{
-				output.write(b, off, len);
-				return null;
-			}
-		};
+		OutputStreamInvoker<Z, D> invoker = (database, output) -> {
+            output.write(b, off, len);
+            return null;
+        };
 		
 		InvocationStrategies.INVOKE_ON_EXISTING.invoke(this.factory, invoker);
 		
@@ -61,15 +56,10 @@ public class OutputStreamProxy<Z, D extends Database<Z>, P> extends OutputStream
 	@Override
 	public void write(final byte[] b) throws IOException
 	{
-		OutputStreamInvoker<Z, D> invoker = new OutputStreamInvoker<Z, D>()
-		{
-			@Override
-			public Void invoke(D database, OutputStream output) throws IOException
-			{
-				output.write(b);
-				return null;
-			}
-		};
+		OutputStreamInvoker<Z, D> invoker = (database, output) -> {
+            output.write(b);
+            return null;
+        };
 		
 		InvocationStrategies.INVOKE_ON_EXISTING.invoke(this.factory, invoker);
 		
@@ -79,15 +69,10 @@ public class OutputStreamProxy<Z, D extends Database<Z>, P> extends OutputStream
 	@Override
 	public void write(final int b) throws IOException
 	{
-		OutputStreamInvoker<Z, D> invoker = new OutputStreamInvoker<Z, D>()
-		{
-			@Override
-			public Void invoke(D database, OutputStream output) throws IOException
-			{
-				output.write(b);
-				return null;
-			}
-		};
+		OutputStreamInvoker<Z, D> invoker = (database, output) -> {
+            output.write(b);
+            return null;
+        };
 		
 		InvocationStrategies.INVOKE_ON_EXISTING.invoke(this.factory, invoker);
 		
@@ -97,15 +82,10 @@ public class OutputStreamProxy<Z, D extends Database<Z>, P> extends OutputStream
 	@Override
 	public void flush() throws IOException
 	{
-		OutputStreamInvoker<Z, D> invoker = new OutputStreamInvoker<Z, D>()
-		{
-			@Override
-			public Void invoke(D database, OutputStream output) throws IOException
-			{
-				output.flush();
-				return null;
-			}
-		};
+		OutputStreamInvoker<Z, D> invoker = (database, output) -> {
+            output.flush();
+            return null;
+        };
 		
 		InvocationStrategies.INVOKE_ON_EXISTING.invoke(this.factory, invoker);
 		
@@ -115,15 +95,10 @@ public class OutputStreamProxy<Z, D extends Database<Z>, P> extends OutputStream
 	@Override
 	public void close() throws IOException
 	{
-		OutputStreamInvoker<Z, D> invoker = new OutputStreamInvoker<Z, D>()
-		{
-			@Override
-			public Void invoke(D database, OutputStream output) throws IOException
-			{
-				output.close();
-				return null;
-			}
-		};
+		OutputStreamInvoker<Z, D> invoker = (database, output) -> {
+            output.close();
+            return null;
+        };
 		
 		InvocationStrategies.INVOKE_ON_EXISTING.invoke(this.factory, invoker);
 		

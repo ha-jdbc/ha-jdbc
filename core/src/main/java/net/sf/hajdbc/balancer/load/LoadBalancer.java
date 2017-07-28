@@ -45,32 +45,27 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 	
 	private volatile SortedMap<D, AtomicInteger> databaseMap = Collections.emptySortedMap();
 	
-	private Comparator<Map.Entry<D, AtomicInteger>> comparator = new Comparator<Map.Entry<D, AtomicInteger>>()
-	{
-		@Override
-		public int compare(Map.Entry<D, AtomicInteger> mapEntry1, Map.Entry<D, AtomicInteger> mapEntry2)
-		{
-			D database1 = mapEntry1.getKey();
-			D database2 = mapEntry2.getKey();
+	private Comparator<Map.Entry<D, AtomicInteger>> comparator = (mapEntry1, mapEntry2) -> {
+        D database1 = mapEntry1.getKey();
+        D database2 = mapEntry2.getKey();
 
-			float load1 = mapEntry1.getValue().get();
-			float load2 = mapEntry2.getValue().get();
-			
-			int weight1 = database1.getWeight();
-			int weight2 = database2.getWeight();
-			
-			// If weights are the same, we can simply compare the loads
-			if (weight1 == weight2)
-			{
-				return Float.compare(load1, load2);
-			}
-			
-			float weightedLoad1 = (weight1 != 0) ? (load1 / weight1) : Float.POSITIVE_INFINITY;
-			float weightedLoad2 = (weight2 != 0) ? (load2 / weight2) : Float.POSITIVE_INFINITY;
-			
-			return Float.compare(weightedLoad1, weightedLoad2);
-		}
-	};
+        float load1 = mapEntry1.getValue().get();
+        float load2 = mapEntry2.getValue().get();
+        
+        int weight1 = database1.getWeight();
+        int weight2 = database2.getWeight();
+        
+        // If weights are the same, we can simply compare the loads
+        if (weight1 == weight2)
+        {
+            return Float.compare(load1, load2);
+        }
+        
+        float weightedLoad1 = (weight1 != 0) ? (load1 / weight1) : Float.POSITIVE_INFINITY;
+        float weightedLoad2 = (weight2 != 0) ? (load2 / weight2) : Float.POSITIVE_INFINITY;
+        
+        return Float.compare(weightedLoad1, weightedLoad2);
+    };
 
 	/**
 	 * Constructs a new LoadBalancer

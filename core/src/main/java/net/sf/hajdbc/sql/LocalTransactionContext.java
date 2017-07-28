@@ -116,14 +116,7 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 	{
 		if ((this.transactionId == null) || !connection.getAutoCommit()) return invoker;
 
-		return new Invoker<Z, D, T, R, SQLException>()
-		{
-			@Override
-			public R invoke(D database, T object) throws SQLException
-			{
-				return LocalTransactionContext.this.durability.getInvoker(invoker, Durability.Phase.COMMIT, LocalTransactionContext.this.transactionId, ExceptionType.SQL.<SQLException>getExceptionFactory()).invoke(database, object);
-			}
-		};
+		return (database, object) -> LocalTransactionContext.this.durability.getInvoker(invoker, Durability.Phase.COMMIT, LocalTransactionContext.this.transactionId, ExceptionType.SQL.<SQLException>getExceptionFactory()).invoke(database, object);
 	}
 
 	/**
