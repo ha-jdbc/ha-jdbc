@@ -172,19 +172,15 @@ public class H2Dialect extends StandardDialect implements DumpRestoreSupport
 		    	  try (ResultSet rs = s.executeQuery("SCRIPT;")) {
 		    		  try (FileWriter fw = new FileWriter(file)) {
 			    		  while (rs.next()) {
-			    			 fw.write(rs.getString(1) + "\n");  
+			    			 fw.write(rs.getString(1) + "\n");
 			    		  }
 		    		  }
 		    	  } finally {
 		    		 s.execute("set EXCLUSIVE 0;");
 		    	  }
 		      }
-			} catch (Exception e) {
-				System.err.println(e.getMessage());
-				e.printStackTrace();
-				throw e;
 			}
-		} 
+		}
 	}
 
 	@Override
@@ -199,13 +195,7 @@ public class H2Dialect extends StandardDialect implements DumpRestoreSupport
 		    		  s.execute("set EXCLUSIVE 0;");
 		    	  }
 		      }
-			} 
-		} catch (Exception e) {
-			System.err.println(e.getMessage());
-			e.printStackTrace();
-			throw e;
+			}
 		}
-	}
-
-	
+	}	
 }
