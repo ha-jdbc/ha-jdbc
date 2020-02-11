@@ -45,20 +45,20 @@
 		<repository>
 			<id>jboss-public-repository-group</id>
 			<name>JBoss Public Repository Group</name>
-			<url>http://repository.jboss.org/nexus/content/groups/public/</url>
+			<url>https://repository.jboss.org/nexus/content/groups/public/</url>
 		</repository>
 		<repository>
 			<!-- Provides berkeleydb-je -->
 			<id>download.oracle.com</id>
 			<name>Oracle maven repository</name>
-			<url>http://download.oracle.com/maven</url>
+			<url>https://download.oracle.com/maven</url>
 		</repository>
 	</repositories>
 	<pluginRepositories>
 		<pluginRepository>
 			<id>jboss-public-repository-group</id>
 			<name>JBoss Public Repository Group</name>
-			<url>http://repository.jboss.org/nexus/content/groups/public/</url>
+			<url>https://repository.jboss.org/nexus/content/groups/public/</url>
 		</pluginRepository>
 	</pluginRepositories>
 
