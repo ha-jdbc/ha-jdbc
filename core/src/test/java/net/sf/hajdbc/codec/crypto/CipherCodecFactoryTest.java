@@ -19,6 +19,7 @@ package net.sf.hajdbc.codec.crypto;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.nio.file.Files;
 import java.security.Key;
 import java.security.KeyStore;
 import java.sql.SQLException;
@@ -48,7 +49,7 @@ public class CipherCodecFactoryTest
 	@Before
 	public void before() throws Exception
 	{
-		File file = File.createTempFile("ha-jdbc", "keystore");
+		File file = Files.createTempFile("ha-jdbc", "keystore").toFile();
 		
 		SecretKeyFactory factory = SecretKeyFactory.getInstance(ALGORITHM);
 		this.key = factory.generateSecret(new DESKeySpec(Base64.getDecoder().decode(KEY)));

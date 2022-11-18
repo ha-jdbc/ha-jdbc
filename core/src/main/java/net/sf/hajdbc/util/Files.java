@@ -19,6 +19,7 @@ package net.sf.hajdbc.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 
@@ -33,7 +34,7 @@ public class Files
 			@Override
 			public File run() throws IOException
 			{
-				return File.createTempFile(TEMP_FILE_PREFIX, suffix);
+				return Files.createTempFile(TEMP_FILE_PREFIX, suffix).toFile();
 			}
 		};
 		
